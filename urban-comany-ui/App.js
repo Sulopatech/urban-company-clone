@@ -29,13 +29,12 @@ import SplashScreen from "./screens/splashScreen";
 import ServiceDetailScreen from "./screens/serviceDetail/serviceDetailScreen";
 import * as ExpoSplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
-import {
-  ApolloClient,
-  ApolloProvider,
-  HttpLink,
-  InMemoryCache,
-} from '@apollo/client';
-import API_URL from './services/Environment';
+import { ApolloClient, ApolloProvider, HttpLink, InMemoryCache } from '@apollo/client';
+import API_URL from './screens/services/Environment';
+
+ExpoSplashScreen.preventAutoHideAsync();
+
+LogBox.ignoreAllLogs();
 
 const Stack = createStackNavigator(); // Define Stack navigator
 
