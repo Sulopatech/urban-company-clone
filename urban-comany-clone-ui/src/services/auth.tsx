@@ -1,28 +1,24 @@
-import { gql } from "@apollo/client";
-import { Token, __Type } from "graphql";
+import {gql} from "@apollo/client"
 
-export const LOGIN = gql `
-    mutation login($email: String!, $password: String!,$rememberMe: Boolean)
-    {
-      login(username: $email, password: $password, rememberMe: $rememberMe) 
-      {
-            __Typename
-            ... on CurrentUser
-            {
-                channels
-                {
-                    id 
-                    Token
-                    code
-                    permission 
-                    __typename
-                }
-            }
-            ... on ErrorResult {
-                errorCode
-                Message
-            }
-      } 
+export const LOGIN = gql`
+mutation login($email: String!,$password: String!,$rememberMe: Boolean){
+ login(username: $email,password: $password, rememberMe: $rememberMe){
 
+    ... on CurrentUser{
+        id 
+        identifier 
+        channels{
+            id 
+            token
+            code 
+            permissions
+            __typename
+        }
     }
-'; 
+        ...on ErrorResult{
+        errorCode
+        message
+        }
+  }
+}
+ `;

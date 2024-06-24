@@ -1,5 +1,5 @@
 import 'react-native-gesture-handler';
-import React, { useCallback } from 'react'
+import React, { useCallback } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { TransitionPresets, createStackNavigator } from '@react-navigation/stack';
 import { LogBox } from 'react-native';
@@ -22,8 +22,8 @@ import InviteFriendsScreen from "./screens/inviteFriends/inviteFriendsScreen";
 import SettingScreen from "./screens/setting/settingScreen";
 import PrivacyPolicyScreen from "./screens/privacyPolicy/privacyPolicyScreen";
 import OnboardingScreen from "./screens/onboarding/onboardingScreen";
-import SigninScreen from "./screens/auth/signinScreen";
-import SignupScreen from "./screens/auth/signupScreen";
+import SignupScreen from './screens/auth/signupScreen';
+import SigninScreen from './screens/auth/signinScreen';
 import VerificationScreen from "./screens/auth/verificationScreen";
 import SplashScreen from "./screens/splashScreen";
 import ServiceDetailScreen from "./screens/serviceDetail/serviceDetailScreen";
@@ -36,12 +36,11 @@ ExpoSplashScreen.preventAutoHideAsync();
 
 LogBox.ignoreAllLogs();
 
-const Stack = createStackNavigator();
+const Stack = createStackNavigator(); // Define Stack navigator
 
 const httpLink = new HttpLink({
   uri: API_URL,
 });
-
 const client = new ApolloClient({
   link: httpLink,
   cache: new InMemoryCache(),
