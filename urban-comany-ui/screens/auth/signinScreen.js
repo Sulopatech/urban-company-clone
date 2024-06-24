@@ -1,13 +1,17 @@
 import React, { useState, useCallback } from "react";
-import { Dimensions, BackHandler, View, ScrollView, TouchableOpacity, ImageBackground, TextInput, Image, StyleSheet, Text, Platform } from "react-native";
+import { Dimensions, BackHandler, View, ScrollView, TouchableOpacity, ImageBackground, TextInput, Image, StyleSheet, Text, Platform, Alert } from "react-native";
 import { Colors, Fonts, Sizes, } from "../../constants/styles";
 import { FontAwesome, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
-import { useFocusEffect } from "@react-navigation/native";
+import { CurrentRenderContext, useFocusEffect } from "@react-navigation/native";
 import MyStatusBar from "../../components/myStatusBar";
+import { useMutation } from "@apollo/client";
+import { LOGIN } from "../services/Auth";
 
 const { width } = Dimensions.get('screen');
 
 const SigninScreen = ({ navigation }) => {
+
+    const [errorMessage, setErrorMessage] = useState('');
 
     const backAction = () => {
         if (Platform.OS === "ios") {
@@ -53,6 +57,64 @@ const SigninScreen = ({ navigation }) => {
         securePassword,
         backClickCount,
     } = state;
+
+    //add method -------------------------------------------------------------------------
+
+    const [login, { loading }, error] = useMutation(LOGIN, {
+
+        onCompleted: (data) => {
+            if (data.login.__typename === "CurrentUser") {
+
+                navigation.push('BottomTabBar');
+
+            } else if (data.login.__typename === "ErrorResult") {
+
+                Alert.alert("Error", data.login.Message);
+
+            } else {
+                if(errorMessage === '') {
+                    Alert.alert("invalid user name password");
+                }
+                
+                
+                // navigation.push('Signin'); 
+            }
+        },
+        onError: (error) => {
+
+            Alert.alert("Error", error.message);
+        }
+    });
+
+    const handleSignin = () => {
+
+        if (userName !== null || !userName.includes('@') || !userName.includes('.')) {
+
+            if (!userName.includes('@')) {
+                setErrorMessage('Username must include @ symbol');
+            }
+            else if (!userName.includes('.')) {
+                setErrorMessage('Username must include . symbol');
+            }
+
+        } else {
+            setErrorMessage(''); // Clear error message when username is valid
+        }
+
+        if (userName !== null && password !== null) {
+            login({ variables: { email: userName, password } });
+        } else {
+            Alert.alert("Error", "Please enter both username and password");
+        }
+    };
+
+    const handleUserNameChange = (text) => {
+        updateState({ userName: text });
+        setErrorMessage('');
+    };
+
+    //end of the added method-------------------------------------------------
+
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
@@ -164,7 +226,7 @@ const SigninScreen = ({ navigation }) => {
         return (
             <TouchableOpacity
                 activeOpacity={0.9}
-                onPress={() => navigation.push('Signup')}
+                onPress={handleSignin}
                 style={styles.signinButtonStyle}
             >
                 <Text style={{ ...Fonts.whiteColor18SemiBold }}>
@@ -222,13 +284,16 @@ const SigninScreen = ({ navigation }) => {
     }
 
     function userNameTextField() {
+
         return (
             <View style={{ marginTop: Sizes.fixPadding + 5.0, marginHorizontal: Sizes.fixPadding * 2.0, }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <FontAwesome name="user" size={17} color={Colors.grayColor} />
                     <TextInput
                         value={userName}
-                        onChangeText={(text) => updateState({ userName: text })}
+                        onChangeText={handleUserNameChange
+
+                        }
                         placeholder="User Name"
                         placeholderTextColor={Colors.grayColor}
                         selectionColor={Colors.primaryColor}
@@ -242,9 +307,15 @@ const SigninScreen = ({ navigation }) => {
                     backgroundColor: Colors.grayColor, height: 1.5,
                     marginVertical: Sizes.fixPadding - 5.0,
                 }} />
+
+                {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+
             </View>
+
         )
     }
+
+
 
     function header() {
         return (
@@ -258,6 +329,7 @@ const SigninScreen = ({ navigation }) => {
 }
 
 const styles = StyleSheet.create({
+
     animatedView: {
         backgroundColor: "#333333",
         position: "absolute",
@@ -301,6 +373,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         flex: 1,
         marginHorizontal: Sizes.fixPadding * 2.0,
+    },
+    errorText: {
+        color: 'red',
     }
 });
 
