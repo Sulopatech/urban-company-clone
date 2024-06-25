@@ -8,26 +8,50 @@ import CollapsibleToolbar from 'react-native-collapsible-toolbar';
 const popularCategoriesList = [
     {
         id: '1',
-        categoryImage: require('../../assets/images/icons/nails.png'),
-        categoryName: 'Nails',
+        categoryImage: require('../../assets/images/icons/women_salon1.png'),
+        categoryName: "Women's Salon,Spa & Skin Clinic",
         bgColor: '#F48FB1',
     },
     {
         id: '2',
-        categoryImage: require('../../assets/images/icons/hair.png'),
-        categoryName: 'Hair',
+        categoryImage: require('../../assets/images/icons/men_salon1.png'),
+        categoryName: "Men Salon & Massage ",
         bgColor: '#CE93D8',
     },
     {
         id: '3',
-        categoryImage: require('../../assets/images/icons/face.png'),
-        categoryName: 'Face',
+        categoryImage: require('../../assets/images/icons/ac_repair1.png'),
+        categoryName: "AC & Appliance Repair",
         bgColor: '#90CAF9',
     },
     {
         id: '4',
-        categoryImage: require('../../assets/images/icons/massage.png'),
-        categoryName: 'Massage',
+        categoryImage: require('../../assets/images/icons/cleaning_pestControl1.png'),
+        categoryName: "Cleaning & Pest Control",
+        bgColor: '#80CBC4',
+    },
+    {
+        id: '5',
+        categoryImage: require('../../assets/images/icons/weekly_cleaning1.png'),
+        categoryName: "Weekly Bathroom Cleaning",
+        bgColor: '#F48FB1',
+    },
+    {
+        id: '6',
+        categoryImage: require('../../assets/images/icons/electrician1.png'),
+        categoryName: "Electrician Plumber & Carpenter",
+        bgColor: '#CE93D8',
+    },
+    {
+        id: '7',
+        categoryImage: require('../../assets/images/icons/water_purifier1.png'),
+        categoryName: "Native Water Purifier",
+        bgColor: '#90CAF9',
+    },
+    {
+        id: '8',
+        categoryImage: require('../../assets/images/icons/painting.png'),
+        categoryName: "Painting & Water Proofing",
         bgColor: '#80CBC4',
     },
 ];
@@ -284,66 +308,83 @@ const HomeScreen = ({ navigation }) => {
     }
 
     function popularCategoryInfo() {
-
-        const renderItem = ({ item }) => (
-            <TouchableOpacity
-                activeOpacity={0.6}
-                onPress={() => navigation.push('CategoryDetail', { item })}
-                style={{
-                    backgroundColor: item.bgColor,
-                    ...styles.popularCategoryWrapStyle,
-                }}
-            >
-                <Image
-                    source={item.categoryImage}
-                    style={{ width: 18.0, height: 18.0, }}
-                    resizeMode="contain"
-                />
-                <Text
-                    numberOfLines={1}
-                    style={{ marginTop: Sizes.fixPadding - 8.0, ...Fonts.whiteColor12Medium }}
-                >
-                    {item.categoryName}
-                </Text>
-            </TouchableOpacity>
-        )
-        return (
-            <View style={{ marginVertical: Sizes.fixPadding + 5.0, }}>
-                <Text style={{ marginHorizontal: Sizes.fixPadding * 2.0, ...Fonts.blackColor16Bold }}>
-                    Popular Category
-                </Text>
-                <FlatList
-                    ListHeaderComponent={
-                        <View style={{
-                            backgroundColor: '#EF9A9A',
-                            ...styles.popularCategoryWrapStyle
-                        }}>
-                            <Image
-                                source={require('../../assets/images/icons/all.png')}
-                                style={{ width: 18.0, height: 18.0, }}
-                                resizeMode="contain"
-                            />
-                            <Text
-                                numberOfLines={1}
-                                style={{ marginTop: Sizes.fixPadding - 8.0, ...Fonts.whiteColor12Medium }}
-                            >
-                                All
-                            </Text>
-                        </View>
-                    }
-                    horizontal
-                    data={popularCategoriesList}
-                    keyExtractor={(item) => `${item.id}`}
-                    renderItem={renderItem}
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{
-                        paddingLeft: Sizes.fixPadding * 2.0,
-                        paddingTop: Sizes.fixPadding,
-                    }}
-                />
+    const renderItem = ({ item }) => (
+        <View style={{  alignItems: 'center', marginRight: Sizes.fixPadding * 1.3,display: "flex", justifyContent:"center" }}>
+        
+        
+        <TouchableOpacity
+            activeOpacity={0.6}
+            onPress={() => navigation.push('CategoryDetail', { item })}
+            style={{
+                backgroundColor: item.bgColor,
+                ...styles.popularCategoryWrapStyle,
+            }}
+        >
+            <View style={{ width: 40, height: 40, alignItems: 'center', justifyContent: 'center' }}>
+            <Image
+                source={item.categoryImage}
+                style={{ width: 40.0, height:40.0 }}
+                resizeMode="contain"
+            />
             </View>
-        )
-    }
+        
+            
+        </TouchableOpacity>
+        <Text
+            // numberOfLines={1}
+            style={{ marginTop: Sizes.fixPadding - 8.0, ...Fonts.blackColor12Medium,textAlign:'center',flexWrap: 'wrap',width: 100}}
+        >
+            {item.categoryName}
+        </Text>
+        
+        </View>
+        
+        
+    );
+    
+    
+   //flex: 1, justifyContent: 'center', alignItems: 'center'
+   //marginVertical: Sizes.fixPadding + 5.0
+
+    
+
+
+    return (
+        <View style={{flex: 1, width: '100%', paddingHorizontal: 5.0}}>
+            <Text style={{ marginHorizontal: Sizes.fixPadding * 1.3, ...Fonts.blackColor16Bold }}>
+                Popular Category
+            </Text>
+            <View style={{justifyContent:"center",alignItems:"center",paddingLeft:11}}>
+            <FlatList
+                
+                data={popularCategoriesList}
+                style={{marginVertical: Sizes.fixPadding + 4.0}}
+                
+                keyExtractor={(item) => `${item.id}`}
+                renderItem={renderItem}
+                horizontal={false} // Set horizontal to false to allow wrapping
+                numColumns={3}
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                    paddingHorizontal: Sizes.fixPadding,                    
+                    gap:10,
+                    display: 'flex',
+                    justifyContent: "center",
+                    alignSelf:"center",
+                    width: "100%"
+                }}
+                
+                showsVerticalScrollIndicator={false}
+                
+            />
+            </View>
+        </View>
+    );
+}
+
+
 
     function userInfo() {
         return (
@@ -404,12 +445,14 @@ const styles = StyleSheet.create({
         marginTop: Sizes.fixPadding,
     },
     popularCategoryWrapStyle: {
-        width: 63.0,
+        // width: 90.0,
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: Sizes.fixPadding,
         borderRadius: Sizes.fixPadding - 3.0,
-        marginRight: Sizes.fixPadding + 10.0,
+        // marginRight: Sizes.fixPadding + 10.0,
+        paddingHorizontal: 30,
+        paddingVertical:20
     },
     bestSalonImageStyle: {
         borderColor: 'rgba(197, 197, 197, 0.3)',
