@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, StyleSheet, TextInput, ScrollView, TouchableOpacity, Text, Image, Modal, Platform } from "react-native";
 import { Colors, Fonts, Sizes, } from "../../constants/styles";
+import * as ImagePicker from 'expo-image-picker';
 import { MaterialIcons } from '@expo/vector-icons';
 import MyStatusBar from "../../components/myStatusBar";
 
@@ -12,6 +13,7 @@ const EditProfileScreen = ({ navigation }) => {
         mobileNumber: '(+91) 1234567890',
         password: '1234567890435',
         showBottomSheet: false,
+        profilePic: require('../../assets/images/users/user3.png'),
     })
 
     const updateState = (data) => setState((state) => ({ ...state, ...data }))
@@ -22,7 +24,35 @@ const EditProfileScreen = ({ navigation }) => {
         mobileNumber,
         password,
         showBottomSheet,
+        profilePic
     } = state;
+
+    const pickImageFromCamera = async () => {
+        console.log("inside camera");
+        const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+        if (!permissionResult.granted) {
+            alert("You've refused to allow this app to access your camera!");
+            return;
+        }
+
+        const result = await ImagePicker.launchCameraAsync();
+        if (!result.cancelled) {
+            updateState({ profilePic: { uri: result.uri }, showBottomSheet: false });
+        }
+    };
+
+    const pickImageFromGallery = async () => {
+        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permissionResult.granted) {
+            alert("You've refused to allow this app to access your gallery!");
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync();
+        if (!result.cancelled) {
+            updateState({ profilePic: { uri: result.uri }, showBottomSheet: false });
+        }
+    };
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
@@ -30,7 +60,7 @@ const EditProfileScreen = ({ navigation }) => {
             <View style={{ flex: 1 }}>
                 {header()}
                 <ScrollView automaticallyAdjustKeyboardInsets={true} showsVerticalScrollIndicator={false}>
-                    {profilePic()}
+                    {profilePicSection()}
                     {userNameInfo()}
                     {emailInfo()}
                     {mobileNumberInfo()}
@@ -81,7 +111,7 @@ const EditProfileScreen = ({ navigation }) => {
                                 </Text>
                                 <TouchableOpacity
                                     activeOpacity={0.9}
-                                    onPress={() => updateState({ showBottomSheet: false })}
+                                    onPress={pickImageFromCamera}
                                     style={{ marginVertical: Sizes.fixPadding, flexDirection: 'row', marginHorizontal: Sizes.fixPadding * 2.0 }}
                                 >
                                     <MaterialIcons name="photo-camera" size={20} color={Colors.blackColor} />
@@ -91,7 +121,7 @@ const EditProfileScreen = ({ navigation }) => {
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     activeOpacity={0.9}
-                                    onPress={() => updateState({ showBottomSheet: false })}
+                                    onPress={pickImageFromGallery}
                                     style={{ flexDirection: 'row', marginHorizontal: Sizes.fixPadding * 2.0 }}
                                 >
                                     <MaterialIcons name="photo-library" size={20} color={Colors.blackColor} />
@@ -208,7 +238,7 @@ const EditProfileScreen = ({ navigation }) => {
         )
     }
 
-    function profilePic() {
+    function profilePicSection() {
         return (
             <TouchableOpacity
                 activeOpacity={0.9}
@@ -216,7 +246,7 @@ const EditProfileScreen = ({ navigation }) => {
                 style={{ alignItems: 'center', alignSelf: 'center' }}
             >
                 <Image
-                    source={require('../../assets/images/users/user3.png')}
+                    source={profilePic}
                     style={{ width: 90.0, height: 90.0, borderRadius: 45.0 }}
                 />
                 <View style={styles.addIconWrapStyle}>
@@ -227,7 +257,7 @@ const EditProfileScreen = ({ navigation }) => {
                     />
                 </View>
             </TouchableOpacity>
-        )
+        );
     }
 
     function header() {
