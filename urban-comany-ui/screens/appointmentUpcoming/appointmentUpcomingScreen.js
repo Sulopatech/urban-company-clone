@@ -123,11 +123,35 @@ const AppointmentUpcoming = ({ navigation }) => {
                             {`$`}{item.services.reduce((total, item) => total = total + item.amount, 0).toFixed(2)}
                         </Text>
                     </View>
+                     <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 10,gap: 7 }}>
                     <Text
                         onPress={() => cancelAppointment({ id: item.id })}
-                        style={{ ...Fonts.greenColor13Bold, textAlign: 'center' }}>
-                        Cancel Booking
+                        style={{ ...Fonts.primaryColor13Bold, textAlign: 'center',borderRadius: 10,borderWidth: 1,paddingVertical: 5, paddingHorizontal: 10, marginTop: 10,borderColor: '#F5B7B1',alignSelf: 'flex-end' }}>
+                        
+                        Cancel 
                     </Text>
+                    
+                    
+                    <Text
+                        
+                        
+                        onPress={() =>navigation.push('ScheduleAppointment')}
+                        style={{
+                            ...Fonts.greenColor13Bold,
+                            textAlign: 'center',
+                            //backgroundColor: '#e9edc9',
+                            borderRadius: 10,
+                            borderWidth: 1,
+                            paddingVertical: 5,
+                            paddingHorizontal: 10,
+                            borderColor: '#a7c957e',
+                            alignSelf: 'flex-end',
+                            marginRight: 10,
+                        }}>
+                        Reschedule
+                    </Text>
+                    </View>
+                    
                 </CollapseBody>
             </Collapse>
         </View>
