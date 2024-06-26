@@ -9,6 +9,7 @@ import { AssetServerPlugin } from '@vendure/asset-server-plugin';
 import { AdminUiPlugin } from '@vendure/admin-ui-plugin';
 import 'dotenv/config';
 import path from 'path';
+import { CustomerprofilepicturePlugin } from './plugins/customerprofilepicture/customerprofilepicture.plugin';
 
 const IS_DEV = process.env.APP_ENV === 'dev';
 
@@ -46,7 +47,7 @@ export const config: VendureConfig = {
         // See the README.md "Migrations" section for an explanation of
         // the `synchronize` and `migrations` options.
         synchronize: false,
-        migrations: [path.join(__dirname, './migrations/*.+(js|ts)')],
+        migrations: [path.join(__dirname, '../migrations/*.+(js|ts)')],
         logging: false,
         database: process.env.DB_NAME,
         host: process.env.DB_HOST,
@@ -93,5 +94,6 @@ export const config: VendureConfig = {
                 apiPort: 3000,
             },
         }),
+        CustomerprofilepicturePlugin.init({}),
     ],
 };
