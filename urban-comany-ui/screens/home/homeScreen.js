@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { View, FlatList, StyleSheet, Image, Text, TextInput, ImageBackground, TouchableOpacity, } from "react-native";
-import { Colors, Fonts, Sizes, } from "../../constants/styles";
+import React, { useState, useRef } from "react";
+import { View, FlatList, StyleSheet, Image, Text, TextInput, ImageBackground, TouchableOpacity, Animated } from "react-native";
+import { Colors, Fonts, Sizes } from "../../constants/styles";
 import { MaterialIcons } from '@expo/vector-icons';
 import { Snackbar } from 'react-native-paper';
 import CollapsibleToolbar from 'react-native-collapsible-toolbar';
@@ -101,9 +101,9 @@ const HomeScreen = ({ navigation }) => {
         bestSalons: bestSalonList,
         showSnackBar: false,
         isFavorite: null,
-    })
+    });
 
-    const updateState = (data) => setState((state) => ({ ...state, ...data }))
+    const updateState = (data) => setState((state) => ({ ...state, ...data }));
 
     const {
         search,
@@ -112,8 +112,37 @@ const HomeScreen = ({ navigation }) => {
         isFavorite,
     } = state;
 
+    const scrollY = useRef(new Animated.Value(0)).current;
+
+    const searchField = () => (
+        <View style={styles.searchFieldWrapStyle}>
+            <MaterialIcons
+                name="search"
+                color={Colors.whiteColor}
+                size={15}
+            />
+            <TextInput
+                value={search}
+                onChangeText={(text) => updateState({ search: text })}
+                placeholder="Search salon services..."
+                placeholderTextColor={Colors.whiteColor}
+                selectionColor={Colors.whiteColor}
+                style={{ marginLeft: Sizes.fixPadding, flex: 1, ...Fonts.whiteColor14Medium }}
+            />
+        </View>
+    );
+
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
+            <Animated.View style={[styles.stickySearchBar, {
+                opacity: scrollY.interpolate({
+                    inputRange: [200, 250],
+                    outputRange: [0, 1],
+                    extrapolate: 'clamp',
+                }),
+            }]}>
+                {searchField()}
+            </Animated.View>
             <View style={{ flex: 1 }}>
                 <CollapsibleToolbar
                     renderContent={() => (
@@ -127,6 +156,10 @@ const HomeScreen = ({ navigation }) => {
                     renderToolBar={() => salonImage()}
                     collapsedNavBarBackgroundColor={Colors.primaryColor}
                     toolBarHeight={250}
+                    onContentScroll={Animated.event(
+                        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                        { useNativeDriver: false }
+                    )}
                     automaticallyAdjustKeyboardInsets={true}
                     showsVerticalScrollIndicator={false}
                 />
@@ -139,7 +172,7 @@ const HomeScreen = ({ navigation }) => {
                 {isFavorite ? 'Item add to favorite' : 'Item remove from favorite'}
             </Snackbar>
         </View>
-    )
+    );
 
     function salonImage() {
         return (
@@ -196,9 +229,9 @@ const HomeScreen = ({ navigation }) => {
                     </Text>
                 </View>
             </ImageBackground>
-        )
+        );
         return (
-            <View style={{ marginVertical: Sizes.fixPadding + 5.0, }}>
+            <View style={{ marginVertical: Sizes.fixPadding + 5.0 }}>
                 <Text style={{ marginHorizontal: Sizes.fixPadding * 2.0, ...Fonts.blackColor16Bold }}>
                     Offers
                 </Text>
@@ -214,7 +247,7 @@ const HomeScreen = ({ navigation }) => {
                     }}
                 />
             </View>
-        )
+        );
     }
 
     function updateBestSalons({ id }) {
@@ -226,11 +259,10 @@ const HomeScreen = ({ navigation }) => {
             }
             return item;
         });
-        updateState({ bestSalons: newList })
+        updateState({ bestSalons: newList });
     }
 
     function bestSalonInfo() {
-
         const renderItem = ({ item }) => (
             <TouchableOpacity
                 activeOpacity={0.6}
@@ -264,10 +296,10 @@ const HomeScreen = ({ navigation }) => {
                             name={item.isFavorite ? "favorite" : "favorite-border"}
                             color={Colors.whiteColor}
                             size={15}
-                            style={{ marginLeft: Sizes.fixPadding - 5.0, marginTop: Sizes.fixPadding - 5.0, }}
+                            style={{ marginLeft: Sizes.fixPadding - 5.0, marginTop: Sizes.fixPadding - 5.0 }}
                             onPress={() => {
-                                updateBestSalons({ id: item.id })
-                                updateState({ showSnackBar: true })
+                                updateBestSalons({ id: item.id });
+                                updateState({ showSnackBar: true });
                             }}
                         />
                     </View>
@@ -280,17 +312,20 @@ const HomeScreen = ({ navigation }) => {
                             color={Colors.yellowColor}
                             size={15}
                         />
-                        <Text style={{ marginLeft: Sizes.fixPadding - 5.0, ...Fonts.whiteColor12Regular }}>
-                            {item.rating.toFixed(1)} ({item.reviews} reviews)
+                        <Text style={{ marginLeft: Sizes.fixPadding - 5.0, ...Fonts.whiteColor14Medium }}>
+                            {item.rating.toFixed(1)}
+                        </Text>
+                        <Text style={{ marginLeft: Sizes.fixPadding - 5.0, ...Fonts.whiteColor14Medium }}>
+                            ({item.reviews} reviews)
                         </Text>
                     </View>
                 </View>
             </TouchableOpacity>
-        )
+        );
         return (
-            <View>
+            <View style={{ marginVertical: Sizes.fixPadding + 5.0 }}>
                 <Text style={{ marginHorizontal: Sizes.fixPadding * 2.0, ...Fonts.blackColor16Bold }}>
-                    Best Salon
+                    Best salon around you
                 </Text>
                 <FlatList
                     data={bestSalons}
@@ -304,87 +339,68 @@ const HomeScreen = ({ navigation }) => {
                     }}
                 />
             </View>
-        )
+        );
     }
 
     function popularCategoryInfo() {
-    const renderItem = ({ item }) => (
-        <View style={{  alignItems: 'center', marginRight: Sizes.fixPadding * 1.3,display: "flex", justifyContent:"center" }}>
-        
-        
-        <TouchableOpacity
-            activeOpacity={0.6}
-            onPress={() => navigation.push('CategoryDetail', { item })}
-            style={{
-                backgroundColor: item.bgColor,
-                ...styles.popularCategoryWrapStyle,
-            }}
-        >
-            <View style={{ width: 40, height: 40, alignItems: 'center', justifyContent: 'center' }}>
-            <Image
-                source={item.categoryImage}
-                style={{ width: 40.0, height:40.0 }}
-                resizeMode="contain"
-            />
+        const renderItem = ({ item }) => (
+            <View style={{ alignItems: 'center', marginRight: Sizes.fixPadding, display: "flex", justifyContent: "center" }}>
+                <TouchableOpacity
+                    activeOpacity={0.6}
+                    onPress={() => navigation.push('CategoryDetail', { item })}
+                    style={{
+                        backgroundColor: "#f0f0f0",
+                        ...styles.popularCategoryWrapStyle,
+                    }}
+                >
+                    <View style={{ width: 60, height: 40, alignItems: 'center', justifyContent: 'center' }}>
+                        <Image
+                            source={item.categoryImage}
+                            style={{ width: 40.0, height: 40.0 }}
+                            resizeMode="contain"
+                        />
+                    </View>
+                </TouchableOpacity>
+                <Text
+                    numberOfLines={1}
+                    style={{ marginTop: Sizes.fixPadding - 8.0, ...Fonts.blackColor12Medium, textAlign: 'center', flexWrap: 'wrap', width: 100 }}
+                >
+                    {item.categoryName}
+                </Text>
             </View>
-        
-            
-        </TouchableOpacity>
-        <Text
-            // numberOfLines={1}
-            style={{ marginTop: Sizes.fixPadding - 8.0, ...Fonts.blackColor12Medium,textAlign:'center',flexWrap: 'wrap',width: 100}}
-        >
-            {item.categoryName}
-        </Text>
-        
-        </View>
-        
-        
-    );
-    
-    
-   //flex: 1, justifyContent: 'center', alignItems: 'center'
-   //marginVertical: Sizes.fixPadding + 5.0
-
-    
-
-
-    return (
-        <View style={{flex: 1, width: '100%', paddingHorizontal: 5.0}}>
-            <Text style={{ marginHorizontal: Sizes.fixPadding * 1.3, ...Fonts.blackColor16Bold }}>
-                Popular Category
-            </Text>
-            <View style={{justifyContent:"center",alignItems:"center",paddingLeft:11}}>
-            <FlatList
-                
-                data={popularCategoriesList}
-                style={{marginVertical: Sizes.fixPadding + 4.0}}
-                
-                keyExtractor={(item) => `${item.id}`}
-                renderItem={renderItem}
-                horizontal={false} // Set horizontal to false to allow wrapping
-                numColumns={3}
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{
-                    flexDirection: 'row',
-                    flexWrap: 'wrap',
-                    paddingHorizontal: Sizes.fixPadding,                    
-                    gap:10,
-                    display: 'flex',
-                    justifyContent: "center",
-                    alignSelf:"center",
-                    width: "100%"
-                }}
-                
-                showsVerticalScrollIndicator={false}
-                
-            />
+        );
+        //flex: 1, justifyContent: 'center', alignItems: 'center'
+        //marginVertical: Sizes.fixPadding + 5.0
+        return (
+            <View style={{ flex: 1, width: '100%', paddingHorizontal: 5.0 }}>
+                <Text style={{ marginHorizontal: Sizes.fixPadding * 1.3, ...Fonts.blackColor16Bold, marginTop: Sizes.fixPadding - 5 }}>
+                    Popular Category
+                </Text>
+                <View style={{ justifyContent: "center", alignItems: "center", paddingLeft: 11 }}>
+                    <FlatList
+                        data={popularCategoriesList}
+                        style={{ marginVertical: Sizes.fixPadding + 4.0 }}
+                        keyExtractor={(item) => `${item.id}`}
+                        renderItem={renderItem}
+                        horizontal={false} // Set horizontal to false to allow wrapping
+                        numColumns={3}
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={{
+                            flexDirection: 'row',
+                            flexWrap: 'wrap',
+                            paddingHorizontal: Sizes.fixPadding,
+                            gap: 10,
+                            display: 'flex',
+                            justifyContent: "center",
+                            alignSelf: "center",
+                            width: "100%"
+                        }}
+                        showsVerticalScrollIndicator={false}
+                    />
+                </View>
             </View>
-        </View>
-    );
-}
-
-
+        );
+    }
 
     function userInfo() {
         return (
@@ -413,69 +429,41 @@ const HomeScreen = ({ navigation }) => {
             </View>
         )
     }
-
-    function searchField() {
-        return (
-            <View style={styles.searchFieldWrapStyle}>
-                <MaterialIcons
-                    name="search"
-                    color={Colors.whiteColor}
-                    size={15}
-                />
-                <TextInput
-                    value={search}
-                    onChangeText={(text) => updateState({ search: text })}
-                    placeholder="Search salon services..."
-                    placeholderTextColor={Colors.whiteColor}
-                    selectionColor={Colors.whiteColor}
-                    style={{ marginLeft: Sizes.fixPadding, flex: 1, ...Fonts.whiteColor14Medium }}
-                />
-            </View>
-        )
-    }
 }
 
 const styles = StyleSheet.create({
     searchFieldWrapStyle: {
+        backgroundColor: 'rgba(214, 105, 134, 0.85)',
+        borderRadius: Sizes.fixPadding - 5.0,
+        paddingHorizontal: Sizes.fixPadding,
+        paddingVertical: Sizes.fixPadding,
         flexDirection: 'row',
         alignItems: 'center',
-        borderRadius: Sizes.fixPadding - 5.0,
-        backgroundColor: 'rgba(214, 105, 134, 0.85)',
-        padding: Sizes.fixPadding,
-        marginTop: Sizes.fixPadding,
+        marginTop: Sizes.fixPadding * 2.0,
+        borderWidth: 1,
+        borderColor: '#f0adbe',
     },
-    popularCategoryWrapStyle: {
-        // width: 90.0,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: Sizes.fixPadding,
-        borderRadius: Sizes.fixPadding - 3.0,
-        // marginRight: Sizes.fixPadding + 10.0,
-        paddingHorizontal: 30,
-        paddingVertical:20
-    },
-    bestSalonImageStyle: {
-        borderColor: 'rgba(197, 197, 197, 0.3)',
-        borderWidth: 2.0,
-        width: 210.0,
-        height: 130.0,
-        borderRadius: Sizes.fixPadding,
-    },
-    bestSalonDetailWrapStyle: {
-        backgroundColor: 'rgba(214, 105, 134, 0.85)',
-        borderRadius: Sizes.fixPadding - 5.0,
-        width: 185.0,
-        marginTop: -40.0,
-        paddingHorizontal: Sizes.fixPadding - 5.0,
-        paddingBottom: Sizes.fixPadding - 5.0,
-    },
-    offerPercentageWrapStyle: {
+    stickySearchBar: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1000,
         backgroundColor: Colors.primaryColor,
-        borderRadius: Sizes.fixPadding - 5.0,
+        padding: Sizes.fixPadding * 2.0,
+    },
+    snackBarStyle: {
+        position: 'absolute',
+        bottom: -10.0,
+        left: -10.0,
+        right: -10.0,
+        backgroundColor: '#333333',
+        elevation: 0.0,
+    },
+    userInfoWrapStyle: {
+        flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
-        alignSelf: 'flex-start',
-        paddingHorizontal: Sizes.fixPadding,
+        marginBottom: Sizes.fixPadding + 5.0,
     },
     offerImageStyle: {
         width: '100%',
@@ -493,13 +481,38 @@ const styles = StyleSheet.create({
         marginRight: Sizes.fixPadding * 2.0,
         overflow: 'hidden'
     },
-    snackBarStyle: {
-        position: 'absolute',
-        bottom: -10.0,
-        left: -10.0,
-        right: -10.0,
-        backgroundColor: '#333333',
-        elevation: 0.0,
+    popularCategoryWrapStyle: {
+        // width: 90.0,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: Sizes.fixPadding,
+        borderRadius: Sizes.fixPadding - 3.0,
+        // marginRight: Sizes.fixPadding + 10.0,
+        paddingHorizontal: 30,
+        paddingVertical: 20
+    },
+    offerPercentageWrapStyle: {
+        backgroundColor: Colors.primaryColor,
+        borderRadius: Sizes.fixPadding - 5.0,
+        alignItems: 'center',
+        justifyContent: 'center',
+        alignSelf: 'flex-start',
+        paddingHorizontal: Sizes.fixPadding,
+    },
+    bestSalonImageStyle: {
+        borderColor: 'rgba(197, 197, 197, 0.3)',
+        borderWidth: 2.0,
+        width: 210.0,
+        height: 130.0,
+        borderRadius: Sizes.fixPadding,
+    },
+    bestSalonDetailWrapStyle: {
+        backgroundColor: 'rgba(214, 105, 134, 0.85)',
+        borderRadius: Sizes.fixPadding - 5.0,
+        width: 185.0,
+        marginTop: -40.0,
+        paddingHorizontal: Sizes.fixPadding - 5.0,
+        paddingBottom: Sizes.fixPadding - 5.0,
     }
 });
 
