@@ -1,60 +1,62 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useQuery } from "@apollo/client";
 import { View, FlatList, StyleSheet, Image, Text, TextInput, ImageBackground, TouchableOpacity, Animated } from "react-native";
 import { Colors, Fonts, Sizes } from "../../constants/styles";
 import { MaterialIcons } from '@expo/vector-icons';
 import { Snackbar } from 'react-native-paper';
 import CollapsibleToolbar from 'react-native-collapsible-toolbar';
+import { GETCOLLECTIONSLIST  } from "../../services/Product";
 
-const popularCategoriesList = [
-    {
-        id: '1',
-        categoryImage: require('../../assets/images/icons/women_salon1.png'),
-        categoryName: "Women's Salon,Spa & Skin Clinic",
-        bgColor: '#F48FB1',
-    },
-    {
-        id: '2',
-        categoryImage: require('../../assets/images/icons/men_salon1.png'),
-        categoryName: "Men Salon & Massage ",
-        bgColor: '#CE93D8',
-    },
-    {
-        id: '3',
-        categoryImage: require('../../assets/images/icons/ac_repair1.png'),
-        categoryName: "AC & Appliance Repair",
-        bgColor: '#90CAF9',
-    },
-    {
-        id: '4',
-        categoryImage: require('../../assets/images/icons/cleaning_pestControl1.png'),
-        categoryName: "Cleaning & Pest Control",
-        bgColor: '#80CBC4',
-    },
-    {
-        id: '5',
-        categoryImage: require('../../assets/images/icons/weekly_cleaning1.png'),
-        categoryName: "Weekly Bathroom Cleaning",
-        bgColor: '#F48FB1',
-    },
-    {
-        id: '6',
-        categoryImage: require('../../assets/images/icons/electrician1.png'),
-        categoryName: "Electrician Plumber & Carpenter",
-        bgColor: '#CE93D8',
-    },
-    {
-        id: '7',
-        categoryImage: require('../../assets/images/icons/water_purifier1.png'),
-        categoryName: "Native Water Purifier",
-        bgColor: '#90CAF9',
-    },
-    {
-        id: '8',
-        categoryImage: require('../../assets/images/icons/painting.png'),
-        categoryName: "Painting & Water Proofing",
-        bgColor: '#80CBC4',
-    },
-];
+// const popularCategoriesList = [
+//     {
+//         id: '1',
+//         categoryImage: require('../../assets/images/icons/women_salon1.png'),
+//         categoryName: "Women's Salon,Spa & Skin Clinic",
+//         bgColor: '#F48FB1',
+//     },
+//     {
+//         id: '2',
+//         categoryImage: require('../../assets/images/icons/men_salon1.png'),
+//         categoryName: "Men Salon & Massage ",
+//         bgColor: '#CE93D8',
+//     },
+//     {
+//         id: '3',
+//         categoryImage: require('../../assets/images/icons/ac_repair1.png'),
+//         categoryName: "AC & Appliance Repair",
+//         bgColor: '#90CAF9',
+//     },
+//     {
+//         id: '4',
+//         categoryImage: require('../../assets/images/icons/cleaning_pestControl1.png'),
+//         categoryName: "Cleaning & Pest Control",
+//         bgColor: '#80CBC4',
+//     },
+//     {
+//         id: '5',
+//         categoryImage: require('../../assets/images/icons/weekly_cleaning1.png'),
+//         categoryName: "Weekly Bathroom Cleaning",
+//         bgColor: '#F48FB1',
+//     },
+//     {
+//         id: '6',
+//         categoryImage: require('../../assets/images/icons/electrician1.png'),
+//         categoryName: "Electrician Plumber & Carpenter",
+//         bgColor: '#CE93D8',
+//     },
+//     {
+//         id: '7',
+//         categoryImage: require('../../assets/images/icons/water_purifier1.png'),
+//         categoryName: "Native Water Purifier",
+//         bgColor: '#90CAF9',
+//     },
+//     {
+//         id: '8',
+//         categoryImage: require('../../assets/images/icons/painting.png'),
+//         categoryName: "Painting & Water Proofing",
+//         bgColor: '#80CBC4',
+//     },
+// ];
 
 const bestSalonList = [
     {
@@ -95,6 +97,14 @@ const offersList = [
 ];
 
 const HomeScreen = ({ navigation }) => {
+    const { data } = useQuery(GETCOLLECTIONSLIST);
+    const [productData, setProductData] = useState([]);
+
+    useEffect(() => {
+        if (data && data.products && data.products.items) {
+            setProductData(data.products.items);
+        }
+    }, [data]);
 
     const [state, setState] = useState({
         search: null,
@@ -343,11 +353,12 @@ const HomeScreen = ({ navigation }) => {
     }
 
     function popularCategoryInfo() {
+        const limitedProductData = productData.slice(0, 8);
         const renderItem = ({ item }) => (
             <View style={{ alignItems: 'center', marginRight: Sizes.fixPadding, display: "flex", justifyContent: "center" }}>
                 <TouchableOpacity
                     activeOpacity={0.6}
-                    onPress={() => navigation.push('CategoryDetail', { item })}
+                    onPress={() => navigation.push('CategoryDetail', { productId: item.id })}
                     style={{
                         backgroundColor: "#f0f0f0",
                         ...styles.popularCategoryWrapStyle,
@@ -355,8 +366,8 @@ const HomeScreen = ({ navigation }) => {
                 >
                     <View style={{ width: 60, height: 40, alignItems: 'center', justifyContent: 'center' }}>
                         <Image
-                            source={item.categoryImage}
-                            style={{ width: 40.0, height: 40.0 }}
+                            source={{ uri: item.featuredAsset ? item.featuredAsset.preview : 'https://via.placeholder.com/40' }}
+                            style={{ width: 40, height: 40 }}
                             resizeMode="contain"
                         />
                     </View>
@@ -365,12 +376,11 @@ const HomeScreen = ({ navigation }) => {
                     numberOfLines={1}
                     style={{ marginTop: Sizes.fixPadding - 8.0, ...Fonts.blackColor12Medium, textAlign: 'center', flexWrap: 'wrap', width: 100 }}
                 >
-                    {item.categoryName}
+                    {item.name}
                 </Text>
             </View>
         );
-        //flex: 1, justifyContent: 'center', alignItems: 'center'
-        //marginVertical: Sizes.fixPadding + 5.0
+
         return (
             <View style={{ flex: 1, width: '100%', paddingHorizontal: 5.0 }}>
                 <Text style={{ marginHorizontal: Sizes.fixPadding * 1.3, ...Fonts.blackColor16Bold, marginTop: Sizes.fixPadding - 5 }}>
@@ -378,11 +388,11 @@ const HomeScreen = ({ navigation }) => {
                 </Text>
                 <View style={{ justifyContent: "center", alignItems: "center", paddingLeft: 11 }}>
                     <FlatList
-                        data={popularCategoriesList}
+                        data={limitedProductData}
                         style={{ marginVertical: Sizes.fixPadding + 4.0 }}
                         keyExtractor={(item) => `${item.id}`}
                         renderItem={renderItem}
-                        horizontal={false} // Set horizontal to false to allow wrapping
+                        horizontal={false}
                         numColumns={3}
                         showsHorizontalScrollIndicator={false}
                         contentContainerStyle={{
@@ -400,7 +410,7 @@ const HomeScreen = ({ navigation }) => {
                 </View>
             </View>
         );
-    }
+    };
 
     function userInfo() {
         return (

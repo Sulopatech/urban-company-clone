@@ -1,4 +1,4 @@
-const local = "http://192.168.1.46:3000/shop-api";
+const local = "http://192.168.1.17:3000/shop-api";
 
 const API_URL= local
 
