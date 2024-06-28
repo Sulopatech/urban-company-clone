@@ -1,13 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useApolloClient, useQuery, useLazyQuery } from "@apollo/client";
+import { useQuery, useLazyQuery} from "@apollo/client";
 import { View, FlatList, StyleSheet, Image, Text, TextInput, ImageBackground, TouchableOpacity, Animated } from "react-native";
 import { Colors, Fonts, Sizes } from "../../constants/styles";
 import { MaterialIcons } from '@expo/vector-icons';
 import { Snackbar } from 'react-native-paper';
 import CollapsibleToolbar from 'react-native-collapsible-toolbar';
-import { GET_ACTIVE_CUSTOMER } from "../../services/HomeApi";
 import { GETCOLLECTIONSLIST  } from "../../services/Product";
 import { GETSEARCHLIST } from "../../services/Search";
+import * as Location from "expo-location";
+import LocationFetching from "../locationFetching/locationFetching";
+import { GET_ACTIVE_CUSTOMER } from "../../services/Profile";
+
 
 const bestSalonList = [
     {
@@ -48,42 +51,30 @@ const offersList = [
 ];
 
 const HomeScreen = ({ navigation }) => {
-    const client = useApolloClient();
+
+    const { data: collectionData } = useQuery(GETCOLLECTIONSLIST);
+    const [getSearchResults, { loading: searchLoading, data: searchData }] = useLazyQuery(GETSEARCHLIST);
+    const { loading: customerLoading, error, data: customerData } = useQuery(GET_ACTIVE_CUSTOMER);
     const [productData, setProductData] = useState([]);
-    const [customerData, setCustomerData] = useState(null);
+
+    const firstName = customerData?.activeCustomer?.firstName;
+    const lastName = customerData?.activeCustomer?.lastName;
+
+    useEffect(() => {
+        if (collectionData && collectionData.products && collectionData.products.items) {
+            setProductData(collectionData.products.items);
+        }
+    }, [collectionData]);
+
     const [state, setState] = useState({
         search: null,
         bestSalons: bestSalonList,
         showSnackBar: false,
         isFavorite: null,
+        address: "Loading..",
     });
 
-    const [getSearchResults, { loading: searchLoading, data: searchData }] = useLazyQuery(GETSEARCHLIST);
-
-    useEffect(() => {
-        async function fetchCollections() {
-            try {
-                const { data } = await client.query({ query: GETCOLLECTIONSLIST });
-                if (data && data.products && data.products.items) {
-                    setProductData(data.products.items);
-                }
-            } catch (error) {
-                console.error("Error fetching collections:", error);
-            }
-        }
-
-        async function fetchCustomer() {
-            try {
-                const { data } = await client.query({ query: GET_ACTIVE_CUSTOMER });
-                setCustomerData(data.activeCustomer);
-            } catch (error) {
-                console.error("Error fetching customer:", error);
-            }
-        }
-
-        fetchCollections();
-        fetchCustomer();
-    }, [client]);
+    const [fetchLocation, setFetchLocation] = useState(false);
 
     const updateState = (data) => setState((state) => ({ ...state, ...data }));
 
@@ -92,7 +83,46 @@ const HomeScreen = ({ navigation }) => {
         bestSalons,
         showSnackBar,
         isFavorite,
+        address
     } = state;
+
+    useEffect(() => {
+        (async () => {
+            setFetchLocation(true);
+          try {
+            let { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== "granted") {
+              updateState({ address: "Permission to access location was denied" });
+              return;
+            }
+    
+            let location = await Location.getCurrentPositionAsync({});
+            if (location) {
+              try {
+                let geocode = await Location.reverseGeocodeAsync({
+                  latitude: location.coords.latitude,
+                  longitude: location.coords.longitude,
+                });
+                setFetchLocation(false);
+                if (geocode && geocode.length > 0) {
+                  let address = `${geocode[0].name}, ${geocode[0].city}, ${geocode[0].region}, ${geocode[0].country}`;
+                  updateState({ address: address });
+                } else {
+                  updateState({ address: "Address not found" });
+                }
+              } catch (error) {
+                console.log("Error in reverse geocoding: ", error);
+                updateState({ address: "Error fetching address" });
+              }
+            }
+          } catch (error) {
+            setFetchLocation(false);
+            console.log("Error in fetching location: ", error);
+            updateState({ address: "Error fetching location" });
+          }
+          setFetchLocation(false);
+        })();
+      }, []);
 
     const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -117,12 +147,17 @@ const HomeScreen = ({ navigation }) => {
         </View>
     );
 
-    if (!customerData) return <Text>Loading...</Text>;
-
-    const { firstName, lastName } = customerData;
-
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
+            {/* <Animated.View style={[styles.stickySearchBar, {
+                opacity: scrollY.interpolate({
+                    inputRange: [200, 250],
+                    outputRange: [0, 1],
+                    extrapolate: 'clamp',
+                }),
+            }]}>
+                {searchField()}
+            </Animated.View> */}
             <View style={{ flex: 1 }}>
                 <CollapsibleToolbar
                     renderContent={() => (
@@ -151,6 +186,8 @@ const HomeScreen = ({ navigation }) => {
             >
                 {isFavorite ? 'Item add to favorite' : 'Item remove from favorite'}
             </Snackbar>
+            {fetchLocation && 
+            <LocationFetching />}
         </View>
     );
 
@@ -275,24 +312,27 @@ const HomeScreen = ({ navigation }) => {
                         <MaterialIcons
                             name={item.isFavorite ? "favorite" : "favorite-border"}
                             color={Colors.whiteColor}
-                            size={16}
-                            style={{ marginLeft: Sizes.fixPadding - 5.0 }}
+                            size={15}
+                            style={{ marginLeft: Sizes.fixPadding - 5.0, marginTop: Sizes.fixPadding - 5.0 }}
                             onPress={() => {
                                 updateBestSalons({ id: item.id });
                                 updateState({ showSnackBar: true });
                             }}
                         />
                     </View>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <View style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                    }}>
                         <MaterialIcons
                             name="star"
-                            color={Colors.ratingColor}
-                            size={16}
+                            color={Colors.yellowColor}
+                            size={15}
                         />
-                        <Text style={{ ...Fonts.whiteColor14Medium, marginLeft: Sizes.fixPadding - 8.0 }}>
+                        <Text style={{ marginLeft: Sizes.fixPadding - 5.0, ...Fonts.whiteColor14Medium }}>
                             {item.rating.toFixed(1)}
                         </Text>
-                        <Text style={{ ...Fonts.whiteColor12Light }}>
+                        <Text style={{ marginLeft: Sizes.fixPadding - 5.0, ...Fonts.whiteColor14Medium }}>
                             ({item.reviews} reviews)
                         </Text>
                     </View>
@@ -300,64 +340,12 @@ const HomeScreen = ({ navigation }) => {
             </TouchableOpacity>
         );
         return (
-            <View>
-                <View style={styles.bestSalonHeaderWrapStyle}>
-                    <Text style={{ ...Fonts.blackColor16Bold }}>
-                        Best salons near you
-                    </Text>
-                    <Text
-                        onPress={() => navigation.push('AllSalonList')}
-                        style={{ ...Fonts.primaryColor14Bold }}
-                    >
-                        View all
-                    </Text>
-                </View>
+            <View style={{ marginVertical: Sizes.fixPadding + 5.0 }}>
+                <Text style={{ marginHorizontal: Sizes.fixPadding * 2.0, ...Fonts.blackColor16Bold }}>
+                    Best salon around you
+                </Text>
                 <FlatList
                     data={bestSalons}
-                    keyExtractor={(item) => `${item.id}`}
-                    renderItem={renderItem}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{ paddingLeft: Sizes.fixPadding * 2.0 }}
-                />
-            </View>
-        );
-    }
-
-    function popularCategoryInfo() {
-        const categoryList = searchData ? searchData.categories.items : [];
-        const renderItem = ({ item }) => (
-            <TouchableOpacity
-                activeOpacity={0.6}
-                onPress={() => navigation.push('SalonDetail', { item })}
-                style={{
-                    marginRight: Sizes.fixPadding * 2.0,
-                    alignItems: 'center',
-                }}
-            >
-                <Image
-                    source={{ uri: item.image }}
-                    style={styles.popularCategoryImageStyle}
-                />
-                <Text
-                    numberOfLines={2}
-                    style={{
-                        textAlign: 'center',
-                        marginTop: Sizes.fixPadding,
-                        ...Fonts.blackColor14Medium,
-                    }}
-                >
-                    {item.name}
-                </Text>
-            </TouchableOpacity>
-        );
-        return (
-            <View>
-                <Text style={{ marginHorizontal: Sizes.fixPadding * 2.0, ...Fonts.blackColor16Bold }}>
-                    Popular categories
-                </Text>
-                <FlatList
-                    data={categoryList}
                     keyExtractor={(item) => `${item.id}`}
                     renderItem={renderItem}
                     horizontal
@@ -371,99 +359,179 @@ const HomeScreen = ({ navigation }) => {
         );
     }
 
-    function userInfo() {
-        return (
-            <View style={styles.userInfoWrapStyle}>
-                <View style={{ flex: 1 }}>
-                    <Text style={{ ...Fonts.whiteColor18Medium }}>
-                        {`Hey ${firstName} ${lastName}!`}
-                    </Text>
-                    <Text style={{ ...Fonts.whiteColor16Regular }}>
-                        Book your desired salon services
-                    </Text>
-                </View>
+    function popularCategoryInfo() {
+        const limitedProductData = productData.slice(0, 8);
+        const renderItem = ({ item }) => (
+            <View style={{ alignItems: 'center', marginRight: Sizes.fixPadding * 1.3, display: "flex", justifyContent: "center" }}>
                 <TouchableOpacity
-                    activeOpacity={0.9}
-                    onPress={() => navigation.push('EditProfile')}
+                    activeOpacity={0.6}
+                    onPress={() => navigation.push('CategoryDetail', { productId: item.id })}
+                    style={{
+                        backgroundColor: "#f0f0f0",
+                        ...styles.popularCategoryWrapStyle,
+                    }}
                 >
-                    <Image
-                        source={require('../../assets/images/users/user1.png')}
-                        style={{ width: 60.0, height: 60.0, borderRadius: 30.0 }}
-                        resizeMode="cover"
-                    />
+                    <View style={{ width: 40, height: 40, alignItems: 'center', justifyContent: 'center' }}>
+                        <Image
+                            source={{ uri: item.featuredAsset ? item.featuredAsset.preview : 'https://via.placeholder.com/40' }}
+                            style={{ width: 40, height: 40 }}
+                            resizeMode="contain"
+                        />
+                    </View>
                 </TouchableOpacity>
+                <Text
+                    numberOfLines={1}
+                    style={{ marginTop: Sizes.fixPadding - 8.0, ...Fonts.blackColor12Medium, textAlign: 'center', flexWrap: 'wrap', width: 100 }}
+                >
+                    {item.name}
+                </Text>
             </View>
         );
+
+        return (
+            <View style={{ flex: 1, width: '100%', paddingHorizontal: 5.0 }}>
+                <Text style={{ marginHorizontal: Sizes.fixPadding * 1.3, ...Fonts.blackColor16Bold, marginTop: Sizes.fixPadding - 5 }}>
+                    Popular Category
+                </Text>
+                <View style={{ justifyContent: "center", alignItems: "center", paddingLeft: 11 }}>
+                    <FlatList
+                        data={limitedProductData}
+                        style={{ marginVertical: Sizes.fixPadding + 4.0 }}
+                        keyExtractor={(item) => `${item.id}`}
+                        renderItem={renderItem}
+                        horizontal={false}
+                        numColumns={3}
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={{
+                            flexDirection: 'row',
+                            flexWrap: 'wrap',
+                            paddingHorizontal: Sizes.fixPadding,
+                            gap: 10,
+                            display: 'flex',
+                            justifyContent: "center",
+                            alignSelf: "center",
+                            width: "100%"
+                        }}
+                        showsVerticalScrollIndicator={false}
+                    />
+                </View>
+            </View>
+        );
+    };
+
+    function userInfo() {
+        return (
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', }}>
+                        <Image
+                            source={require('../../assets/images/icons/whiteNearby.png')}
+                            style={{ width: 16.0, height: 16.0, }}
+                            resizeMode="contain"
+                        />
+                        <Text style={{ marginLeft: Sizes.fixPadding, ...Fonts.whiteColor18SemiBold }}>
+                        {`${firstName} ${lastName}`}
+                        </Text>
+                    </View>
+                    <Text style={{ ...Fonts.whiteColor14Light }}>
+                        {/* {` 6/36, Sohrab Bldg, H G Rd, Gamdevi\nMumbai Maharasta`} */}
+                        {address}
+                    </Text>
+                </View>
+                <MaterialIcons
+                    name="filter-alt"
+                    size={22}
+                    color={Colors.whiteColor}
+                    onPress={() => navigation.push('Filter')}
+                />
+            </View>
+        )
     }
-};
+}
 
 const styles = StyleSheet.create({
-    snackBarStyle: {
-        position: 'absolute',
-        bottom: 58.0,
-        left: 10.0,
-        right: 10.0,
-        backgroundColor: '#333333',
-    },
     searchFieldWrapStyle: {
-        backgroundColor: Colors.primaryColor,
+        backgroundColor: 'rgba(214, 105, 134, 0.85)',
+        borderRadius: Sizes.fixPadding - 5.0,
+        paddingHorizontal: Sizes.fixPadding,
+        paddingVertical: Sizes.fixPadding,
         flexDirection: 'row',
         alignItems: 'center',
-        borderRadius: Sizes.fixPadding - 5.0,
-        marginVertical: Sizes.fixPadding,
-        paddingVertical: Sizes.fixPadding,
-        paddingHorizontal: Sizes.fixPadding * 2.0,
+        marginTop: Sizes.fixPadding * 2.0,
+        borderWidth: 1,
+        borderColor: '#f0adbe',
+    },
+    stickySearchBar: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1000,
+        backgroundColor: Colors.primaryColor,
+        padding: Sizes.fixPadding * 2.0,
+    },
+    snackBarStyle: {
+        position: 'absolute',
+        bottom: -10.0,
+        left: -10.0,
+        right: -10.0,
+        backgroundColor: '#333333',
+        elevation: 0.0,
     },
     userInfoWrapStyle: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: Sizes.fixPadding * 2.0
+        marginBottom: Sizes.fixPadding + 5.0,
     },
-    bestSalonImageStyle: {
-        width: 150.0,
-        height: 150.0,
-        borderTopLeftRadius: Sizes.fixPadding + 5.0,
-        borderTopRightRadius: Sizes.fixPadding + 5.0,
-    },
-    bestSalonHeaderWrapStyle: {
-        marginVertical: Sizes.fixPadding,
-        marginHorizontal: Sizes.fixPadding * 2.0,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
-    bestSalonDetailWrapStyle: {
-        backgroundColor: Colors.primaryColor,
-        paddingVertical: Sizes.fixPadding,
-        paddingHorizontal: Sizes.fixPadding,
-        borderBottomLeftRadius: Sizes.fixPadding + 5.0,
-        borderBottomRightRadius: Sizes.fixPadding + 5.0,
-    },
-    popularCategoryImageStyle: {
-        width: 80.0,
-        height: 80.0,
+    offerImageStyle: {
+        width: '100%',
+        height: '100%',
+        borderColor: 'rgba(197, 197, 197, 0.3)',
+        borderWidth: 2.0,
         borderRadius: Sizes.fixPadding,
+        justifyContent: 'space-between',
+        paddingLeft: Sizes.fixPadding,
+        paddingTop: Sizes.fixPadding - 5.0,
+        paddingBottom: Sizes.fixPadding + 5.0,
+        resizeMode: 'stretch',
+        width: 300.0,
+        height: 135.0,
+        marginRight: Sizes.fixPadding * 2.0,
+        overflow: 'hidden'
+    },
+    popularCategoryWrapStyle: {
+        // width: 90.0,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: Sizes.fixPadding,
+        borderRadius: Sizes.fixPadding - 3.0,
+        // marginRight: Sizes.fixPadding + 10.0,
+        paddingHorizontal: 30,
+        paddingVertical: 20
     },
     offerPercentageWrapStyle: {
         backgroundColor: Colors.primaryColor,
-        borderRadius: Sizes.fixPadding * 2.0,
-        position: 'absolute',
-        right: 10.0,
-        bottom: 10.0,
+        borderRadius: Sizes.fixPadding - 5.0,
         alignItems: 'center',
         justifyContent: 'center',
+        alignSelf: 'flex-start',
         paddingHorizontal: Sizes.fixPadding,
-        paddingVertical: Sizes.fixPadding - 5.0,
     },
-    offerImageStyle: {
-        width: 300.0,
-        height: 150.0,
-        justifyContent: 'space-between',
-        paddingVertical: Sizes.fixPadding + 5.0,
-        paddingHorizontal: Sizes.fixPadding,
-        marginRight: Sizes.fixPadding * 2.0,
+    bestSalonImageStyle: {
+        borderColor: 'rgba(197, 197, 197, 0.3)',
+        borderWidth: 2.0,
+        width: 210.0,
+        height: 130.0,
         borderRadius: Sizes.fixPadding,
     },
+    bestSalonDetailWrapStyle: {
+        backgroundColor: 'rgba(214, 105, 134, 0.85)',
+        borderRadius: Sizes.fixPadding - 5.0,
+        width: 185.0,
+        marginTop: -40.0,
+        paddingHorizontal: Sizes.fixPadding - 5.0,
+        paddingBottom: Sizes.fixPadding - 5.0,
+    }
 });
 
 export default HomeScreen;

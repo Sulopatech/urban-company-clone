@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, TextInput, ScrollView, TouchableOpacity, Text, Image, Modal, Platform, ActivityIndicator, Alert } from "react-native";
+import { View, StyleSheet, TextInput, ScrollView, TouchableOpacity, Text, Image, Modal, Platform, ActivityIndicator } from "react-native";
 import { Colors, Fonts, Sizes } from "../../constants/styles";
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import { MaterialIcons } from '@expo/vector-icons';
 import MyStatusBar from "../../components/myStatusBar";
+import { UPDATE_PROFILE_PIC } from "../../services/Profile";
 import { useMutation, useQuery } from "@apollo/client";
-import { UPDATE_PROFILE_PIC, UPDATE_USER, GET_ACTIVE_CUSTOMER } from "../../services/Editprofile"; // Adjust with your actual imports
+import { UPDATE_USER, GET_ACTIVE_CUSTOMER } from "../../services/Editprofile"; // Adjust with your actual imports
 
 const EditProfileScreen = ({ navigation }) => {
     const [state, setState] = useState({
@@ -15,54 +16,30 @@ const EditProfileScreen = ({ navigation }) => {
         phoneNumber: '',
         showBottomSheet: false,
         profilePic: require('../../assets/images/users/user3.png'),
-    });
-
+    })
     const [base64Code, setBase64Code] = useState(null);
+    const [upadteProfilePic, {loading}] = useMutation(UPDATE_PROFILE_PIC);
 
-    const { loading: queryLoading, error: queryError, data, refetch } = useQuery(GET_ACTIVE_CUSTOMER);
+    // const updateState = (data) => setState((state) => ({ ...state, ...data }))
 
-    useEffect(() => {
-        if (data) {
-            const { firstName, lastName, phoneNumber } = data.activeCustomer;
-            setState((prevState) => ({
-                ...prevState,
-                firstName,
-                lastName,
-                phoneNumber,
-            }));
-        }
-    }, [data]);
-
-    const [updateProfilePic, { loading: uploadLoading }] = useMutation(UPDATE_PROFILE_PIC, {
-        onCompleted: (data) => {
-            console.log("Profile picture updated successfully:", data);
-        },
-        onError: (error) => {
-            console.error("Error updating profile picture:", error);
-            Alert.alert("Error", "An error occurred while updating the profile picture.");
-        }
-    });
-
-    const [updateCustomer, { loading: mutationLoading, error: mutationError }] = useMutation(UPDATE_USER, {
-        onCompleted: async (data) => {
-            console.log("Profile updated successfully:", data);
-            await refetch(); // Refetch the query to update the UI with the latest data
-            navigation.pop();
-        },
-        onError: (error) => {
-            console.error("Error updating profile:", error);
-        },
-    });
-
-    const updateState = (newData) => setState((prevState) => ({ ...prevState, ...newData }));
+    const {
+        userName,
+        email,
+        mobileNumber,
+        password,
+        // showBottomSheet,
+        profilePic
+    } = state;
 
     const uploadImage = async (uri) => {
         try {
-            await updateProfilePic({
+            const data = await upadteProfilePic({
                 variables: {
                     code: uri,
                 }
-            });
+            })
+            console.log("data: ",data);
+
         } catch (error) {
             console.error("Error uploading image:", error);
             Alert.alert("Error", "An error occurred while uploading the image.");
@@ -112,6 +89,35 @@ const EditProfileScreen = ({ navigation }) => {
         });
         return base64;
     };
+    
+    const { loading: queryLoading, error: queryError, data, refetch } = useQuery(GET_ACTIVE_CUSTOMER);
+
+    useEffect(() => {
+        if (data) {
+            const { firstName, lastName, phoneNumber } = data.activeCustomer;
+            setState((prevState) => ({
+                ...prevState,
+                firstName,
+                lastName,
+                phoneNumber,
+            }));
+        }
+    }, [data]);
+
+    const [updateCustomer, { loading: mutationLoading, error: mutationError }] = useMutation(UPDATE_USER, {
+        onCompleted: async (data) => {
+            console.log("Profile updated successfully:", data);
+            await refetch(); // Refetch the query to update the UI with the latest data
+            navigation.pop();
+        },
+        onError: (error) => {
+            console.error("Error updating profile:", error);
+        },
+    });
+
+    const updateState = (newData) => setState((prevState) => ({ ...prevState, ...newData }));
+
+    const { firstName, lastName, phoneNumber, showBottomSheet } = state;
 
     const handleUpdateProfile = async () => {
         try {
@@ -131,8 +137,6 @@ const EditProfileScreen = ({ navigation }) => {
 
     if (queryLoading) return <ActivityIndicator size="large" color={Colors.primaryColor} />;
     if (queryError) return <Text style={styles.errorText}>Error loading user data</Text>;
-
-    const { firstName, lastName, phoneNumber, showBottomSheet, profilePic } = state;
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
@@ -209,6 +213,21 @@ const EditProfileScreen = ({ navigation }) => {
         );
     }
 
+    function renderProfilePicOption(icon, text) {
+        return (
+            <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={() => updateState({ showBottomSheet: false })}
+                style={{ marginVertical: Sizes.fixPadding, flexDirection: 'row', marginHorizontal: Sizes.fixPadding * 2.0 }}
+            >
+                <MaterialIcons name={icon} size={20} color={Colors.blackColor} />
+                <Text style={{ lineHeight: 20.0, ...Fonts.blackColor14SemiBold, marginLeft: Sizes.fixPadding }}>
+                    {text}
+                </Text>
+            </TouchableOpacity>
+        );
+    }
+
     function updateProfileButton() {
         return (
             <TouchableOpacity
@@ -238,8 +257,31 @@ const EditProfileScreen = ({ navigation }) => {
                     keyboardType={keyboardType}
                 />
             </View>
-        );
+        )
     }
+
+    // function emailInfo() {
+    //     return (
+    //         <View style={{
+    //             marginHorizontal: Sizes.fixPadding * 2.0,
+    //             marginVertical: Sizes.fixPadding
+    //         }}>
+    //             <Text style={{ ...Fonts.grayColor13SemiBold }}>
+    //                 Email
+    //             </Text>
+    //             <TextInput
+    //                 keyboardType="email-address"
+    //                 placeholder="Enter Email"
+    //                 value={email}
+    //                 onChangeText={(text) => updateState({ email: text })}
+    //                 placeholderTextColor={Colors.grayColor}
+    //                 selectionColor={Colors.primaryColor}
+    //                 style={styles.textFieldStyle}
+    //             />
+    //         </View>
+    //     )
+    // }
+
 
     function profilePicSection() {
         return (

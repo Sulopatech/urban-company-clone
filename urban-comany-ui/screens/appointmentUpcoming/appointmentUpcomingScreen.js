@@ -126,7 +126,7 @@ const AppointmentUpcoming = ({ navigation }) => {
                      <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 10,gap: 7 }}>
                     <Text
                         onPress={() => cancelAppointment({ id: item.id })}
-                        style={{ ...Fonts.primaryColor13Bold, textAlign: 'center',borderRadius: 10,borderWidth: 1,paddingVertical: 5, paddingHorizontal: 10, marginTop: 10,borderColor: '#F5B7B1',alignSelf: 'flex-end' }}>
+                        style={{ ...Fonts.primaryColor13Bold, textAlign: 'center',paddingVertical: 5, paddingHorizontal: 10, marginTop: 10,alignSelf: 'flex-end' }}>
                         
                         Cancel 
                     </Text>
@@ -139,14 +139,10 @@ const AppointmentUpcoming = ({ navigation }) => {
                         style={{
                             ...Fonts.greenColor13Bold,
                             textAlign: 'center',
-                            //backgroundColor: '#e9edc9',
-                            borderRadius: 10,
-                            borderWidth: 1,
                             paddingVertical: 5,
                             paddingHorizontal: 10,
-                            borderColor: '#a7c957e',
                             alignSelf: 'flex-end',
-                            marginRight: 10,
+                            marginRight: 1,
                         }}>
                         Reschedule
                     </Text>

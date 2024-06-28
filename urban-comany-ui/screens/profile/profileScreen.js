@@ -239,7 +239,7 @@ const ProfileScreen = ({ navigation }) => {
                         Hello,
                         </Text>
                         <Text style={{ maxWidth: width - 190, lineHeight: 17.0, ...Fonts.blackColor15Bold }}>
-                        {firstName} {lastName}
+                        {firstName ? `${firstName} ${lastName}` : "Guest"}
                         </Text>
                     </View>
                 </View>

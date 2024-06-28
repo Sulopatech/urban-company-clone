@@ -166,7 +166,7 @@ const CategoryDetailScreen = ({ navigation, route }) => {
                     onPress={() => navigation.pop()}
                 />
                 <Text style={{ marginLeft: Sizes.fixPadding, ...Fonts.blackColor18Bold }}>
-                    {product ? product.name : 'Loading...'}
+                    {product ? product.name : 'Loading.....'}
                 </Text>
             </View>
         );
