@@ -1,65 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useQuery, useLazyQuery} from "@apollo/client";
+import { useApolloClient, useQuery, useLazyQuery } from "@apollo/client";
 import { View, FlatList, StyleSheet, Image, Text, TextInput, ImageBackground, TouchableOpacity, Animated } from "react-native";
 import { Colors, Fonts, Sizes } from "../../constants/styles";
 import { MaterialIcons } from '@expo/vector-icons';
 import { Snackbar } from 'react-native-paper';
 import CollapsibleToolbar from 'react-native-collapsible-toolbar';
-import { useQuery } from '@apollo/client';
 import { GET_ACTIVE_CUSTOMER } from "../../services/HomeApi";
 import { GETCOLLECTIONSLIST  } from "../../services/Product";
 import { GETSEARCHLIST } from "../../services/Search";
-
-// const popularCategoriesList = [
-//     {
-//         id: '1',
-//         categoryImage: require('../../assets/images/icons/women_salon1.png'),
-//         categoryName: "Women's Salon,Spa & Skin Clinic",
-//         bgColor: '#F48FB1',
-//     },
-//     {
-//         id: '2',
-//         categoryImage: require('../../assets/images/icons/men_salon1.png'),
-//         categoryName: "Men Salon & Massage ",
-//         bgColor: '#CE93D8',
-//     },
-//     {
-//         id: '3',
-//         categoryImage: require('../../assets/images/icons/ac_repair1.png'),
-//         categoryName: "AC & Appliance Repair",
-//         bgColor: '#90CAF9',
-//     },
-//     {
-//         id: '4',
-//         categoryImage: require('../../assets/images/icons/cleaning_pestControl1.png'),
-//         categoryName: "Cleaning & Pest Control",
-//         bgColor: '#80CBC4',
-//     },
-//     {
-//         id: '5',
-//         categoryImage: require('../../assets/images/icons/weekly_cleaning1.png'),
-//         categoryName: "Weekly Bathroom Cleaning",
-//         bgColor: '#F48FB1',
-//     },
-//     {
-//         id: '6',
-//         categoryImage: require('../../assets/images/icons/electrician1.png'),
-//         categoryName: "Electrician Plumber & Carpenter",
-//         bgColor: '#CE93D8',
-//     },
-//     {
-//         id: '7',
-//         categoryImage: require('../../assets/images/icons/water_purifier1.png'),
-//         categoryName: "Native Water Purifier",
-//         bgColor: '#90CAF9',
-//     },
-//     {
-//         id: '8',
-//         categoryImage: require('../../assets/images/icons/painting.png'),
-//         categoryName: "Painting & Water Proofing",
-//         bgColor: '#80CBC4',
-//     },
-// ];
 
 const bestSalonList = [
     {
@@ -100,23 +48,42 @@ const offersList = [
 ];
 
 const HomeScreen = ({ navigation }) => {
-
-    const { data } = useQuery(GETCOLLECTIONSLIST);
-    const [getSearchResults, { loading: searchLoading, data: searchData }] = useLazyQuery(GETSEARCHLIST);
+    const client = useApolloClient();
     const [productData, setProductData] = useState([]);
-    useEffect(() => {
-        if (data && data.products && data.products.items) {
-            setProductData(data.products.items);
-        }
-    }, [data]);
-
+    const [customerData, setCustomerData] = useState(null);
     const [state, setState] = useState({
         search: null,
         bestSalons: bestSalonList,
         showSnackBar: false,
         isFavorite: null,
-    })
-    const { loading, error, userData } = useQuery(GET_ACTIVE_CUSTOMER);
+    });
+
+    const [getSearchResults, { loading: searchLoading, data: searchData }] = useLazyQuery(GETSEARCHLIST);
+
+    useEffect(() => {
+        async function fetchCollections() {
+            try {
+                const { data } = await client.query({ query: GETCOLLECTIONSLIST });
+                if (data && data.products && data.products.items) {
+                    setProductData(data.products.items);
+                }
+            } catch (error) {
+                console.error("Error fetching collections:", error);
+            }
+        }
+
+        async function fetchCustomer() {
+            try {
+                const { data } = await client.query({ query: GET_ACTIVE_CUSTOMER });
+                setCustomerData(data.activeCustomer);
+            } catch (error) {
+                console.error("Error fetching customer:", error);
+            }
+        }
+
+        fetchCollections();
+        fetchCustomer();
+    }, [client]);
 
     const updateState = (data) => setState((state) => ({ ...state, ...data }));
 
@@ -150,22 +117,12 @@ const HomeScreen = ({ navigation }) => {
         </View>
     );
 
-    if (loading) return <Text>Loading...</Text>;
-    if (error) return <Text>Error: {error.message}</Text>;
+    if (!customerData) return <Text>Loading...</Text>;
 
-    const { firstName, lastName } = userData.activeCustomer;
+    const { firstName, lastName } = customerData;
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
-            {/* <Animated.View style={[styles.stickySearchBar, {
-                opacity: scrollY.interpolate({
-                    inputRange: [200, 250],
-                    outputRange: [0, 1],
-                    extrapolate: 'clamp',
-                }),
-            }]}>
-                {searchField()}
-            </Animated.View> */}
             <View style={{ flex: 1 }}>
                 <CollapsibleToolbar
                     renderContent={() => (
@@ -318,27 +275,24 @@ const HomeScreen = ({ navigation }) => {
                         <MaterialIcons
                             name={item.isFavorite ? "favorite" : "favorite-border"}
                             color={Colors.whiteColor}
-                            size={15}
-                            style={{ marginLeft: Sizes.fixPadding - 5.0, marginTop: Sizes.fixPadding - 5.0 }}
+                            size={16}
+                            style={{ marginLeft: Sizes.fixPadding - 5.0 }}
                             onPress={() => {
                                 updateBestSalons({ id: item.id });
                                 updateState({ showSnackBar: true });
                             }}
                         />
                     </View>
-                    <View style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                    }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <MaterialIcons
                             name="star"
-                            color={Colors.yellowColor}
-                            size={15}
+                            color={Colors.ratingColor}
+                            size={16}
                         />
-                        <Text style={{ marginLeft: Sizes.fixPadding - 5.0, ...Fonts.whiteColor14Medium }}>
+                        <Text style={{ ...Fonts.whiteColor14Medium, marginLeft: Sizes.fixPadding - 8.0 }}>
                             {item.rating.toFixed(1)}
                         </Text>
-                        <Text style={{ marginLeft: Sizes.fixPadding - 5.0, ...Fonts.whiteColor14Medium }}>
+                        <Text style={{ ...Fonts.whiteColor12Light }}>
                             ({item.reviews} reviews)
                         </Text>
                     </View>
@@ -346,12 +300,64 @@ const HomeScreen = ({ navigation }) => {
             </TouchableOpacity>
         );
         return (
-            <View style={{ marginVertical: Sizes.fixPadding + 5.0 }}>
-                <Text style={{ marginHorizontal: Sizes.fixPadding * 2.0, ...Fonts.blackColor16Bold }}>
-                    Best salon around you
-                </Text>
+            <View>
+                <View style={styles.bestSalonHeaderWrapStyle}>
+                    <Text style={{ ...Fonts.blackColor16Bold }}>
+                        Best salons near you
+                    </Text>
+                    <Text
+                        onPress={() => navigation.push('AllSalonList')}
+                        style={{ ...Fonts.primaryColor14Bold }}
+                    >
+                        View all
+                    </Text>
+                </View>
                 <FlatList
                     data={bestSalons}
+                    keyExtractor={(item) => `${item.id}`}
+                    renderItem={renderItem}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ paddingLeft: Sizes.fixPadding * 2.0 }}
+                />
+            </View>
+        );
+    }
+
+    function popularCategoryInfo() {
+        const categoryList = searchData ? searchData.categories.items : [];
+        const renderItem = ({ item }) => (
+            <TouchableOpacity
+                activeOpacity={0.6}
+                onPress={() => navigation.push('SalonDetail', { item })}
+                style={{
+                    marginRight: Sizes.fixPadding * 2.0,
+                    alignItems: 'center',
+                }}
+            >
+                <Image
+                    source={{ uri: item.image }}
+                    style={styles.popularCategoryImageStyle}
+                />
+                <Text
+                    numberOfLines={2}
+                    style={{
+                        textAlign: 'center',
+                        marginTop: Sizes.fixPadding,
+                        ...Fonts.blackColor14Medium,
+                    }}
+                >
+                    {item.name}
+                </Text>
+            </TouchableOpacity>
+        );
+        return (
+            <View>
+                <Text style={{ marginHorizontal: Sizes.fixPadding * 2.0, ...Fonts.blackColor16Bold }}>
+                    Popular categories
+                </Text>
+                <FlatList
+                    data={categoryList}
                     keyExtractor={(item) => `${item.id}`}
                     renderItem={renderItem}
                     horizontal
@@ -365,178 +371,99 @@ const HomeScreen = ({ navigation }) => {
         );
     }
 
-    function popularCategoryInfo() {
-        const limitedProductData = productData.slice(0, 8);
-        const renderItem = ({ item }) => (
-            <View style={{ alignItems: 'center', marginRight: Sizes.fixPadding, display: "flex", justifyContent: "center" }}>
-                <TouchableOpacity
-                    activeOpacity={0.6}
-                    onPress={() => navigation.push('CategoryDetail', { productId: item.id })}
-                    style={{
-                        backgroundColor: "#f0f0f0",
-                        ...styles.popularCategoryWrapStyle,
-                    }}
-                >
-                    <View style={{ width: 60, height: 40, alignItems: 'center', justifyContent: 'center' }}>
-                        <Image
-                            source={{ uri: item.featuredAsset ? item.featuredAsset.preview : 'https://via.placeholder.com/40' }}
-                            style={{ width: 40, height: 40 }}
-                            resizeMode="contain"
-                        />
-                    </View>
-                </TouchableOpacity>
-                <Text
-                    numberOfLines={1}
-                    style={{ marginTop: Sizes.fixPadding - 8.0, ...Fonts.blackColor12Medium, textAlign: 'center', flexWrap: 'wrap', width: 100 }}
-                >
-                    {item.name}
-                </Text>
-            </View>
-        );
-
-        return (
-            <View style={{ flex: 1, width: '100%', paddingHorizontal: 5.0 }}>
-                <Text style={{ marginHorizontal: Sizes.fixPadding * 1.3, ...Fonts.blackColor16Bold, marginTop: Sizes.fixPadding - 5 }}>
-                    Popular Category
-                </Text>
-                <View style={{ justifyContent: "center", alignItems: "center", paddingLeft: 11 }}>
-                    <FlatList
-                        data={limitedProductData}
-                        style={{ marginVertical: Sizes.fixPadding + 4.0 }}
-                        keyExtractor={(item) => `${item.id}`}
-                        renderItem={renderItem}
-                        horizontal={false}
-                        numColumns={3}
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={{
-                            flexDirection: 'row',
-                            flexWrap: 'wrap',
-                            paddingHorizontal: Sizes.fixPadding,
-                            gap: 10,
-                            display: 'flex',
-                            justifyContent: "center",
-                            alignSelf: "center",
-                            width: "100%"
-                        }}
-                        showsVerticalScrollIndicator={false}
-                    />
-                </View>
-            </View>
-        );
-    };
-
     function userInfo() {
         return (
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <View>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', }}>
-                        <Image
-                            source={require('../../assets/images/icons/whiteNearby.png')}
-                            style={{ width: 16.0, height: 16.0, }}
-                            resizeMode="contain"
-                        />
-                        <Text style={{ marginLeft: Sizes.fixPadding, ...Fonts.whiteColor18SemiBold }}>
-                        {`${firstName} ${lastName}`}
-                        </Text>
-                    </View>
-                    <Text style={{ ...Fonts.whiteColor14Light }}>
-                        {` 6/36, Sohrab Bldg, H G Rd, Gamdevi\nMumbai Maharasta`}
+            <View style={styles.userInfoWrapStyle}>
+                <View style={{ flex: 1 }}>
+                    <Text style={{ ...Fonts.whiteColor18Medium }}>
+                        {`Hey ${firstName} ${lastName}!`}
+                    </Text>
+                    <Text style={{ ...Fonts.whiteColor16Regular }}>
+                        Book your desired salon services
                     </Text>
                 </View>
-                <MaterialIcons
-                    name="filter-alt"
-                    size={22}
-                    color={Colors.whiteColor}
-                    onPress={() => navigation.push('Filter')}
-                />
+                <TouchableOpacity
+                    activeOpacity={0.9}
+                    onPress={() => navigation.push('EditProfile')}
+                >
+                    <Image
+                        source={require('../../assets/images/users/user1.png')}
+                        style={{ width: 60.0, height: 60.0, borderRadius: 30.0 }}
+                        resizeMode="cover"
+                    />
+                </TouchableOpacity>
             </View>
-        )
+        );
     }
-}
+};
 
 const styles = StyleSheet.create({
-    searchFieldWrapStyle: {
-        backgroundColor: 'rgba(214, 105, 134, 0.85)',
-        borderRadius: Sizes.fixPadding - 5.0,
-        paddingHorizontal: Sizes.fixPadding,
-        paddingVertical: Sizes.fixPadding,
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: Sizes.fixPadding * 2.0,
-        borderWidth: 1,
-        borderColor: '#f0adbe',
-    },
-    stickySearchBar: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 1000,
-        backgroundColor: Colors.primaryColor,
-        padding: Sizes.fixPadding * 2.0,
-    },
     snackBarStyle: {
         position: 'absolute',
-        bottom: -10.0,
-        left: -10.0,
-        right: -10.0,
+        bottom: 58.0,
+        left: 10.0,
+        right: 10.0,
         backgroundColor: '#333333',
-        elevation: 0.0,
+    },
+    searchFieldWrapStyle: {
+        backgroundColor: Colors.primaryColor,
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderRadius: Sizes.fixPadding - 5.0,
+        marginVertical: Sizes.fixPadding,
+        paddingVertical: Sizes.fixPadding,
+        paddingHorizontal: Sizes.fixPadding * 2.0,
     },
     userInfoWrapStyle: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: Sizes.fixPadding + 5.0,
-    },
-    offerImageStyle: {
-        width: '100%',
-        height: '100%',
-        borderColor: 'rgba(197, 197, 197, 0.3)',
-        borderWidth: 2.0,
-        borderRadius: Sizes.fixPadding,
         justifyContent: 'space-between',
-        paddingLeft: Sizes.fixPadding,
-        paddingTop: Sizes.fixPadding - 5.0,
-        paddingBottom: Sizes.fixPadding + 5.0,
-        resizeMode: 'stretch',
-        width: 300.0,
-        height: 135.0,
-        marginRight: Sizes.fixPadding * 2.0,
-        overflow: 'hidden'
+        marginBottom: Sizes.fixPadding * 2.0
     },
-    popularCategoryWrapStyle: {
-        // width: 90.0,
-        alignItems: 'center',
-        justifyContent: 'center',
+    bestSalonImageStyle: {
+        width: 150.0,
+        height: 150.0,
+        borderTopLeftRadius: Sizes.fixPadding + 5.0,
+        borderTopRightRadius: Sizes.fixPadding + 5.0,
+    },
+    bestSalonHeaderWrapStyle: {
+        marginVertical: Sizes.fixPadding,
+        marginHorizontal: Sizes.fixPadding * 2.0,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    bestSalonDetailWrapStyle: {
+        backgroundColor: Colors.primaryColor,
         paddingVertical: Sizes.fixPadding,
-        borderRadius: Sizes.fixPadding - 3.0,
-        // marginRight: Sizes.fixPadding + 10.0,
-        paddingHorizontal: 30,
-        paddingVertical: 20
+        paddingHorizontal: Sizes.fixPadding,
+        borderBottomLeftRadius: Sizes.fixPadding + 5.0,
+        borderBottomRightRadius: Sizes.fixPadding + 5.0,
+    },
+    popularCategoryImageStyle: {
+        width: 80.0,
+        height: 80.0,
+        borderRadius: Sizes.fixPadding,
     },
     offerPercentageWrapStyle: {
         backgroundColor: Colors.primaryColor,
-        borderRadius: Sizes.fixPadding - 5.0,
+        borderRadius: Sizes.fixPadding * 2.0,
+        position: 'absolute',
+        right: 10.0,
+        bottom: 10.0,
         alignItems: 'center',
         justifyContent: 'center',
-        alignSelf: 'flex-start',
         paddingHorizontal: Sizes.fixPadding,
+        paddingVertical: Sizes.fixPadding - 5.0,
     },
-    bestSalonImageStyle: {
-        borderColor: 'rgba(197, 197, 197, 0.3)',
-        borderWidth: 2.0,
-        width: 210.0,
-        height: 130.0,
+    offerImageStyle: {
+        width: 300.0,
+        height: 150.0,
+        justifyContent: 'space-between',
+        paddingVertical: Sizes.fixPadding + 5.0,
+        paddingHorizontal: Sizes.fixPadding,
+        marginRight: Sizes.fixPadding * 2.0,
         borderRadius: Sizes.fixPadding,
     },
-    bestSalonDetailWrapStyle: {
-        backgroundColor: 'rgba(214, 105, 134, 0.85)',
-        borderRadius: Sizes.fixPadding - 5.0,
-        width: 185.0,
-        marginTop: -40.0,
-        paddingHorizontal: Sizes.fixPadding - 5.0,
-        paddingBottom: Sizes.fixPadding - 5.0,
-    }
 });
 
 export default HomeScreen;
