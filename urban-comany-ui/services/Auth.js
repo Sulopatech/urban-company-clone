@@ -1,7 +1,35 @@
 import { gql } from "@apollo/client";
 
+
+
+export const LOGIN = gql`
+  mutation login($username: String!, $password: String!) {
+
+    login(username: $username, password: $password) {
+      __typename
+      ... on CurrentUser
+      {
+        channels
+        {
+          id 
+          token
+          code
+          __typename
+        }
+      }
+      ... on ErrorResult {
+        errorCode
+        message
+      }
+      
+    }
+  }
+  
+`;
+
+
 export const SIGNUP = gql`
- mutation registerCustomerAccount(
+  mutation registerCustomerAccount(
     $firstName: String!,
     $lastName: String!,
     $emailAddress: String!,
@@ -19,15 +47,3 @@ export const SIGNUP = gql`
     }
   }
 `;
-
- export const LOGIN = gql `
-     mutation login($email: String!, $password: String! )
-     {
-       login(username: $email, password: $password) 
-       {
-             __typename
-       } 
-
-     }
-       
- `; 

@@ -12,9 +12,17 @@ import {
   Alert,
 } from "react-native";
 import { useMutation } from "@apollo/client";
-import { SIGNUP } from "../../services/Auth"; // Adjust the path as necessary
-import { Colors, Fonts, Sizes } from "../../constants/styles";
-import { MaterialIcons, FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
+import { SIGNUP } from "../../services/Auth";
+import {
+  Colors,
+  Fonts,
+  Sizes
+} from "../../constants/styles";
+import {
+  MaterialIcons,
+  FontAwesome,
+  MaterialCommunityIcons
+} from '@expo/vector-icons';
 import MyStatusBar from "../../components/myStatusBar";
 
 const { width } = Dimensions.get('window');
