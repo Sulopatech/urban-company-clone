@@ -12,7 +12,7 @@ import {
   Alert,
 } from "react-native";
 import { useMutation } from "@apollo/client";
-import { SIGNUP } from "../../services/Auth"; // Adjust the path as necessary
+import { SIGNUP } from "../../services/Auth";
 import {
   Colors,
   Fonts,

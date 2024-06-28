@@ -1,17 +1,21 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Dimensions, BackHandler, View, ScrollView, TouchableOpacity, ImageBackground, TextInput, Image, StyleSheet, Text, Platform, Alert } from "react-native";
 import { Colors, Fonts, Sizes, } from "../../constants/styles";
 import { FontAwesome, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { CurrentRenderContext, useFocusEffect } from "@react-navigation/native";
 import MyStatusBar from "../../components/myStatusBar";
 import { useMutation } from "@apollo/client";
-import { LOGIN } from "../services/Auth";
+import { LOGIN } from "../../services/Auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+//import ID from "../../id/id";
 
 const { width } = Dimensions.get('screen');
 
 const SigninScreen = ({ navigation }) => {
 
     const [errorMessage, setErrorMessage] = useState('');
+
+   const [id, setId] = useState(null);
 
     const backAction = () => {
         if (Platform.OS === "ios") {
@@ -60,24 +64,21 @@ const SigninScreen = ({ navigation }) => {
 
     //add method -------------------------------------------------------------------------
 
-    const [login, { loading }, error] = useMutation(LOGIN, {
-
-        onCompleted: (data) => {
+    const [login, { loading , error}] = useMutation(LOGIN, {
+        
+        onCompleted: async(data) => {
             if (data.login.__typename === "CurrentUser") {
 
+                await AsyncStorage.setItem("id", JSON.stringify(data.login.channels[0].id));
+                await AsyncStorage.setItem(`token`, JSON.stringify(data.login.channels[0].token));
+                
                 navigation.push('BottomTabBar');
-
-            } else if (data.login.__typename === "ErrorResult") {
-
-                Alert.alert("Error", data.login.Message);
 
             } else {
                 if(errorMessage === '') {
-                    Alert.alert("invalid user name password");
+                    Alert.alert("Error","invalid user name password");
                 }
                 
-                
-                // navigation.push('Signin'); 
             }
         },
         onError: (error) => {
@@ -86,8 +87,8 @@ const SigninScreen = ({ navigation }) => {
         }
     });
 
-    const handleSignin = () => {
-
+    const handleSignin = async() => {
+        
         if (userName !== null || !userName.includes('@') || !userName.includes('.')) {
 
             if (!userName.includes('@')) {
@@ -98,11 +99,11 @@ const SigninScreen = ({ navigation }) => {
             }
 
         } else {
-            setErrorMessage(''); // Clear error message when username is valid
+            setErrorMessage(''); 
         }
 
-        if (userName !== null && password !== null) {
-            login({ variables: { email: userName, password } });
+        if (userName !== null  && password !== null ) {
+            login({ variables: { username: userName, password: password } });
         } else {
             Alert.alert("Error", "Please enter both username and password");
         }
@@ -113,9 +114,10 @@ const SigninScreen = ({ navigation }) => {
         setErrorMessage('');
     };
 
+
     //end of the added method-------------------------------------------------
 
-
+    
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
             <MyStatusBar />
