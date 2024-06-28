@@ -2,8 +2,11 @@ import React, { useState } from "react";
 import { View, StyleSheet, TextInput, ScrollView, TouchableOpacity, Text, Image, Modal, Platform } from "react-native";
 import { Colors, Fonts, Sizes, } from "../../constants/styles";
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
 import { MaterialIcons } from '@expo/vector-icons';
 import MyStatusBar from "../../components/myStatusBar";
+import { UPDATE_PROFILE_PIC } from "../../services/Profile";
+import { useMutation } from "@apollo/client";
 
 const EditProfileScreen = ({ navigation }) => {
 
@@ -15,6 +18,8 @@ const EditProfileScreen = ({ navigation }) => {
         showBottomSheet: false,
         profilePic: require('../../assets/images/users/user3.png'),
     })
+    const [base64Code, setBase64Code] = useState(null);
+    const [upadteProfilePic, {loading}] = useMutation(UPDATE_PROFILE_PIC);
 
     const updateState = (data) => setState((state) => ({ ...state, ...data }))
 
@@ -27,8 +32,23 @@ const EditProfileScreen = ({ navigation }) => {
         profilePic
     } = state;
 
+    const uploadImage = async (uri) => {
+        try {
+            const data = await upadteProfilePic({
+                variables: {
+                    code: uri,
+                }
+            })
+            console.log("data: ",data);
+
+        } catch (error) {
+            console.error("Error uploading image:", error);
+            Alert.alert("Error", "An error occurred while uploading the image.");
+            return false;
+        }
+    };
+
     const pickImageFromCamera = async () => {
-        console.log("inside camera");
         const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
         if (!permissionResult.granted) {
             alert("You've refused to allow this app to access your camera!");
@@ -36,8 +56,13 @@ const EditProfileScreen = ({ navigation }) => {
         }
 
         const result = await ImagePicker.launchCameraAsync();
-        if (!result.cancelled) {
-            updateState({ profilePic: { uri: result.uri }, showBottomSheet: false });
+        if (!result.canceled) {
+            const base64 = await convertToBase64(result.assets[0].uri);
+            setBase64Code(base64);
+            const assetId = await uploadImage(base64);
+            if (assetId) {
+                updateState({ profilePic: { uri: result.assets[0].uri }, showBottomSheet: false });
+            }
         }
     };
 
@@ -49,10 +74,23 @@ const EditProfileScreen = ({ navigation }) => {
         }
 
         const result = await ImagePicker.launchImageLibraryAsync();
-        if (!result.cancelled) {
-            updateState({ profilePic: { uri: result.uri }, showBottomSheet: false });
+        if (!result.canceled) {
+            const base64 = await convertToBase64(result.assets[0].uri);
+            setBase64Code(base64);
+            const assetId = await uploadImage(base64);
+            if (assetId) {
+                updateState({ profilePic: { uri: result.assets[0].uri }, showBottomSheet: false });
+            }
         }
     };
+
+    const convertToBase64 = async (uri) => {
+        const base64 = await FileSystem.readAsStringAsync(uri, {
+            encoding: FileSystem.EncodingType.Base64,
+        });
+        return base64;
+    };
+    
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>

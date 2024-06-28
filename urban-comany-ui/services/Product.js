@@ -1,35 +1,35 @@
 import { gql } from "@apollo/client";
 
 export const GETCOLLECTIONSLIST = gql`
- query {
-  products {
-    items {
-      id
-      name
-      slug
-      description
-      assets{
+  query {
+    products {
+      items {
         id
         name
-        type
-        fileSize
-        width
-        height
-        preview
-        source
+        slug
+        description
+        assets {
+          id
+          name
+          type
+          fileSize
+          width
+          height
+          preview
+          source
+        }
+        featuredAsset {
+          id
+          preview
+        }
       }
-      featuredAsset {
-        id
-        preview
-      }
+      totalItems
     }
-    totalItems
   }
-}
 `;
 
 export const GETSINGLECOLLECTIONLIST = gql`
-  query getProduct($id: ID!) {
+  query getProduct($id: ID! = 1) {
     product(id: $id) {
       id
       name
@@ -48,6 +48,24 @@ export const GETSINGLECOLLECTIONLIST = gql`
       featuredAsset {
         id
         preview
+      }
+      variantList {
+        items {
+          name
+          product {
+            name
+          }
+          assets {
+            id
+            name
+            type
+            fileSize
+            width
+            height
+            preview
+            source
+          }
+        }
       }
     }
   }

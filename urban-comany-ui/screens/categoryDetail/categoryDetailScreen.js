@@ -29,8 +29,7 @@ const CategoryDetailScreen = ({ navigation, route }) => {
     } = state;
 
     const product = data ? data.product : null;
-
-    console.log("product details:",product)
+    const variantList = product?.variantList?.items || [];
     
 
     return (
@@ -38,7 +37,8 @@ const CategoryDetailScreen = ({ navigation, route }) => {
             <MyStatusBar />
             <View style={{ flex: 1 }}>
                 {header()}
-                {product && availableSalons(product)}
+                {/* {product && availableSalons(product)} */}
+                {variantList.length > 0 && renderVariants(variantList)}
             </View>
             <Snackbar
                 style={styles.snackBarStyle}
@@ -49,6 +49,39 @@ const CategoryDetailScreen = ({ navigation, route }) => {
             </Snackbar>
         </View>
     );
+
+    function renderVariants(variants) {
+        return (
+            <FlatList
+                data={variants}
+                keyExtractor={(item, index) => `${item.name}-${index}`}
+                renderItem={renderVariantItem}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: Sizes.fixPadding, paddingTop: Sizes.fixPadding - 5.0 }}
+            />
+        );
+    }
+
+    function renderVariantItem({ item }) {
+        const imageSource = item.assets.length > 0 ? { uri: item.assets[0].url } : require('../../assets/images/dummyimage.png');
+
+        return (
+            <View style={styles.variantContainer}>
+                <TouchableOpacity
+                    activeOpacity={0.9}
+                    onPress={() => {/* Handle onPress if needed */}}
+                    style={styles.variantItem}
+                >
+                    <Image
+                        source={imageSource}
+                        style={styles.variantImage}
+                        resizeMode="cover"
+                    />
+                    <Text style={styles.variantName}>{item.name}</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
 
     function updateSalons({ id }) {
         const newList = salons.map((item) => {
@@ -170,6 +203,30 @@ const styles = StyleSheet.create({
         flex: 1,
         marginHorizontal: Sizes.fixPadding,
         marginVertical: Sizes.fixPadding - 5.0,
+    },
+    variantContainer: {
+        borderWidth: 1,
+        borderColor: Colors.borderColor,
+        borderRadius: Sizes.fixPadding,
+        marginHorizontal: Sizes.fixPadding * 2.0,
+        marginBottom: Sizes.fixPadding * 2.0,
+        overflow: 'hidden',
+        ...CommonStyles.shadow
+    },
+    variantItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: Sizes.fixPadding,
+    },
+    variantImage: {
+        width: 80,
+        height: 80,
+        borderRadius: Sizes.fixPadding,
+    },
+    variantName: {
+        ...Fonts.blackColor14Bold,
+        marginLeft: Sizes.fixPadding,
+        flex: 1,
     }
 });
 
