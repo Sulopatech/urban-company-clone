@@ -4,6 +4,8 @@ import { Colors, Fonts, Sizes, } from "../../constants/styles";
 import { MaterialIcons } from '@expo/vector-icons';
 import { Snackbar } from 'react-native-paper';
 import CollapsibleToolbar from 'react-native-collapsible-toolbar';
+import { useQuery } from '@apollo/client';
+import { GET_ACTIVE_CUSTOMER } from "../../services/HomeApi";
 
 const popularCategoriesList = [
     {
@@ -78,6 +80,7 @@ const HomeScreen = ({ navigation }) => {
         showSnackBar: false,
         isFavorite: null,
     })
+    const { loading, error, data } = useQuery(GET_ACTIVE_CUSTOMER);
 
     const updateState = (data) => setState((state) => ({ ...state, ...data }))
 
@@ -87,6 +90,11 @@ const HomeScreen = ({ navigation }) => {
         showSnackBar,
         isFavorite,
     } = state;
+
+    if (loading) return <Text>Loading...</Text>;
+    if (error) return <Text>Error: {error.message}</Text>;
+
+    const { firstName, lastName } = data.activeCustomer;
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
@@ -356,7 +364,7 @@ const HomeScreen = ({ navigation }) => {
                             resizeMode="contain"
                         />
                         <Text style={{ marginLeft: Sizes.fixPadding, ...Fonts.whiteColor18SemiBold }}>
-                            Samantha Shah
+                        {`${firstName} ${lastName}`}
                         </Text>
                     </View>
                     <Text style={{ ...Fonts.whiteColor14Light }}>

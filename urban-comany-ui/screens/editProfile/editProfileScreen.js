@@ -1,28 +1,66 @@
-import React, { useState } from "react";
-import { View, StyleSheet, TextInput, ScrollView, TouchableOpacity, Text, Image, Modal, Platform } from "react-native";
-import { Colors, Fonts, Sizes, } from "../../constants/styles";
+import React, { useState, useEffect } from "react";
+import { View, StyleSheet, TextInput, ScrollView, TouchableOpacity, Text, Image, Modal, Platform, ActivityIndicator } from "react-native";
+import { Colors, Fonts, Sizes } from "../../constants/styles";
 import { MaterialIcons } from '@expo/vector-icons';
 import MyStatusBar from "../../components/myStatusBar";
+import { useMutation, useQuery } from "@apollo/client";
+import { UPDATE_USER, GET_ACTIVE_CUSTOMER } from "../../services/Editprofile"; // Adjust with your actual imports
 
 const EditProfileScreen = ({ navigation }) => {
-
     const [state, setState] = useState({
-        userName: 'Samantha John',
-        email: 'shahsamantha@gmail.com',
-        mobileNumber: '(+91) 1234567890',
-        password: '1234567890435',
+        firstName: '',
+        lastName: '',
+        phoneNumber: '',
         showBottomSheet: false,
-    })
+    });
 
-    const updateState = (data) => setState((state) => ({ ...state, ...data }))
+    const { loading: queryLoading, error: queryError, data, refetch } = useQuery(GET_ACTIVE_CUSTOMER);
 
-    const {
-        userName,
-        email,
-        mobileNumber,
-        password,
-        showBottomSheet,
-    } = state;
+    useEffect(() => {
+        if (data) {
+            const { firstName, lastName, phoneNumber } = data.activeCustomer;
+            setState((prevState) => ({
+                ...prevState,
+                firstName,
+                lastName,
+                phoneNumber,
+            }));
+        }
+    }, [data]);
+
+    const [updateCustomer, { loading: mutationLoading, error: mutationError }] = useMutation(UPDATE_USER, {
+        onCompleted: async (data) => {
+            console.log("Profile updated successfully:", data);
+            await refetch(); // Refetch the query to update the UI with the latest data
+            navigation.pop();
+        },
+        onError: (error) => {
+            console.error("Error updating profile:", error);
+        },
+    });
+
+    const updateState = (newData) => setState((prevState) => ({ ...prevState, ...newData }));
+
+    const { firstName, lastName, phoneNumber, showBottomSheet } = state;
+
+    const handleUpdateProfile = async () => {
+        try {
+            await updateCustomer({
+                variables: {
+                    input: {
+                        firstName,
+                        lastName,
+                        phoneNumber,
+                    },
+                },
+            });
+        } catch (err) {
+            console.error("Error updating profile:", err);
+        }
+    };
+
+    if (queryLoading) return <ActivityIndicator size="large" color={Colors.primaryColor} />;
+    if (queryError) return <Text style={styles.errorText}>Error loading user data</Text>;
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
@@ -31,30 +69,24 @@ const EditProfileScreen = ({ navigation }) => {
                 {header()}
                 <ScrollView automaticallyAdjustKeyboardInsets={true} showsVerticalScrollIndicator={false}>
                     {profilePic()}
-                    {userNameInfo()}
-                    {emailInfo()}
-                    {mobileNumberInfo()}
-                    {passwordInfo()}
+                    {renderInputField("First Name", firstName, (text) => updateState({ firstName: text }))}
+                    {renderInputField("Last Name", lastName, (text) => updateState({ lastName: text }))}
+                    {renderInputField("Phone Number", phoneNumber, (text) => updateState({ phoneNumber: text }), "phone-pad")}
                     {updateProfileButton()}
                 </ScrollView>
             </View>
             {changeProfilePicOptionsSheet()}
         </View>
-    )
+    );
 
     function changeProfilePicOptionsSheet() {
         return (
-            // <BottomSheet
-            //     isVisible={showBottomSheet}
-            //     containerStyle={{ backgroundColor: 'rgba(0.5, 0.50, 0, 0.50)' }}
-            //     onBackdropPress={() => { updateState({ showBottomSheet: false }) }}
-            // >
             <Modal
                 animationType="slide"
                 transparent={true}
                 visible={showBottomSheet}
                 onRequestClose={() => {
-                    updateState({ showBottomSheet: false })
+                    updateState({ showBottomSheet: false });
                 }}
             >
                 <TouchableOpacity
@@ -70,142 +102,68 @@ const EditProfileScreen = ({ navigation }) => {
                             onPress={() => { }}
                             style={{ backgroundColor: Colors.whiteColor }}
                         >
-                            <View
-                                style={{
-                                    backgroundColor: Colors.whiteColor,
-                                    paddingVertical: Sizes.fixPadding,
-                                }}
-                            >
+                            <View style={{
+                                backgroundColor: Colors.whiteColor,
+                                paddingVertical: Sizes.fixPadding,
+                            }}>
                                 <Text style={{ ...Fonts.blackColor16Bold, textAlign: 'center' }}>
                                     Choose Option
                                 </Text>
-                                <TouchableOpacity
-                                    activeOpacity={0.9}
-                                    onPress={() => updateState({ showBottomSheet: false })}
-                                    style={{ marginVertical: Sizes.fixPadding, flexDirection: 'row', marginHorizontal: Sizes.fixPadding * 2.0 }}
-                                >
-                                    <MaterialIcons name="photo-camera" size={20} color={Colors.blackColor} />
-                                    <Text style={{ lineHeight: 20.0, ...Fonts.blackColor14SemiBold, marginLeft: Sizes.fixPadding }}>
-                                        Take picture
-                                    </Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    activeOpacity={0.9}
-                                    onPress={() => updateState({ showBottomSheet: false })}
-                                    style={{ flexDirection: 'row', marginHorizontal: Sizes.fixPadding * 2.0 }}
-                                >
-                                    <MaterialIcons name="photo-library" size={20} color={Colors.blackColor} />
-                                    <Text style={{ lineHeight: 20.0, ...Fonts.blackColor14SemiBold, marginLeft: Sizes.fixPadding }}>
-                                        Select From Gallery
-                                    </Text>
-                                </TouchableOpacity>
+                                {renderProfilePicOption("photo-camera", "Take picture")}
+                                {renderProfilePicOption("photo-library", "Select From Gallery")}
                             </View>
                         </TouchableOpacity>
                     </View>
                 </TouchableOpacity>
             </Modal>
-        )
+        );
+    }
+
+    function renderProfilePicOption(icon, text) {
+        return (
+            <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={() => updateState({ showBottomSheet: false })}
+                style={{ marginVertical: Sizes.fixPadding, flexDirection: 'row', marginHorizontal: Sizes.fixPadding * 2.0 }}
+            >
+                <MaterialIcons name={icon} size={20} color={Colors.blackColor} />
+                <Text style={{ lineHeight: 20.0, ...Fonts.blackColor14SemiBold, marginLeft: Sizes.fixPadding }}>
+                    {text}
+                </Text>
+            </TouchableOpacity>
+        );
     }
 
     function updateProfileButton() {
         return (
             <TouchableOpacity
                 activeOpacity={0.9}
-                onPress={() => navigation.pop()}
+                onPress={handleUpdateProfile}
                 style={styles.updateProfileButtonStyle}
             >
                 <Text style={{ ...Fonts.whiteColor18SemiBold }}>
-                    Update Profile
+                    {mutationLoading ? "Updating..." : "Update Profile"}
                 </Text>
+                {mutationError && <Text style={styles.errorText}>Error updating profile</Text>}
             </TouchableOpacity>
-        )
+        );
     }
 
-    function passwordInfo() {
+    function renderInputField(label, value, onChangeText, keyboardType = "default") {
         return (
-            <View style={{
-                marginHorizontal: Sizes.fixPadding * 2.0,
-                marginVertical: Sizes.fixPadding
-            }}>
-                <Text style={{ ...Fonts.grayColor13SemiBold }}>
-                    Password
-                </Text>
+            <View style={styles.inputFieldContainer}>
+                <Text style={styles.labelText}>{label}</Text>
                 <TextInput
-                    placeholder="Enter Password"
-                    value={password}
-                    onChangeText={(text) => updateState({ password: text })}
-                    placeholderTextColor={Colors.grayColor}
-                    selectionColor={Colors.primaryColor}
-                    secureTextEntry={true}
-                    style={styles.textFieldStyle}
-                />
-            </View>
-        )
-    }
-
-    function mobileNumberInfo() {
-        return (
-            <View style={{
-                marginHorizontal: Sizes.fixPadding * 2.0,
-                marginVertical: Sizes.fixPadding
-            }}>
-                <Text style={{ ...Fonts.grayColor13SemiBold }}>
-                    Mobile Number
-                </Text>
-                <TextInput
-                    keyboardType="phone-pad"
-                    placeholder="Enter Mobile Number"
-                    value={mobileNumber}
-                    onChangeText={(text) => updateState({ mobileNumber: text })}
+                    placeholder={`Enter ${label}`}
+                    value={value}
+                    onChangeText={onChangeText}
                     placeholderTextColor={Colors.grayColor}
                     selectionColor={Colors.primaryColor}
                     style={styles.textFieldStyle}
+                    keyboardType={keyboardType}
                 />
             </View>
-        )
-    }
-
-    function emailInfo() {
-        return (
-            <View style={{
-                marginHorizontal: Sizes.fixPadding * 2.0,
-                marginVertical: Sizes.fixPadding
-            }}>
-                <Text style={{ ...Fonts.grayColor13SemiBold }}>
-                    Email
-                </Text>
-                <TextInput
-                    keyboardType="email-address"
-                    placeholder="Enter Email"
-                    value={email}
-                    onChangeText={(text) => updateState({ email: text })}
-                    placeholderTextColor={Colors.grayColor}
-                    selectionColor={Colors.primaryColor}
-                    style={styles.textFieldStyle}
-                />
-            </View>
-        )
-    }
-
-    function userNameInfo() {
-        return (
-            <View style={{
-                marginHorizontal: Sizes.fixPadding * 2.0,
-                marginVertical: Sizes.fixPadding
-            }}>
-                <Text style={{ ...Fonts.grayColor13SemiBold }}>
-                    User Name
-                </Text>
-                <TextInput
-                    placeholder="Enter User Name"
-                    value={userName}
-                    onChangeText={(text) => updateState({ userName: text })}
-                    placeholderTextColor={Colors.grayColor}
-                    selectionColor={Colors.primaryColor}
-                    style={styles.textFieldStyle}
-                />
-            </View>
-        )
+        );
     }
 
     function profilePic() {
@@ -227,7 +185,7 @@ const EditProfileScreen = ({ navigation }) => {
                     />
                 </View>
             </TouchableOpacity>
-        )
+        );
     }
 
     function header() {
@@ -243,9 +201,9 @@ const EditProfileScreen = ({ navigation }) => {
                     Edit Profile
                 </Text>
             </View>
-        )
+        );
     }
-}
+};
 
 const styles = StyleSheet.create({
     headerWrapStyle: {
@@ -280,7 +238,19 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1.5,
         paddingBottom: Platform.OS == 'ios' ? Sizes.fixPadding - 6.0 : 0,
         marginTop: Platform.OS == "ios" ? Sizes.fixPadding - 5.0 : null
-    }
+    },
+    inputFieldContainer: {
+        marginHorizontal: Sizes.fixPadding * 2.0,
+        marginVertical: Sizes.fixPadding,
+    },
+    labelText: {
+        ...Fonts.grayColor13SemiBold,
+    },
+    errorText: {
+        color: "red",
+        textAlign: "center",
+        marginVertical: Sizes.fixPadding,
+    },
 });
 
 export default EditProfileScreen;
