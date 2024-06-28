@@ -30,7 +30,7 @@ import ServiceDetailScreen from "./screens/serviceDetail/serviceDetailScreen";
 import * as ExpoSplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
 import { ApolloClient, ApolloProvider, HttpLink, InMemoryCache } from '@apollo/client';
-import API_URL from './screens/services/Environment';
+import API_URL from "./services/Environment"
 
 ExpoSplashScreen.preventAutoHideAsync();
 
