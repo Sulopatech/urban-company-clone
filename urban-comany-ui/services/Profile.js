@@ -7,3 +7,12 @@ export const UPDATE_PROFILE_PIC = gql`
     }
   }
 `;
+
+export const GET_ACTIVE_CUSTOMER = gql`
+  query {
+    activeCustomer {
+      firstName
+      lastName
+    }
+  }
+`;

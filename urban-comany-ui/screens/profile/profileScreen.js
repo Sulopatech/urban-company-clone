@@ -2,12 +2,18 @@ import React, { useState, } from "react";
 import { View, Dimensions, ScrollView, StyleSheet, TouchableOpacity, Text, Image, Modal } from "react-native";
 import { Colors, Fonts, Sizes, } from "../../constants/styles";
 import { MaterialIcons } from '@expo/vector-icons';
-
+import { useQuery } from '@apollo/client';
+import { GET_ACTIVE_CUSTOMER } from "../../services/Profile";
 const { width } = Dimensions.get('window');
 
 const ProfileScreen = ({ navigation }) => {
 
     const [showLogoutDialog, setshowLogoutDialog] = useState(false);
+    const { loading, error, data } = useQuery(GET_ACTIVE_CUSTOMER);
+    if (loading) return <Text>Loading...</Text>;
+    if (error) return <Text>Error: {error.message}</Text>;
+
+    const { firstName, lastName } = data.activeCustomer;
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
@@ -230,10 +236,10 @@ const ProfileScreen = ({ navigation }) => {
                     />
                     <View style={{ marginLeft: Sizes.fixPadding, }}>
                         <Text style={{ ...Fonts.grayColor13SemiBold }}>
-                            Hello,
+                        Hello,
                         </Text>
                         <Text style={{ maxWidth: width - 190, lineHeight: 17.0, ...Fonts.blackColor15Bold }}>
-                            Samantha Shah
+                        {firstName} {lastName}
                         </Text>
                     </View>
                 </View>

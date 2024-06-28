@@ -5,7 +5,7 @@ import { FontAwesome, MaterialCommunityIcons, MaterialIcons } from '@expo/vector
 import { CurrentRenderContext, useFocusEffect } from "@react-navigation/native";
 import MyStatusBar from "../../components/myStatusBar";
 import { useMutation } from "@apollo/client";
-import { LOGIN } from "../services/Auth";
+import { LOGIN } from "../../services/Auth";
 
 const { width } = Dimensions.get('screen');
 
