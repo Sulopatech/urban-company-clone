@@ -228,7 +228,8 @@ const SigninScreen = ({ navigation }) => {
         return (
             <TouchableOpacity
                 activeOpacity={0.9}
-                onPress={handleSignin}
+                 onPress={handleSignin}
+                // onPress={() => navigation.push('BottomTabBar')}
                 style={styles.signinButtonStyle}
             >
                 <Text style={{ ...Fonts.whiteColor18SemiBold }}>

@@ -31,12 +31,14 @@ export const LOGIN = gql`
 export const SIGNUP = gql`
   mutation registerCustomerAccount(
     $firstName: String!,
+    $lastName: String!,
     $emailAddress: String!,
     $password: String!,
     $phoneNumber: String
   ) {
     registerCustomerAccount(input: {
       firstName: $firstName,
+      lastName :$lastName,
       emailAddress: $emailAddress,
       password: $password,
       phoneNumber: $phoneNumber
@@ -45,6 +47,3 @@ export const SIGNUP = gql`
     }
   }
 `;
-
-
-

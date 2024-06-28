@@ -28,7 +28,8 @@
         "googleMaps": {
           "apiKey": "YOUR GOOGLE MAP API KEY HERE"
         }
-      }
+      },
+      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"]
     },
     "web": {
       "bundler": "metro",

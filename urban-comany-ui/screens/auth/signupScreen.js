@@ -29,7 +29,8 @@ const { width } = Dimensions.get('window');
 
 const SignupScreen = ({ navigation }) => {
   const [state, setState] = useState({
-    userName: '',
+    firstName: '',
+    lastName: '',
     email: '',
     mobileNumber: '',
     password: '',
@@ -37,13 +38,10 @@ const SignupScreen = ({ navigation }) => {
     securePassword: true,
     secureConfirmPassword: true,
     showEmailErrorMessage: false,
-    showPasswordError: false, // State for password error message
+    showPasswordError: false,
   });
 
-  const [signup, {
-    loading,
-    error
-  }] = useMutation(SIGNUP);
+  const [signup, { loading, error }] = useMutation(SIGNUP);
 
   const updateState = (data) => setState(prevState => ({
     ...prevState,
@@ -51,7 +49,8 @@ const SignupScreen = ({ navigation }) => {
   }));
 
   const {
-    userName,
+    firstName,
+    lastName,
     email,
     mobileNumber,
     password,
@@ -62,7 +61,6 @@ const SignupScreen = ({ navigation }) => {
     showPasswordError,
   } = state;
 
-  // Function to handle dynamic password validation
   useEffect(() => {
     if (password !== '') {
       const isValid = validatePasswordFormat(password);
@@ -72,16 +70,13 @@ const SignupScreen = ({ navigation }) => {
     }
   }, [password]);
 
-  // Function to validate password format
   const validatePasswordFormat = (password) => {
-    // Minimum eight characters, at least one uppercase letter, one special character, and one number:
     const pattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
     return pattern.test(password);
   };
 
-  // Function to check if all required fields are filled
   const isFormValid = () => {
-    return userName !== '' && email !== '' && mobileNumber !== '' && password !== '' && confirmPassword !== '';
+    return firstName !== '' && lastName !== '' && email !== '' && mobileNumber !== '' && password !== '' && confirmPassword !== '';
   };
 
   const handleSignup = async () => {
@@ -90,7 +85,6 @@ const SignupScreen = ({ navigation }) => {
       return;
     }
 
-    // Basic email validation
     if (!validateEmailFormat(email)) {
       updateState({
         showEmailErrorMessage: true
@@ -98,13 +92,11 @@ const SignupScreen = ({ navigation }) => {
       return;
     }
 
-    // Phone number validation
     if (!validatePhoneNumber(mobileNumber)) {
       Alert.alert("Error", "Invalid phone number. It should be exactly 10 digits.");
       return;
     }
 
-    // Password validation
     const passwordError = validatePassword(password);
     if (passwordError) {
       Alert.alert("Error", passwordError);
@@ -112,11 +104,10 @@ const SignupScreen = ({ navigation }) => {
     }
 
     try {
-      const {
-        data
-      } = await signup({
+      const { data } = await signup({
         variables: {
-          firstName: userName,
+          firstName: firstName,
+          lastName: lastName,
           emailAddress: email,
           password: password,
           phoneNumber: mobileNumber,
@@ -132,20 +123,16 @@ const SignupScreen = ({ navigation }) => {
     }
   };
 
-  // Function to validate phone number format
   const validatePhoneNumber = (phoneNumber) => {
     const pattern = /^\d{10}$/;
     return pattern.test(phoneNumber);
   };
 
-  // Function to validate email format
   const validateEmailFormat = (email) => {
     return email.includes('@') && email.endsWith('.com');
   };
 
-  // Function to validate password format
   const validatePassword = (password) => {
-    // Minimum eight characters, at least one uppercase letter, one special character, and one number:
     const pattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
     if (!pattern.test(password)) {
       return "Password must contain at least 8 characters, including at least one uppercase letter, one special character, and one number.";
@@ -154,9 +141,7 @@ const SignupScreen = ({ navigation }) => {
   };
 
   const handleMobileNumberChange = (text) => {
-    // Allow only numerical input
     const cleanedText = text.replace(/[^0-9]/g, '');
-    // Update state with cleaned text
     updateState({
       mobileNumber: cleanedText
     });
@@ -175,7 +160,8 @@ const SignupScreen = ({ navigation }) => {
         <View style={{ flex: 1, right: -width / 20.0 }}>
           {header()}
           <ScrollView automaticallyAdjustKeyboardInsets={true} showsVerticalScrollIndicator={false}>
-            {userNameTextField()}
+            {firstNameTextField()}
+            {lastNameTextField()}
             {emailTextField()}
             {mobileNumberTextField()}
             {passwordTextField()}
@@ -315,23 +301,25 @@ const SignupScreen = ({ navigation }) => {
 
   function passwordTextField() {
     return (
-      <View style={{ marginBottom: Sizes.fixPadding, marginHorizontal: Sizes.fixPadding * 2.0, }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <View style={styles.iconWrapper}>
-            <MaterialIcons name="lock" size={19} color={Colors.grayColor} />
+      <View style={{ marginBottom: Sizes.fixPadding, marginHorizontal: Sizes.fixPadding * 2.0 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+            <View style={styles.iconWrapper}>
+              <MaterialIcons name="lock" size={19} color={Colors.grayColor} />
+            </View>
+            <TextInput
+              secureTextEntry={securePassword}
+              value={password}
+              onChangeText={(text) => updateState({ password: text })}
+              placeholder="Password"
+              placeholderTextColor={Colors.grayColor}
+              selectionColor={Colors.primaryColor}
+              style={{
+                marginLeft: Sizes.fixPadding,
+                ...Fonts.blackColor15Bold, flex: 1
+              }}
+            />
           </View>
-          <TextInput
-            secureTextEntry={securePassword}
-            value={password}
-            onChangeText={(text) => updateState({ password: text })}
-            placeholder="Password"
-            placeholderTextColor={Colors.grayColor}
-            selectionColor={Colors.primaryColor}
-            style={{
-              marginLeft: Sizes.fixPadding,
-              ...Fonts.blackColor15Bold, flex: 1
-            }}
-          />
           <MaterialCommunityIcons
             name={securePassword ? "eye-off" : "eye"}
             size={19}
@@ -343,36 +331,25 @@ const SignupScreen = ({ navigation }) => {
           backgroundColor: Colors.grayColor, height: 1.5,
           marginVertical: Sizes.fixPadding - 5.0,
         }} />
-        {showPasswordError && (
-          <View>
-            <Text style={{ ...Fonts.grayColor14Bold, color: 'red', marginTop: 10 }}>
-              Invalid password format
-            </Text>
-            <Text style={{ ...Fonts.grayColor14Bold, color: 'red', marginTop: 5 }}>
-              Password must contain at least 8 characters, including at least one uppercase letter, one special character, and one number.
-            </Text>
-          </View>
-        )}
+        {showPasswordError && <Text style={{ color: 'red' }}>{validatePassword(password)}</Text>}
       </View>
     );
   }
-  
 
   function mobileNumberTextField() {
     return (
-      <View style={{ marginBottom: Sizes.fixPadding, marginHorizontal: Sizes.fixPadding * 2.0, }}>
+      <View style={{ marginBottom: Sizes.fixPadding, marginHorizontal: Sizes.fixPadding * 2.0 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <View style={styles.iconWrapper}>
-            <MaterialIcons name="phone-android" size={19} color={Colors.grayColor} />
+            <FontAwesome name="phone" size={17} color={Colors.grayColor} />
           </View>
           <TextInput
+            keyboardType="numeric"
             value={mobileNumber}
             onChangeText={handleMobileNumberChange}
             placeholder="Mobile Number"
             placeholderTextColor={Colors.grayColor}
             selectionColor={Colors.primaryColor}
-            keyboardType="numeric"
-            maxLength={10}
             style={{
               marginLeft: Sizes.fixPadding,
               ...Fonts.blackColor15Bold, flex: 1
@@ -389,14 +366,15 @@ const SignupScreen = ({ navigation }) => {
 
   function emailTextField() {
     return (
-      <View style={{ marginBottom: Sizes.fixPadding, marginHorizontal: Sizes.fixPadding * 2.0, }}>
+      <View style={{ marginBottom: Sizes.fixPadding, marginHorizontal: Sizes.fixPadding * 2.0 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <View style={styles.iconWrapper}>
             <MaterialIcons name="email" size={19} color={Colors.grayColor} />
           </View>
           <TextInput
+            keyboardType="email-address"
             value={email}
-            onChangeText={(text) => updateState({ email: text, showEmailErrorMessage: !validateEmailFormat(text) })}
+            onChangeText={(text) => updateState({ email: text, showEmailErrorMessage: false })}
             placeholder="Email"
             placeholderTextColor={Colors.grayColor}
             selectionColor={Colors.primaryColor}
@@ -411,25 +389,52 @@ const SignupScreen = ({ navigation }) => {
           marginVertical: Sizes.fixPadding - 5.0,
         }} />
         {showEmailErrorMessage && (
-          <Text style={{ ...Fonts.grayColor14Bold, color: 'red', marginTop: 10 }}>
-           Invalid email format. The email must contain "@" and ".com" at the end.
+          <Text style={{ color: 'red', fontSize: 13, marginTop: 5, marginBottom: 10, marginLeft: Sizes.fixPadding }}>
+            Please enter a valid email address.The email must contain "@" and ".com" at the end.
           </Text>
         )}
       </View>
     );
   }
 
-  function userNameTextField() {
+  function lastNameTextField() {
     return (
-      <View style={{ marginBottom: Sizes.fixPadding, marginHorizontal: Sizes.fixPadding * 2.0, }}>
+      <View style={{ marginBottom: Sizes.fixPadding, marginHorizontal: Sizes.fixPadding * 2.0 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <View style={styles.iconWrapper}>
-            <FontAwesome name="user-o" size={19} color={Colors.grayColor} />
+            <MaterialIcons name="person" size={19} color={Colors.grayColor} />
           </View>
           <TextInput
-            value={userName}
-            onChangeText={(text) => updateState({ userName: text })}
-            placeholder="User Name"
+            value={lastName}
+            onChangeText={(text) => updateState({ lastName: text })}
+            placeholder="Last Name"
+            placeholderTextColor={Colors.grayColor}
+            selectionColor={Colors.primaryColor}
+            style={{
+              marginLeft: Sizes.fixPadding,
+              ...Fonts.blackColor15Bold, flex: 1
+            }}
+          />
+        </View>
+        <View style={{
+          backgroundColor: Colors.grayColor, height: 1.5,
+          marginVertical: Sizes.fixPadding - 5.0,
+        }} />
+      </View>
+    );
+  }
+
+  function firstNameTextField() {
+    return (
+      <View style={{ marginBottom: Sizes.fixPadding, marginHorizontal: Sizes.fixPadding * 2.0 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View style={styles.iconWrapper}>
+            <MaterialIcons name="person" size={19} color={Colors.grayColor} />
+          </View>
+          <TextInput
+            value={firstName}
+            onChangeText={(text) => updateState({ firstName: text })}
+            placeholder="First Name"
             placeholderTextColor={Colors.grayColor}
             selectionColor={Colors.primaryColor}
             style={{
@@ -449,12 +454,12 @@ const SignupScreen = ({ navigation }) => {
   function header() {
     return (
       <View style={styles.headerWrapStyle}>
-        <MaterialIcons name="arrow-back-ios" size={24} color={Colors.blackColor}
+        <MaterialIcons name="arrow-back-ios" size={22} color={Colors.blackColor}
           onPress={() => navigation.pop()}
-          style={{ position: 'absolute', left: 20.0, }}
+          style={{ marginHorizontal: Sizes.fixPadding * 2.0 }}
         />
-        <Text style={{ ...Fonts.blackColor22Bold }}>
-          Create Account
+        <Text style={{ ...Fonts.blackColor22Bold, flex: 1, textAlign: 'center' }}>
+          Signup
         </Text>
       </View>
     );
@@ -463,45 +468,53 @@ const SignupScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   headerWrapStyle: {
-    paddingVertical: Sizes.fixPadding * 2.0,
-    backgroundColor: Colors.whiteColor,
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginVertical: Sizes.fixPadding,
+    flexDirection: 'row',
+    alignItems: 'center'
   },
   signupButtonStyle: {
     backgroundColor: Colors.primaryColor,
+    paddingVertical: Sizes.fixPadding + 5.0,
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: Sizes.fixPadding * 2.0,
     borderRadius: Sizes.fixPadding - 5.0,
-    height: 56.0,
-    marginVertical: Sizes.fixPadding * 2.0,
-  },
-  orSigninWithDividerStyle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Sizes.fixPadding * 2.0,
-  },
-  optionsShortWrapStyle: {
-    height: 40.0,
-    width: 40.0, borderRadius: 20.0, alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: Sizes.fixPadding * 2.0,
+    marginTop: Sizes.fixPadding * 3.0,
+    marginBottom: Sizes.fixPadding * 2.0
   },
   socialMediaOptionsWrapStyle: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: Sizes.fixPadding * 7.0,
+    marginTop: Sizes.fixPadding * 3.0,
+    marginBottom: Sizes.fixPadding * 2.0
+  },
+  optionsShortWrapStyle: {
+    width: 42.0,
+    height: 42.0,
+    borderRadius: 21.0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: Sizes.fixPadding
+  },
+  orSigninWithDividerStyle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: Sizes.fixPadding * 2.0,
   },
   iconWrapper: {
-    height: 25.0,
-    width: 25.0,
-    borderRadius: 12.5,
+    width: 35,
+    height: 35,
+    borderRadius: 35 / 2,
     backgroundColor: Colors.whiteColor,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: Colors.grayColor,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
   },
 });
 

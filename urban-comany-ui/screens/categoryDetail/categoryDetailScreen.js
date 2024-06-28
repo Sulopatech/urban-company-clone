@@ -1,115 +1,87 @@
 import React, { useState } from "react";
 import { View, StyleSheet, FlatList, TouchableOpacity, Dimensions, Text, Image } from "react-native";
+import { useQuery } from '@apollo/client';
 import { Colors, Fonts, Sizes, CommonStyles } from "../../constants/styles";
 import { MaterialIcons } from '@expo/vector-icons';
 import { Snackbar } from "react-native-paper";
 import MyStatusBar from "../../components/myStatusBar";
+import { GETSINGLECOLLECTIONLIST } from '../../services/Product'
 
 const { width } = Dimensions.get('screen');
 
-const salonsList = [
-    {
-        id: '1',
-        salonImage: require('../../assets/images/salon/salon2.png'),
-        salonName: 'Crown salon',
-        salonAddress: 'A 9/a Sector 16,Gautam Budh Nagar',
-        rating: 4.6,
-        reviews: 100,
-        salonOpenTime: '9:00 am',
-        salonCloseTime: '9:00 pm',
-        isFavorite: false,
-    },
-    {
-        id: '2',
-        salonImage: require('../../assets/images/salon/salon3.png'),
-        salonName: 'RedBox salon',
-        salonAddress: 'A 9/a Sector 16,Gautam Budh Nagar',
-        rating: 4.6,
-        reviews: 100,
-        salonOpenTime: '9:00 am',
-        salonCloseTime: '9:00 pm',
-        isFavorite: true,
-    },
-    {
-        id: '3',
-        salonImage: require('../../assets/images/salon/salon4.png'),
-        salonName: 'Ultra unisex salon',
-        salonAddress: 'A 9/a Sector 16,Gautam Budh Nagar',
-        rating: 4.6,
-        reviews: 100,
-        salonOpenTime: '9:00 am',
-        salonCloseTime: '9:00 pm',
-        isFavorite: true,
-    },
-    {
-        id: '4',
-        salonImage: require('../../assets/images/salon/salon5.png'),
-        salonName: 'Livestyle salon',
-        salonAddress: 'A 9/a Sector 16,Gautam Budh Nagar',
-        rating: 4.6,
-        reviews: 100,
-        salonOpenTime: '9:00 am',
-        salonCloseTime: '9:00 pm',
-        isFavorite: false,
-    },
-    {
-        id: '5',
-        salonImage: require('../../assets/images/salon/salon6.png'),
-        salonName: 'Opera city salon',
-        salonAddress: 'A 9/a Sector 16,Gautam Budh Nagar',
-        rating: 4.6,
-        reviews: 100,
-        salonOpenTime: '9:00 am',
-        salonCloseTime: '9:00 pm',
-        isFavorite: false,
-    },
-    {
-        id: '6',
-        salonImage: require('../../assets/images/salon/salon7.png'),
-        salonName: 'Wonder spot salon',
-        salonAddress: 'A 9/a Sector 16,Gautam Budh Nagar',
-        rating: 4.6,
-        reviews: 100,
-        salonOpenTime: '9:00 am',
-        salonCloseTime: '9:00 pm',
-        isFavorite: false,
-    },
-];
-
 const CategoryDetailScreen = ({ navigation, route }) => {
+    const { productId } = route.params;
 
-    const item = route.params.item;
+    const { data } = useQuery(GETSINGLECOLLECTIONLIST, {
+        variables: { id: productId },
+    });
 
     const [state, setState] = useState({
-        salons: salonsList,
         showSnackBar: false,
         addToFavorite: false,
-    })
+    });
 
-    const updateState = (data) => setState((state) => ({ ...state, ...data }))
+    const updateState = (data) => setState((state) => ({ ...state, ...data }));
 
     const {
-        salons,
         showSnackBar,
         addToFavorite,
     } = state;
+
+    const product = data ? data.product : null;
+    const variantList = product?.variantList?.items || [];
+    
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
             <MyStatusBar />
             <View style={{ flex: 1 }}>
                 {header()}
-                {availableSalons()}
+                {/* {product && availableSalons(product)} */}
+                {variantList.length > 0 && renderVariants(variantList)}
             </View>
             <Snackbar
                 style={styles.snackBarStyle}
                 visible={showSnackBar}
                 onDismiss={() => updateState({ showSnackBar: false })}
             >
-                {addToFavorite ? 'Item add to favorite' : 'Item remove from favorite'}
+                {addToFavorite ? 'Item added to favorite' : 'Item removed from favorite'}
             </Snackbar>
         </View>
-    )
+    );
+
+    function renderVariants(variants) {
+        return (
+            <FlatList
+                data={variants}
+                keyExtractor={(item, index) => `${item.name}-${index}`}
+                renderItem={renderVariantItem}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: Sizes.fixPadding, paddingTop: Sizes.fixPadding - 5.0 }}
+            />
+        );
+    }
+
+    function renderVariantItem({ item }) {
+        const imageSource = item.assets.length > 0 ? { uri: item.assets[0].url } : require('../../assets/images/dummyimage.png');
+
+        return (
+            <View style={styles.variantContainer}>
+                <TouchableOpacity
+                    activeOpacity={0.9}
+                    onPress={() => {/* Handle onPress if needed */}}
+                    style={styles.variantItem}
+                >
+                    <Image
+                        source={imageSource}
+                        style={styles.variantImage}
+                        resizeMode="cover"
+                    />
+                    <Text style={styles.variantName}>{item.name}</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
 
     function updateSalons({ id }) {
         const newList = salons.map((item) => {
@@ -123,7 +95,7 @@ const CategoryDetailScreen = ({ navigation, route }) => {
         updateState({ salons: newList })
     }
 
-    function availableSalons() {
+    function availableSalons(product) {
         const renderItem = ({ item }) => (
             <TouchableOpacity
                 activeOpacity={0.9}
@@ -148,8 +120,8 @@ const CategoryDetailScreen = ({ navigation, route }) => {
                             color={Colors.blackColor}
                             size={17}
                             onPress={() => {
-                                updateSalons({ id: item.id })
-                                updateState({ showSnackBar: true })
+                                updateSalons({ id: item.id });
+                                updateState({ showSnackBar: true });
                             }}
                         />
                     </View>
@@ -171,16 +143,17 @@ const CategoryDetailScreen = ({ navigation, route }) => {
                     </Text>
                 </View>
             </TouchableOpacity>
-        )
+        );
+
         return (
             <FlatList
-                data={salons}
+                data={product.salonDetails}
                 keyExtractor={(item) => `${item.id}`}
                 renderItem={renderItem}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: Sizes.fixPadding, paddingTop: Sizes.fixPadding - 5.0 }}
             />
-        )
+        );
     }
 
     function header() {
@@ -193,12 +166,12 @@ const CategoryDetailScreen = ({ navigation, route }) => {
                     onPress={() => navigation.pop()}
                 />
                 <Text style={{ marginLeft: Sizes.fixPadding, ...Fonts.blackColor18Bold }}>
-                    {item.categoryName}
+                    {product ? product.name : 'Loading.....'}
                 </Text>
             </View>
-        )
+        );
     }
-}
+};
 
 const styles = StyleSheet.create({
     headerWrapStyle: {
@@ -230,6 +203,30 @@ const styles = StyleSheet.create({
         flex: 1,
         marginHorizontal: Sizes.fixPadding,
         marginVertical: Sizes.fixPadding - 5.0,
+    },
+    variantContainer: {
+        borderWidth: 1,
+        borderColor: Colors.borderColor,
+        borderRadius: Sizes.fixPadding,
+        marginHorizontal: Sizes.fixPadding * 2.0,
+        marginBottom: Sizes.fixPadding * 2.0,
+        overflow: 'hidden',
+        ...CommonStyles.shadow
+    },
+    variantItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: Sizes.fixPadding,
+    },
+    variantImage: {
+        width: 80,
+        height: 80,
+        borderRadius: Sizes.fixPadding,
+    },
+    variantName: {
+        ...Fonts.blackColor14Bold,
+        marginLeft: Sizes.fixPadding,
+        flex: 1,
     }
 });
 
