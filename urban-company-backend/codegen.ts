@@ -12,7 +12,7 @@ const config: CodegenConfig = {
         namingConvention: { enumValues: 'keep' },
     },
     generates: {
-        './src/plugins/customerprofilepicture/gql/generated.ts': { plugins: ['typescript'] },
+        './src/plugins/customer-profile/gql/generated.ts': { plugins: ['typescript'] },
     },
 };
 

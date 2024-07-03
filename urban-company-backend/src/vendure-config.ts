@@ -9,7 +9,7 @@ import { AssetServerPlugin } from '@vendure/asset-server-plugin';
 import { AdminUiPlugin } from '@vendure/admin-ui-plugin';
 import 'dotenv/config';
 import path from 'path';
-import { CustomerprofilepicturePlugin } from './plugins/customerprofilepicture/customerprofilepicture.plugin';
+import { CustomerProfilePicPlugin } from './plugins/customer-profile/customer-profile.plugin';
 
 const IS_DEV = process.env.APP_ENV === 'dev';
 
@@ -33,6 +33,7 @@ export const config: VendureConfig = {
         } : {}),
     },
     authOptions: {
+        requireVerification: false,
         tokenMethod: ['bearer', 'cookie'],
         superadminCredentials: {
             identifier: process.env.SUPERADMIN_USERNAME,
@@ -60,7 +61,20 @@ export const config: VendureConfig = {
     },
     // When adding or altering custom field definitions, the database will
     // need to be updated. See the "Migrations" section in README.md.
-    customFields: {},
+    customFields: {
+        Product: [
+            {name: 'weekdays', type: 'string', nullable: true},
+            {name: 'weekends', type: 'string', nullable: true},
+            {name: 'location', type: 'string', nullable: true},
+            {name: 'x_coordinate', type: 'float', nullable: true},
+            {name: 'y_coordinate', type: 'float', nullable: true}
+        ],
+        Customer: [
+            {name: 'currentLocation', type: 'string', nullable: true},
+            {name: 'x_coordinaties', type: 'float', nullable: true},
+            {name: 'y_coordinates', type: 'float', nullable: true}
+        ]
+    },
     plugins: [
         AssetServerPlugin.init({
             route: 'assets',
@@ -94,6 +108,9 @@ export const config: VendureConfig = {
                 apiPort: 3000,
             },
         }),
-        CustomerprofilepicturePlugin.init({}),
+        CustomerProfilePicPlugin.init({
+            route: 'profilepic',
+            assetUploadDir: path.join(__dirname, '../static/profilepic')
+        }),
     ],
 };
