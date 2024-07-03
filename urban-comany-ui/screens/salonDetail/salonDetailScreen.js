@@ -30,152 +30,6 @@ const packageAndOffersList = [
     }
 ];
 
-const aboutList = [
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-    'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.Lorem ipsum dolor sit amet',
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-];
-
-// const specialists = [
-//     {
-//         id: '1',
-//         specialistImage: require('../../assets/images/specialists/specialist1.png'),
-//         specialistName: 'Sora',
-//         speciality: 'Manager',
-//     },
-//     {
-//         id: '2',
-//         specialistImage: require('../../assets/images/specialists/specialist2.png'),
-//         specialistName: 'Joya',
-//         speciality: 'Hair stylist',
-//     },
-//     {
-//         id: '3',
-//         specialistImage: require('../../assets/images/salon/salon4.png'),
-//         specialistName: 'Doe',
-//         speciality: 'St.Barber',
-//     },
-//     {
-//         id: '4',
-//         specialistImage: require('../../assets/images/specialists/specialist3.png'),
-//         specialistName: 'Helina',
-//         speciality: 'M.Artist',
-//     },
-//     {
-//         id: '5',
-//         specialistImage: require('../../assets/images/specialists/specialist4.png'),
-//         specialistName: 'Robat',
-//         speciality: 'Hair Stylist',
-//     },
-//     {
-//         id: '6',
-//         specialistImage: require('../../assets/images/specialists/specialist4.png'),
-//         specialistName: 'Robat',
-//         speciality: 'Hair Stylist',
-//     }
-// ];
-
-const servicesList = [
-    {
-        id: '1',
-        serviceImage: require('../../assets/images/icons/hairstyle.png'),
-        serviceName: 'Hairstyle',
-        serviceTypes: 10,
-        bgColor: '#EF9A9A',
-    },
-    {
-        id: '2',
-        serviceImage: require('../../assets/images/icons/hairdryer.png'),
-        serviceName: 'Hairdryer',
-        serviceTypes: 5,
-        bgColor: '#F48FB1',
-    },
-    {
-        id: '3',
-        serviceImage: require('../../assets/images/icons/shaving.png'),
-        serviceName: 'Shaving',
-        serviceTypes: 6,
-        bgColor: '#CE93D8',
-    },
-    {
-        id: '4',
-        serviceImage: require('../../assets/images/icons/makeup.png'),
-        serviceName: 'Makeup',
-        serviceTypes: 10,
-        bgColor: '#90CAF9',
-    },
-    {
-        id: '5',
-        serviceImage: require('../../assets/images/icons/nails.png'),
-        serviceName: 'Nails',
-        serviceTypes: 5,
-        bgColor: '#80CBC4',
-    },
-    {
-        id: '6',
-        serviceImage: require('../../assets/images/icons/coloring.png'),
-        serviceName: 'Coloring',
-        serviceTypes: 6,
-        bgColor: '#EF9A9A',
-    },
-    {
-        id: '7',
-        serviceImage: require('../../assets/images/icons/massage.png'),
-        serviceName: 'Massage',
-        serviceTypes: 6,
-        bgColor: '#F48FB1',
-    },
-];
-
-// const galleryImagesList = [
-//     {
-//         id: '1',
-//         image: require('../../assets/images/gallery/img1.png'),
-//         aspectRatio: 1
-//     },
-//     {
-//         id: '2',
-//         image: require('../../assets/images/gallery/img2.png'),
-//         aspectRatio: 200 / 145,
-//     },
-//     {
-//         id: '3',
-//         image: require('../../assets/images/gallery/img3.png'),
-//         aspectRatio: 180 / 145,
-//     },
-//     {
-//         id: '4',
-//         image: require('../../assets/images/gallery/img4.png'),
-//         aspectRatio: 180 / 145,
-//     },
-//     {
-//         id: '5',
-//         image: require('../../assets/images/gallery/img5.png'),
-//         aspectRatio: 1,
-//     },
-//     {
-//         id: '6',
-//         image: require('../../assets/images/gallery/img6.png'),
-//         aspectRatio: 120 / 145,
-//     },
-//     {
-//         id: '7',
-//         image: require('../../assets/images/gallery/img7.png'),
-//         aspectRatio: 210 / 145,
-//     },
-//     {
-//         id: '8',
-//         image: require('../../assets/images/gallery/img8.png'),
-//         aspectRatio: 160 / 145,
-//     },
-//     {
-//         id: '9',
-//         image: require('../../assets/images/gallery/img9.png'),
-//         aspectRatio: 130 / 145,
-//     }
-// ];
-
 const reviewsList = [
     {
         id: '1',
@@ -216,9 +70,14 @@ const SalonDetailScreen = ({ navigation, route }) => {
         isFavorite,
         showSnackBar,
     } = state;
-       
+    
+    const [selectedServices, setSelectedServices] = useState([]);
+
+    const { variantSlug } = route.params;
+
     const { loading, error, data } = useQuery(GET_PRODUCT_DETAIL, {
-        variables: { slug: "Laptop" }, 
+        variables: { slug: variantSlug },
+        skip: !variantSlug,  
     });
     
     if (loading) return <Text>Loading...</Text>;
@@ -226,6 +85,23 @@ const SalonDetailScreen = ({ navigation, route }) => {
     
     const { product } = data;
     console.log("data",data)
+    const servicesListData = product?.variants || [] ;
+
+    const addService = (service) => {
+        setSelectedServices((prevServices) => [...prevServices, service]);
+    };
+
+    const removeService = (service) => {
+        setSelectedServices((prevServices) =>
+            prevServices.filter((item) => item.id !== service.id)
+        );
+    };
+
+    const isServiceSelected = (service) => {
+        return selectedServices.some((item) => item.id === service.id);
+    };
+
+    console.log("selected sevices : ",selectedServices);
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
@@ -304,7 +180,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
     function salonImage() {
         return (
             <ImageBackground
-                source={item.salonImage}
+                source={{uri: product.featuredAsset.preview}}
                 style={{
                     width: '100%',
                     height: 230,
@@ -324,10 +200,10 @@ const SalonDetailScreen = ({ navigation, route }) => {
                                     numberOfLines={1}
                                     style={{ maxWidth: width - 150.0, ...Fonts.whiteColor16Bold }}
                                 >
-                                    {item.salonName}
+                                    {product.name}
                                 </Text>
                                 <Text style={{ marginLeft: Sizes.fixPadding - 6.0, ...Fonts.primaryColor10Bold }}>
-                                    {product.name}
+                                    {/* {product.name} */}
                                 </Text>
                             </View>
                             <Text
@@ -338,12 +214,11 @@ const SalonDetailScreen = ({ navigation, route }) => {
                                     ...Fonts.whiteColor13Medium
                                 }}
                             >
-                                {item.salonAddress}
+                                {"item.salonAddress"}
                             </Text>
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                {showRating({ rate: item.rating })}
-                                <Text style={{ marginLeft: Sizes.fixPadding, ...Fonts.whiteColor12Medium }}>
-                                    ({item.reviews} Reviews)
+                                <Text style={{ ...Fonts.whiteColor12Medium }}>
+                                {"4.6 Ratings"} | {"100 Reviews"}
                                 </Text>
                             </View>
                         </View>
@@ -439,54 +314,6 @@ const SalonDetailScreen = ({ navigation, route }) => {
         )
     }
 
-    // function galleryInfo() {
-    //     return (
-    //         <ScrollView
-    //             automaticallyAdjustKeyboardInsets={true}
-    //             contentContainerStyle={styles.galleryInfoWrapStyle}
-    //             showsVerticalScrollIndicator={false}
-    //         >
-    //             <View style={{ flexDirection: 'row' }}>
-    //                 <View>
-    //                     {galleryImagesList
-    //                         .filter((_, i) => i % 2 !== 0)
-    //                         .map((item,) =>
-    //                         (
-    //                             <Image
-    //                                 key={`${item.id}`}
-    //                                 source={item.image}
-    //                                 style={{
-    //                                     marginRight: Sizes.fixPadding + 5.0,
-    //                                     ...styles.galleryImagesStyle,
-    //                                     width: (width - 60) / 2.0,
-    //                                     height: ((width - 40) / 2.0) * item.aspectRatio
-    //                                 }}
-    //                                 resizeMode="cover"
-    //                             />
-    //                         ))}
-    //                 </View>
-    //                 <View>
-    //                     {galleryImagesList
-    //                         .filter((_, i) => i % 2 === 0)
-    //                         .map((item,) =>
-    //                         (
-    //                             <Image
-    //                                 key={`${item.id}`}
-    //                                 source={item.image}
-    //                                 style={{
-    //                                     ...styles.galleryImagesStyle,
-    //                                     width: (width - 40) / 2.0,
-    //                                     height: ((width - 40) / 2.0) * item.aspectRatio
-    //                                 }}
-    //                                 resizeMode="cover"
-    //                             />
-    //                         ))}
-    //                 </View>
-    //             </View>
-    //         </ScrollView>
-    //     )
-    // }
-
     function salonServicesInfo() {
         return (
             <View style={{ marginHorizontal: Sizes.fixPadding * 2.0, }}>
@@ -494,7 +321,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
                     Services
                 </Text>
                 {
-                    servicesList.map((item) => (
+                    servicesListData.map((item) => (
                         <View key={`${item.id}`}>
                             <View style={styles.salonServicesWrapStyle}>
                                 <View style={{
@@ -506,7 +333,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
                                         backgroundColor: item.bgColor,
                                     }}>
                                         <Image
-                                            source={item.serviceImage}
+                                            source={{ uri : item.assets ? item.assets.preview : product.featuredAsset.preview }}
                                             style={{ width: 22.0, height: 22.0, }}
                                             resizeMode="contain"
                                             tintColor={Colors.whiteColor}
@@ -514,19 +341,45 @@ const SalonDetailScreen = ({ navigation, route }) => {
                                     </View>
                                     <View style={{ marginLeft: Sizes.fixPadding, }}>
                                         <Text style={{ marginTop: Sizes.fixPadding - 5.0, lineHeight: 15.0, ...Fonts.blackColor13Bold }}>
-                                            {item.serviceName}
+                                            {item.name}
                                         </Text>
                                         <Text style={{ ...Fonts.grayColor11SemiBold }}>
-                                            {item.serviceTypes}types
+                                            ₹: {item.price} + tax : {item.priceWithTax - item.price} Rs
+                                        </Text>
+                                        <Text style={{ ...Fonts.grayColor11SemiBold }}>
+                                            Total ₹: {item.priceWithTax} Rs
                                         </Text>
                                     </View>
                                 </View>
+                                <View>
+                                {isServiceSelected(item) ? (
+                                    <TouchableOpacity onPress={() => removeService(item)} style={styles.addButton}>
+                                        <Text style={{ marginHorizontal: Sizes.fixPadding, ...Fonts.primaryColor14Bold }}>
+                                            Remove
+                                        </Text>
+                                    </TouchableOpacity>
+                                ) : (
+                                    <TouchableOpacity onPress={() => addService(item)} style={styles.addButton}>
+                                        <Text style={{ marginHorizontal: Sizes.fixPadding, ...Fonts.primaryColor14Bold }}>
+                                            Add
+                                        </Text>
+                                    </TouchableOpacity>
+                                )}
+                                {/* <TouchableOpacity onPress={() => addService(item)} style={styles.addButton}>
                                 <Text
-                                    onPress={() => navigation.push('ServiceDetail')}
+                                    // onPress={() => navigation.push('ServiceDetail')}
                                     style={{ marginHorizontal: Sizes.fixPadding, ...Fonts.primaryColor14Bold }}
                                 >
-                                    View
+                                    Add
                                 </Text>
+                                </TouchableOpacity> */}
+                                {/* <Text
+                                    onPress={() => navigation.push('ServiceDetail')}
+                                    // style={{ marginHorizontal: Sizes.fixPadding, ...Fonts.primaryColor14Bold }}
+                                >
+                                    View
+                                </Text> */}
+                                </View>
                             </View>
                         </View>
                     ))
@@ -541,8 +394,8 @@ const SalonDetailScreen = ({ navigation, route }) => {
                 {aboutInfo()}
                 {divider()}
                 {openingHoursInfo()}
-                {divider()}
-                {locationInfo()}
+                {/* {divider()}
+                {locationInfo()} */}
                 {divider()}
                 {currentPackageAndOffersInfo()}
             </View>
@@ -554,7 +407,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
             <View>
                 <TouchableOpacity
                     activeOpacity={0.9}
-                    onPress={() => navigation.push('ScheduleAppointment')}
+                    onPress={() => navigation.push('ScheduleAppointment',{selectedServices})}
                     style={styles.bookAppointmentButtonStyle}
                 >
                     <Text style={{ ...Fonts.whiteColor18SemiBold }}>
@@ -575,7 +428,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
                     packageAndOffersList.map((item) => (
                         <View key={`${item.id}`}>
                             <ImageBackground
-                                source={item.salonImage}
+                                source={{uri: product.featuredAsset.preview}}
                                 style={styles.packageAndOffersImageStyle}
                                 borderRadius={Sizes.fixPadding}
                             >
@@ -613,53 +466,6 @@ const SalonDetailScreen = ({ navigation, route }) => {
                         </View>
                     ))
                 }
-            </View>
-        )
-    }
-
-    function locationInfo() {
-        return (
-            <View style={{
-                marginVertical: Sizes.fixPadding - 5.0,
-                marginHorizontal: Sizes.fixPadding * 2.0,
-            }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', }}>
-                    <View>
-                        <Text style={{
-                            marginBottom: Sizes.fixPadding,
-                            lineHeight: 18.0, ...Fonts.blackColor16Bold
-                        }}>
-                            Location
-                        </Text>
-                        <Text style={{ maxWidth: width - 160.0, ...Fonts.grayColor12SemiBold }}>
-                            {item.salonAddress}
-                        </Text>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <FontAwesome
-                                name="location-arrow"
-                                size={15}
-                                color={Colors.primaryColor}
-                            />
-                            <Text style={{ marginLeft: Sizes.fixPadding - 5.0, ...Fonts.primaryColor12Bold }}>
-                                Get directions - 5.2km
-                            </Text>
-                        </View>
-                    </View>
-                    <View style={styles.mapViewWrapStyle}>
-                        <MapView
-                            style={{
-                                width: 110.0,
-                                height: 90.0,
-                            }}
-                            initialRegion={{
-                                latitude: 37.78825,
-                                longitude: -122.4324,
-                                latitudeDelta: 0.0922,
-                                longitudeDelta: 0.0421,
-                            }}
-                        />
-                    </View>
-                </View>
             </View>
         )
     }
@@ -740,48 +546,6 @@ const SalonDetailScreen = ({ navigation, route }) => {
         )
     }
 
-    // function salonSpecialists() {
-
-    //     const renderItem = ({ item }) => (
-    //         <TouchableOpacity
-    //             activeOpacity={0.9}
-    //             onPress={() => navigation.push('SpecialistDetail', { item: item, salonInfo: route.params.item })}
-    //             style={{
-    //                 alignItems: 'center',
-    //                 marginRight: Sizes.fixPadding + 5.0,
-    //             }}
-    //         >
-    //             <Image
-    //                 source={item.specialistImage}
-    //                 style={{ width: 45.0, height: 45.0, borderRadius: Sizes.fixPadding - 5.0, }}
-    //             />
-    //             <Text style={{ ...Fonts.blackColor12Bold, marginTop: Sizes.fixPadding - 7.0 }}>
-    //                 {item.specialistName}
-    //             </Text>
-    //             <Text style={{ lineHeight: 11.0, ...Fonts.grayColor11SemiBold }}>
-    //                 {item.speciality}
-    //             </Text>
-    //         </TouchableOpacity>
-    //     )
-    //     return (
-    //         <View>
-    //             <Text style={{ marginHorizontal: Sizes.fixPadding * 2.0, ...Fonts.blackColor16Bold }}>
-    //                 Our Salon Specialists
-    //             </Text>
-    //             <FlatList
-    //                 data={specialists}
-    //                 keyExtractor={(item) => `${item.id}`}
-    //                 renderItem={renderItem}
-    //                 horizontal
-    //                 showsHorizontalScrollIndicator={false}
-    //                 contentContainerStyle={{
-    //                     paddingLeft: Sizes.fixPadding * 2.0,
-    //                     paddingTop: Sizes.fixPadding,
-    //                 }}
-    //             />
-    //         </View>
-    //     )
-    // }
 
     function divider() {
         return (
@@ -820,47 +584,6 @@ const SalonDetailScreen = ({ navigation, route }) => {
             </View>
         )
     }
-
-    // function salonInfo() {
-    //     return (
-    //         <View style={styles.salonInfoWrapStyle}>
-    //             <View>
-    //                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-    //                     <Text
-    //                         numberOfLines={1}
-    //                         style={{ maxWidth: width - 150.0, ...Fonts.whiteColor16Bold }}
-    //                     >
-    //                         {item.salonName}
-    //                     </Text>
-    //                     <Text style={{ marginLeft: Sizes.fixPadding - 6.0, ...Fonts.primaryColor10Bold }}>
-    //                         WOMEN ONLY
-    //                     </Text>
-    //                 </View>
-    //                 <Text
-    //                     numberOfLines={1}
-    //                     style={{
-    //                         width: width - 120.0,
-    //                         lineHeight: 17.0,
-    //                         ...Fonts.whiteColor13Medium
-    //                     }}
-    //                 >
-    //                     {item.salonAddress}
-    //                 </Text>
-    //                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-    //                     {showRating({ rate: item.rating })}
-    //                     <Text style={{ marginLeft: Sizes.fixPadding, ...Fonts.whiteColor12Medium }}>
-    //                         ({item.reviews} Reviews)
-    //                     </Text>
-    //                 </View>
-    //             </View>
-    //             <View style={styles.openButtonWrapStyle}>
-    //                 <Text style={{ ...Fonts.whiteColor11Bold }}>
-    //                     Open
-    //                 </Text>
-    //             </View>
-    //         </View>
-    //     )
-    // }
 
     function showRating({ rate }) {
         const rating = Math.ceil(rate);
@@ -1065,6 +788,7 @@ const styles = StyleSheet.create({
         borderRadius: Sizes.fixPadding,
         borderColor: '#f1f1f1',
         borderWidth: 0.40,
+        paddingVertical: 4,
         marginBottom: Sizes.fixPadding * 2.0,
         ...CommonStyles.shadow
     },
@@ -1091,7 +815,15 @@ const styles = StyleSheet.create({
         right: -10.0,
         backgroundColor: '#333333',
         elevation: 0.0,
-    }
+    },
+    addButton: {
+        paddingVertical: 2,
+        paddingHorizontal: 4,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: "#D66986",
+        marginRight: 4,
+    },
 });
 
 export default SalonDetailScreen;
