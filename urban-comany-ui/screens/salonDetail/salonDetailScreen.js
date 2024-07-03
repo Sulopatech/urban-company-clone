@@ -6,6 +6,8 @@ import MapView from 'react-native-maps';
 import { Snackbar } from 'react-native-paper';
 import MyStatusBar from "../../components/myStatusBar";
 import CollapsibleToolbar from 'react-native-collapsible-toolbar';
+import { GET_PRODUCT_DETAIL } from "../../services/salonDetails";
+import { useQuery } from "@apollo/client";
 
 const { width } = Dimensions.get('window');
 
@@ -35,44 +37,44 @@ const aboutList = [
     'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
 ];
 
-const specialists = [
-    {
-        id: '1',
-        specialistImage: require('../../assets/images/specialists/specialist1.png'),
-        specialistName: 'Sora',
-        speciality: 'Manager',
-    },
-    {
-        id: '2',
-        specialistImage: require('../../assets/images/specialists/specialist2.png'),
-        specialistName: 'Joya',
-        speciality: 'Hair stylist',
-    },
-    {
-        id: '3',
-        specialistImage: require('../../assets/images/salon/salon4.png'),
-        specialistName: 'Doe',
-        speciality: 'St.Barber',
-    },
-    {
-        id: '4',
-        specialistImage: require('../../assets/images/specialists/specialist3.png'),
-        specialistName: 'Helina',
-        speciality: 'M.Artist',
-    },
-    {
-        id: '5',
-        specialistImage: require('../../assets/images/specialists/specialist4.png'),
-        specialistName: 'Robat',
-        speciality: 'Hair Stylist',
-    },
-    {
-        id: '6',
-        specialistImage: require('../../assets/images/specialists/specialist4.png'),
-        specialistName: 'Robat',
-        speciality: 'Hair Stylist',
-    }
-];
+// const specialists = [
+//     {
+//         id: '1',
+//         specialistImage: require('../../assets/images/specialists/specialist1.png'),
+//         specialistName: 'Sora',
+//         speciality: 'Manager',
+//     },
+//     {
+//         id: '2',
+//         specialistImage: require('../../assets/images/specialists/specialist2.png'),
+//         specialistName: 'Joya',
+//         speciality: 'Hair stylist',
+//     },
+//     {
+//         id: '3',
+//         specialistImage: require('../../assets/images/salon/salon4.png'),
+//         specialistName: 'Doe',
+//         speciality: 'St.Barber',
+//     },
+//     {
+//         id: '4',
+//         specialistImage: require('../../assets/images/specialists/specialist3.png'),
+//         specialistName: 'Helina',
+//         speciality: 'M.Artist',
+//     },
+//     {
+//         id: '5',
+//         specialistImage: require('../../assets/images/specialists/specialist4.png'),
+//         specialistName: 'Robat',
+//         speciality: 'Hair Stylist',
+//     },
+//     {
+//         id: '6',
+//         specialistImage: require('../../assets/images/specialists/specialist4.png'),
+//         specialistName: 'Robat',
+//         speciality: 'Hair Stylist',
+//     }
+// ];
 
 const servicesList = [
     {
@@ -126,53 +128,53 @@ const servicesList = [
     },
 ];
 
-const galleryImagesList = [
-    {
-        id: '1',
-        image: require('../../assets/images/gallery/img1.png'),
-        aspectRatio: 1
-    },
-    {
-        id: '2',
-        image: require('../../assets/images/gallery/img2.png'),
-        aspectRatio: 200 / 145,
-    },
-    {
-        id: '3',
-        image: require('../../assets/images/gallery/img3.png'),
-        aspectRatio: 180 / 145,
-    },
-    {
-        id: '4',
-        image: require('../../assets/images/gallery/img4.png'),
-        aspectRatio: 180 / 145,
-    },
-    {
-        id: '5',
-        image: require('../../assets/images/gallery/img5.png'),
-        aspectRatio: 1,
-    },
-    {
-        id: '6',
-        image: require('../../assets/images/gallery/img6.png'),
-        aspectRatio: 120 / 145,
-    },
-    {
-        id: '7',
-        image: require('../../assets/images/gallery/img7.png'),
-        aspectRatio: 210 / 145,
-    },
-    {
-        id: '8',
-        image: require('../../assets/images/gallery/img8.png'),
-        aspectRatio: 160 / 145,
-    },
-    {
-        id: '9',
-        image: require('../../assets/images/gallery/img9.png'),
-        aspectRatio: 130 / 145,
-    }
-];
+// const galleryImagesList = [
+//     {
+//         id: '1',
+//         image: require('../../assets/images/gallery/img1.png'),
+//         aspectRatio: 1
+//     },
+//     {
+//         id: '2',
+//         image: require('../../assets/images/gallery/img2.png'),
+//         aspectRatio: 200 / 145,
+//     },
+//     {
+//         id: '3',
+//         image: require('../../assets/images/gallery/img3.png'),
+//         aspectRatio: 180 / 145,
+//     },
+//     {
+//         id: '4',
+//         image: require('../../assets/images/gallery/img4.png'),
+//         aspectRatio: 180 / 145,
+//     },
+//     {
+//         id: '5',
+//         image: require('../../assets/images/gallery/img5.png'),
+//         aspectRatio: 1,
+//     },
+//     {
+//         id: '6',
+//         image: require('../../assets/images/gallery/img6.png'),
+//         aspectRatio: 120 / 145,
+//     },
+//     {
+//         id: '7',
+//         image: require('../../assets/images/gallery/img7.png'),
+//         aspectRatio: 210 / 145,
+//     },
+//     {
+//         id: '8',
+//         image: require('../../assets/images/gallery/img8.png'),
+//         aspectRatio: 160 / 145,
+//     },
+//     {
+//         id: '9',
+//         image: require('../../assets/images/gallery/img9.png'),
+//         aspectRatio: 130 / 145,
+//     }
+// ];
 
 const reviewsList = [
     {
@@ -214,6 +216,16 @@ const SalonDetailScreen = ({ navigation, route }) => {
         isFavorite,
         showSnackBar,
     } = state;
+       
+    const { loading, error, data } = useQuery(GET_PRODUCT_DETAIL, {
+        variables: { slug: "Laptop" }, 
+    });
+    
+    if (loading) return <Text>Loading...</Text>;
+    if (error) return <Text>Error: {error.message}</Text>;
+    
+    const { product } = data;
+    console.log("data",data)
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
@@ -224,7 +236,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
                         <View style={{ flex: 1 }}>
                             {options()}
                             {divider()}
-                            {salonSpecialists()}
+                            {/* {salonSpecialists()} */}
                             {tabBarOptions()}
                             {
                                 currentSelectedIndex == 1
@@ -235,11 +247,12 @@ const SalonDetailScreen = ({ navigation, route }) => {
                                         ?
                                         salonServicesInfo()
                                         :
-                                        currentSelectedIndex == 3
-                                            ?
-                                            galleryInfo()
-                                            :
-                                            reviewInfo()
+                                        reviewInfo()
+                                        // currentSelectedIndex == 3
+                                        //     ?
+                                        //     galleryInfo()
+                                        //     :
+                                          
                             }
                         </View>
                     )}
@@ -314,7 +327,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
                                     {item.salonName}
                                 </Text>
                                 <Text style={{ marginLeft: Sizes.fixPadding - 6.0, ...Fonts.primaryColor10Bold }}>
-                                    WOMEN ONLY
+                                    {product.name}
                                 </Text>
                             </View>
                             <Text
@@ -426,53 +439,53 @@ const SalonDetailScreen = ({ navigation, route }) => {
         )
     }
 
-    function galleryInfo() {
-        return (
-            <ScrollView
-                automaticallyAdjustKeyboardInsets={true}
-                contentContainerStyle={styles.galleryInfoWrapStyle}
-                showsVerticalScrollIndicator={false}
-            >
-                <View style={{ flexDirection: 'row' }}>
-                    <View>
-                        {galleryImagesList
-                            .filter((_, i) => i % 2 !== 0)
-                            .map((item,) =>
-                            (
-                                <Image
-                                    key={`${item.id}`}
-                                    source={item.image}
-                                    style={{
-                                        marginRight: Sizes.fixPadding + 5.0,
-                                        ...styles.galleryImagesStyle,
-                                        width: (width - 60) / 2.0,
-                                        height: ((width - 40) / 2.0) * item.aspectRatio
-                                    }}
-                                    resizeMode="cover"
-                                />
-                            ))}
-                    </View>
-                    <View>
-                        {galleryImagesList
-                            .filter((_, i) => i % 2 === 0)
-                            .map((item,) =>
-                            (
-                                <Image
-                                    key={`${item.id}`}
-                                    source={item.image}
-                                    style={{
-                                        ...styles.galleryImagesStyle,
-                                        width: (width - 40) / 2.0,
-                                        height: ((width - 40) / 2.0) * item.aspectRatio
-                                    }}
-                                    resizeMode="cover"
-                                />
-                            ))}
-                    </View>
-                </View>
-            </ScrollView>
-        )
-    }
+    // function galleryInfo() {
+    //     return (
+    //         <ScrollView
+    //             automaticallyAdjustKeyboardInsets={true}
+    //             contentContainerStyle={styles.galleryInfoWrapStyle}
+    //             showsVerticalScrollIndicator={false}
+    //         >
+    //             <View style={{ flexDirection: 'row' }}>
+    //                 <View>
+    //                     {galleryImagesList
+    //                         .filter((_, i) => i % 2 !== 0)
+    //                         .map((item,) =>
+    //                         (
+    //                             <Image
+    //                                 key={`${item.id}`}
+    //                                 source={item.image}
+    //                                 style={{
+    //                                     marginRight: Sizes.fixPadding + 5.0,
+    //                                     ...styles.galleryImagesStyle,
+    //                                     width: (width - 60) / 2.0,
+    //                                     height: ((width - 40) / 2.0) * item.aspectRatio
+    //                                 }}
+    //                                 resizeMode="cover"
+    //                             />
+    //                         ))}
+    //                 </View>
+    //                 <View>
+    //                     {galleryImagesList
+    //                         .filter((_, i) => i % 2 === 0)
+    //                         .map((item,) =>
+    //                         (
+    //                             <Image
+    //                                 key={`${item.id}`}
+    //                                 source={item.image}
+    //                                 style={{
+    //                                     ...styles.galleryImagesStyle,
+    //                                     width: (width - 40) / 2.0,
+    //                                     height: ((width - 40) / 2.0) * item.aspectRatio
+    //                                 }}
+    //                                 resizeMode="cover"
+    //                             />
+    //                         ))}
+    //                 </View>
+    //             </View>
+    //         </ScrollView>
+    //     )
+    // }
 
     function salonServicesInfo() {
         return (
@@ -688,48 +701,10 @@ const SalonDetailScreen = ({ navigation, route }) => {
                 <Text style={{ marginBottom: Sizes.fixPadding - 5.0, ...Fonts.blackColor16Bold }}>
                     About
                 </Text>
-                <View>
-                    {
-                        aboutList.map((item, index) => (
-                            <View key={`${index}`} >
-                                {readMore ?
-                                    <View style={{}}>
-                                        <Text style={{ ...Fonts.grayColor13Bold }}>
-                                            {`        `}{item}
-                                        </Text>
-                                        {index == aboutList.length - 1 ?
-                                            <Text
-                                                onPress={() => updateState({ readMore: false })}
-                                                style={{ alignSelf: 'flex-end', ...Fonts.primaryColor14Bold }}
-                                            >
-                                                Show Less
-                                            </Text>
-                                            : null
-                                        }
-                                    </View>
-                                    :
-                                    index < 2
-                                        ?
-                                        <View style={{}}>
-                                            <Text style={{ ...Fonts.grayColor13Bold }}>
-                                                {`        `}{item}
-                                            </Text>
-                                            {index == 1 ?
-                                                <Text
-                                                    onPress={() => updateState({ readMore: true })}
-                                                    style={{ alignSelf: 'flex-end', ...Fonts.primaryColor14Bold }}
-                                                >
-                                                    ReadMore
-                                                </Text>
-                                                : null}
-                                        </View>
-                                        :
-                                        null
-                                }
-                            </View>
-                        ))
-                    }
-                </View>
+                <Text style={{ marginBottom: Sizes.fixPadding - 5.0 , ...Fonts.grayColor13Bold }}>
+                    {product.description}
+                </Text>
+               
             </View >
         )
     }
@@ -749,12 +724,12 @@ const SalonDetailScreen = ({ navigation, route }) => {
                 >
                     Services
                 </Text>
-                <Text
+                {/* <Text
                     onPress={() => updateState({ currentSelectedIndex: 3 })}
                     style={currentSelectedIndex == 3 ? { ...Fonts.primaryColor15Bold } : { ...Fonts.grayColor15Bold }}
                 >
                     Gallery
-                </Text>
+                </Text> */}
                 <Text
                     onPress={() => updateState({ currentSelectedIndex: 4 })}
                     style={currentSelectedIndex == 4 ? { ...Fonts.primaryColor15Bold } : { ...Fonts.grayColor15Bold }}
@@ -765,48 +740,48 @@ const SalonDetailScreen = ({ navigation, route }) => {
         )
     }
 
-    function salonSpecialists() {
+    // function salonSpecialists() {
 
-        const renderItem = ({ item }) => (
-            <TouchableOpacity
-                activeOpacity={0.9}
-                onPress={() => navigation.push('SpecialistDetail', { item: item, salonInfo: route.params.item })}
-                style={{
-                    alignItems: 'center',
-                    marginRight: Sizes.fixPadding + 5.0,
-                }}
-            >
-                <Image
-                    source={item.specialistImage}
-                    style={{ width: 45.0, height: 45.0, borderRadius: Sizes.fixPadding - 5.0, }}
-                />
-                <Text style={{ ...Fonts.blackColor12Bold, marginTop: Sizes.fixPadding - 7.0 }}>
-                    {item.specialistName}
-                </Text>
-                <Text style={{ lineHeight: 11.0, ...Fonts.grayColor11SemiBold }}>
-                    {item.speciality}
-                </Text>
-            </TouchableOpacity>
-        )
-        return (
-            <View>
-                <Text style={{ marginHorizontal: Sizes.fixPadding * 2.0, ...Fonts.blackColor16Bold }}>
-                    Our Salon Specialists
-                </Text>
-                <FlatList
-                    data={specialists}
-                    keyExtractor={(item) => `${item.id}`}
-                    renderItem={renderItem}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{
-                        paddingLeft: Sizes.fixPadding * 2.0,
-                        paddingTop: Sizes.fixPadding,
-                    }}
-                />
-            </View>
-        )
-    }
+    //     const renderItem = ({ item }) => (
+    //         <TouchableOpacity
+    //             activeOpacity={0.9}
+    //             onPress={() => navigation.push('SpecialistDetail', { item: item, salonInfo: route.params.item })}
+    //             style={{
+    //                 alignItems: 'center',
+    //                 marginRight: Sizes.fixPadding + 5.0,
+    //             }}
+    //         >
+    //             <Image
+    //                 source={item.specialistImage}
+    //                 style={{ width: 45.0, height: 45.0, borderRadius: Sizes.fixPadding - 5.0, }}
+    //             />
+    //             <Text style={{ ...Fonts.blackColor12Bold, marginTop: Sizes.fixPadding - 7.0 }}>
+    //                 {item.specialistName}
+    //             </Text>
+    //             <Text style={{ lineHeight: 11.0, ...Fonts.grayColor11SemiBold }}>
+    //                 {item.speciality}
+    //             </Text>
+    //         </TouchableOpacity>
+    //     )
+    //     return (
+    //         <View>
+    //             <Text style={{ marginHorizontal: Sizes.fixPadding * 2.0, ...Fonts.blackColor16Bold }}>
+    //                 Our Salon Specialists
+    //             </Text>
+    //             <FlatList
+    //                 data={specialists}
+    //                 keyExtractor={(item) => `${item.id}`}
+    //                 renderItem={renderItem}
+    //                 horizontal
+    //                 showsHorizontalScrollIndicator={false}
+    //                 contentContainerStyle={{
+    //                     paddingLeft: Sizes.fixPadding * 2.0,
+    //                     paddingTop: Sizes.fixPadding,
+    //                 }}
+    //             />
+    //         </View>
+    //     )
+    // }
 
     function divider() {
         return (
@@ -846,46 +821,46 @@ const SalonDetailScreen = ({ navigation, route }) => {
         )
     }
 
-    function salonInfo() {
-        return (
-            <View style={styles.salonInfoWrapStyle}>
-                <View>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Text
-                            numberOfLines={1}
-                            style={{ maxWidth: width - 150.0, ...Fonts.whiteColor16Bold }}
-                        >
-                            {item.salonName}
-                        </Text>
-                        <Text style={{ marginLeft: Sizes.fixPadding - 6.0, ...Fonts.primaryColor10Bold }}>
-                            WOMEN ONLY
-                        </Text>
-                    </View>
-                    <Text
-                        numberOfLines={1}
-                        style={{
-                            width: width - 120.0,
-                            lineHeight: 17.0,
-                            ...Fonts.whiteColor13Medium
-                        }}
-                    >
-                        {item.salonAddress}
-                    </Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        {showRating({ rate: item.rating })}
-                        <Text style={{ marginLeft: Sizes.fixPadding, ...Fonts.whiteColor12Medium }}>
-                            ({item.reviews} Reviews)
-                        </Text>
-                    </View>
-                </View>
-                <View style={styles.openButtonWrapStyle}>
-                    <Text style={{ ...Fonts.whiteColor11Bold }}>
-                        Open
-                    </Text>
-                </View>
-            </View>
-        )
-    }
+    // function salonInfo() {
+    //     return (
+    //         <View style={styles.salonInfoWrapStyle}>
+    //             <View>
+    //                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+    //                     <Text
+    //                         numberOfLines={1}
+    //                         style={{ maxWidth: width - 150.0, ...Fonts.whiteColor16Bold }}
+    //                     >
+    //                         {item.salonName}
+    //                     </Text>
+    //                     <Text style={{ marginLeft: Sizes.fixPadding - 6.0, ...Fonts.primaryColor10Bold }}>
+    //                         WOMEN ONLY
+    //                     </Text>
+    //                 </View>
+    //                 <Text
+    //                     numberOfLines={1}
+    //                     style={{
+    //                         width: width - 120.0,
+    //                         lineHeight: 17.0,
+    //                         ...Fonts.whiteColor13Medium
+    //                     }}
+    //                 >
+    //                     {item.salonAddress}
+    //                 </Text>
+    //                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+    //                     {showRating({ rate: item.rating })}
+    //                     <Text style={{ marginLeft: Sizes.fixPadding, ...Fonts.whiteColor12Medium }}>
+    //                         ({item.reviews} Reviews)
+    //                     </Text>
+    //                 </View>
+    //             </View>
+    //             <View style={styles.openButtonWrapStyle}>
+    //                 <Text style={{ ...Fonts.whiteColor11Bold }}>
+    //                     Open
+    //                 </Text>
+    //             </View>
+    //         </View>
+    //     )
+    // }
 
     function showRating({ rate }) {
         const rating = Math.ceil(rate);
