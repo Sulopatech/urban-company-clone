@@ -16,7 +16,7 @@ export const GETSEARCHLIST = gql`
 `;
 
 export const GET_SEARCH_FILTER_LIST = gql`
-  query Search($term: String!) {
+  query {
     search(
       input: {
         filter: {

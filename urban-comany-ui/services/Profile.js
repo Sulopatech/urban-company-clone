@@ -1,9 +1,11 @@
 import { gql } from "@apollo/client";
 
-export const UPDATE_PROFILE_PIC = gql`
-  mutation createCustomoreProfilePicture($code: String!) {
-    createCustomoreProfilePicture(input: { code: $code }) {
-      __typename
+const UPDATE_PROFILE_PIC = gql`
+  mutation SetCustomerProfilePic($file: Upload!) {
+    setCustomerProfilePic(file: $file) {
+      id
+      name
+      preview
     }
   }
 `;

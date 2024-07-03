@@ -5,16 +5,15 @@ import { Colors, Fonts, Sizes, CommonStyles } from "../../constants/styles";
 import { MaterialIcons } from '@expo/vector-icons';
 import { Snackbar } from "react-native-paper";
 import MyStatusBar from "../../components/myStatusBar";
-import { GETSINGLECOLLECTIONLIST } from '../../services/Product'
+import {  GET_SINGLE_COLLECTION_LIST } from '../../services/Product'
 
 const { width } = Dimensions.get('screen');
 
 const CategoryDetailScreen = ({ navigation, route }) => {
-    const { productId } = route.params;
+    const { productSlug } = route.params;
+    console.log("slug: ",productSlug);
 
-    const { data } = useQuery(GETSINGLECOLLECTIONLIST, {
-        variables: { id: productId },
-    });
+    const { data } = useQuery(GET_SINGLE_COLLECTION_LIST(productSlug));
 
     const [state, setState] = useState({
         showSnackBar: false,
@@ -28,8 +27,8 @@ const CategoryDetailScreen = ({ navigation, route }) => {
         addToFavorite,
     } = state;
 
-    const product = data ? data.product : null;
-    const variantList = product?.variantList?.items || [];
+    const product = data ? data.collection : null;
+    const variantList = product?.productVariants?.items || [];
     
 
     return (
@@ -38,7 +37,7 @@ const CategoryDetailScreen = ({ navigation, route }) => {
             <View style={{ flex: 1 }}>
                 {header()}
                 {/* {product && availableSalons(product)} */}
-                {variantList.length > 0 && renderVariants(variantList)}
+                {variantList && renderVariants(variantList)}
             </View>
             <Snackbar
                 style={styles.snackBarStyle}
@@ -63,13 +62,12 @@ const CategoryDetailScreen = ({ navigation, route }) => {
     }
 
     function renderVariantItem({ item }) {
-        const imageSource = item.assets.length > 0 ? { uri: item.assets[0].url } : require('../../assets/images/dummyimage.png');
-
+        const imageSource = item.product.featuredAsset ? { uri: item.product.featuredAsset.preview } : require('../../assets/images/dummyimage.png');
         return (
             <View style={styles.variantContainer}>
                 <TouchableOpacity
                     activeOpacity={0.9}
-                    onPress={() => {/* Handle onPress if needed */}}
+                    onPress={() => navigation.push('SalonDetail', { variantSlug: item.product.slug })}
                     style={styles.variantItem}
                 >
                     <Image
@@ -77,7 +75,42 @@ const CategoryDetailScreen = ({ navigation, route }) => {
                         style={styles.variantImage}
                         resizeMode="cover"
                     />
-                    <Text style={styles.variantName}>{item.name}</Text>
+                    <View style={styles.salonDetailWrapper}>
+                    <View style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                    }}>
+                        <Text numberOfLines={1} style={{ ...Fonts.blackColor14Bold, flex: 1 }}>
+                            {item.product.name}
+                        </Text>
+                        <MaterialIcons
+                            name={item.isFavorite ? "favorite" : "favorite-border"}
+                            color={Colors.blackColor}
+                            size={17}
+                            // onPress={() => {
+                            //     updateSalons({ id: item.id })
+                            //     updateState({ showSnackBar: true })
+                            // }}
+                        />
+                    </View>
+                    <Text numberOfLines={1} style={{ ...Fonts.grayColor12SemiBold }} >
+                        {'A 9/a Sector 16,Gautam Budh Nagar'}
+                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', }}>
+                        <MaterialIcons
+                            name="star"
+                            color={Colors.yellowColor}
+                            size={15}
+                        />
+                        <Text style={{ marginLeft: Sizes.fixPadding - 7.0, ...Fonts.grayColor12SemiBold }}>
+                            {"4.6 (100 reviews)"}
+                        </Text>
+                    </View>
+                    <Text numberOfLines={1} style={{ ...Fonts.grayColor12SemiBold }}>
+                        {"9:00 am"} - {"9:00 pm"}
+                    </Text>
+                </View>
                 </TouchableOpacity>
             </View>
         );
@@ -205,22 +238,20 @@ const styles = StyleSheet.create({
         marginVertical: Sizes.fixPadding - 5.0,
     },
     variantContainer: {
-        borderWidth: 1,
-        borderColor: Colors.borderColor,
         borderRadius: Sizes.fixPadding,
+        backgroundColor: Colors.whiteColor,
+        elevation: 3.0,
         marginHorizontal: Sizes.fixPadding * 2.0,
         marginBottom: Sizes.fixPadding * 2.0,
-        overflow: 'hidden',
         ...CommonStyles.shadow
     },
     variantItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: Sizes.fixPadding,
     },
     variantImage: {
-        width: 80,
-        height: 80,
+        width: 100,
+        height: "100%",
         borderRadius: Sizes.fixPadding,
     },
     variantName: {

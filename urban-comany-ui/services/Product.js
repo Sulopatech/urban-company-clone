@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client";
 
-export const GETCOLLECTIONSLIST = gql`
+export const GET_CATEGORY_LIST = gql`
   query {
     products {
       items {
@@ -28,9 +28,10 @@ export const GETCOLLECTIONSLIST = gql`
   }
 `;
 
-export const GETSINGLECOLLECTIONLIST = gql`
-  query getProduct($id: ID! = 1) {
-    product(id: $id) {
+export const GETCOLLECTIONSLIST = gql`
+query {
+  collections {
+    items {
       id
       name
       slug
@@ -49,24 +50,82 @@ export const GETSINGLECOLLECTIONLIST = gql`
         id
         preview
       }
-      variantList {
-        items {
+    }
+    totalItems
+  }
+}`
+
+export const GET_SINGLE_COLLECTION_LIST = (slug) => gql`
+query collection {
+  collection(slug: "${slug}") {
+    children {
+      id
+      name
+      slug
+      createdAt
+      __typename
+      featuredAsset {
+        id
+        createdAt
+        name
+        preview
+      }
+    }
+    name
+    productVariants {
+      items {
+        name
+        productId
+        price
+        stockLevel
+        product {
+          id
           name
-          product {
-            name
-          }
-          assets {
+          slug
+          featuredAsset {
             id
-            name
-            type
-            fileSize
-            width
-            height
             preview
-            source
           }
         }
       }
+      totalItems
     }
   }
+  activeOrder{
+      totalQuantity
+    }
+}`
+
+export const GET_PRODUCT_DETAIL = (prodSlug) => gql`
+query {
+  product(slug: "${prodSlug}") {
+    id
+    name
+    slug
+    featuredAsset {
+      preview
+      id
+      createdAt
+    }
+    __typename
+    description
+    createdAt
+    variants {
+      id
+      name
+      priceWithTax
+      price
+      taxCategory {
+        id
+        name
+      }
+      taxRateApplied {
+        name
+      }
+    }
+  }
+  activeOrder{
+      totalQuantity
+    }
+}
 `;

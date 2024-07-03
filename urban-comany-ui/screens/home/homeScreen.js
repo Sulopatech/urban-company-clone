@@ -6,6 +6,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Snackbar } from 'react-native-paper';
 import CollapsibleToolbar from 'react-native-collapsible-toolbar';
 import { GETCOLLECTIONSLIST  } from "../../services/Product";
+import { GET_CATEGORY_LIST } from "../../services/Product";
 import { GETSEARCHLIST } from "../../services/Search";
 import * as Location from "expo-location";
 import LocationFetching from "../locationFetching/locationFetching";
@@ -55,14 +56,13 @@ const HomeScreen = ({ navigation }) => {
     const { data: collectionData } = useQuery(GETCOLLECTIONSLIST);
     const [getSearchResults, { loading: searchLoading, data: searchData }] = useLazyQuery(GETSEARCHLIST);
     const { loading: customerLoading, error, data: customerData } = useQuery(GET_ACTIVE_CUSTOMER);
-    const [productData, setProductData] = useState([]);
-
+    const [mainCollectionData, setMainCollectionData] = useState([]);
     const firstName = customerData?.activeCustomer?.firstName;
     const lastName = customerData?.activeCustomer?.lastName;
 
     useEffect(() => {
-        if (collectionData && collectionData.products && collectionData.products.items) {
-            setProductData(collectionData.products.items);
+        if (collectionData && collectionData.collections && collectionData.collections.items) {
+            setMainCollectionData(collectionData.collections.items);
         }
     }, [collectionData]);
 
@@ -360,12 +360,12 @@ const HomeScreen = ({ navigation }) => {
     }
 
     function popularCategoryInfo() {
-        const limitedProductData = productData.slice(0, 8);
+        const limitedProductData = mainCollectionData.slice(0, 9);
         const renderItem = ({ item }) => (
             <View style={{ alignItems: 'center', marginRight: Sizes.fixPadding * 1.3, display: "flex", justifyContent: "center" }}>
                 <TouchableOpacity
                     activeOpacity={0.6}
-                    onPress={() => navigation.push('CategoryDetail', { productId: item.id })}
+                    onPress={() => navigation.push('CategoryDetail', { productSlug: item.slug })}
                     style={{
                         backgroundColor: "#f0f0f0",
                         ...styles.popularCategoryWrapStyle,
@@ -374,8 +374,8 @@ const HomeScreen = ({ navigation }) => {
                     <View style={{ width: 40, height: 40, alignItems: 'center', justifyContent: 'center' }}>
                         <Image
                             source={{ uri: item.featuredAsset ? item.featuredAsset.preview : 'https://via.placeholder.com/40' }}
-                            style={{ width: 40, height: 40 }}
-                            resizeMode="contain"
+                            style={{ width: 50, height: 50 }}
+                            resizeMode="cover"
                         />
                     </View>
                 </TouchableOpacity>
