@@ -2,11 +2,12 @@ import React, { useState, } from "react";
 import { View, Dimensions, ScrollView, StyleSheet, TouchableOpacity, Text, Image, Modal } from "react-native";
 import { Colors, Fonts, Sizes, } from "../../constants/styles";
 import { MaterialIcons } from '@expo/vector-icons';
-import { useQuery } from '@apollo/client';
+import { useApolloClient, useQuery } from '@apollo/client';
 import { GET_ACTIVE_CUSTOMER } from "../../services/Profile";
 const { width } = Dimensions.get('window');
 
 const ProfileScreen = ({ navigation }) => {
+    const client = useApolloClient();
 
     const [showLogoutDialog, setshowLogoutDialog] = useState(false);
     const { loading, error, data } = useQuery(GET_ACTIVE_CUSTOMER);
@@ -14,6 +15,16 @@ const ProfileScreen = ({ navigation }) => {
     if (error) return <Text>Error: {error.message}</Text>;
 
     const { firstName, lastName } = data.activeCustomer;
+
+    const handleLogout = async () => {
+        try {
+            await client.clearStore(); // Clear the Apollo Client cache
+            setshowLogoutDialog(false);
+            navigation.push('Signin');
+        } catch (error) {
+            console.error("Error clearing store", error);
+        }
+    };
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
@@ -143,10 +154,7 @@ const ProfileScreen = ({ navigation }) => {
                                     </TouchableOpacity>
                                     <TouchableOpacity
                                         activeOpacity={0.6}
-                                        onPress={() => {
-                                            setshowLogoutDialog(false)
-                                            navigation.push('Signin')
-                                        }}
+                                        onPress={handleLogout}
                                         style={{
                                             ...styles.cancelAndLogoutButtonStyle,
                                             marginLeft: Sizes.fixPadding,

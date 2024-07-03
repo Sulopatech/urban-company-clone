@@ -67,15 +67,34 @@ const selectedServicesList = [
     },
 ];
 
-const ScheduleAppointmentScreen = ({ navigation }) => {
+const ScheduleAppointmentScreen = ({ navigation ,route }) => {
 
     const [state, setState] = useState({
         specialists: specialistsData,
         selectedSpecialistId: specialistsData[0].id,
-        selectedSlot: '02:00 pm',
+        selectedSlot: '',
     })
 
+    const [selectedDate, setSelectedDate] = useState(null);
+
+    const handleDateSelected = (date) => {
+        const FormatedDate = formatDate(date); 
+      setSelectedDate(FormatedDate);  // Update state with the selected date
+        
+    };
+    const formatDate = (date) => {
+        if (!date) return '';
+        const isoString = date.toISOString();  // Get ISO 8601 string
+        return isoString.split('T')[0];  // Split by 'T' and take the date part
+    };
+
     const updateState = (data) => setState((state) => ({ ...state, ...data }))
+
+    const {id, name,salonAddress} = route.params;
+    console.log('ID:', id);
+    console.log('Name:', name);
+    console.log('Selected Date:', selectedDate);
+    console.log("salonAddress: ",salonAddress)
 
     const {
         specialists,
@@ -110,7 +129,14 @@ const ScheduleAppointmentScreen = ({ navigation }) => {
         return (
             <TouchableOpacity
                 activeOpacity={0.9}
-                onPress={() => navigation.push('AppointmentDetail')}
+                onPress={() => navigation.push('AppointmentDetail',{
+                    id: id,
+                    SalonName: name,
+                    date: selectedDate,
+                    selectedSlot: state.selectedSlot,
+                    salonAddress: salonAddress
+                
+                })}
                 style={styles.continueButtonStyle}
             >
                 <Text style={{ ...Fonts.whiteColor18SemiBold }}>
@@ -275,6 +301,7 @@ const ScheduleAppointmentScreen = ({ navigation }) => {
                         dateNameStyle={{ fontSize: 10, color: Colors.blackColor }}
                         highlightDateNameStyle={{ fontSize: 10, color: Colors.whiteColor }}
                         highlightDateNumberStyle={{ fontSize: 14, color: Colors.whiteColor }}
+                        onDateSelected={handleDateSelected}
                         useIsoWeekday={false}
                         scrollable={true}
                         upperCaseDays={true}
