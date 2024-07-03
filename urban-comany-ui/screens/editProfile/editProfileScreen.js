@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, TextInput, ScrollView, TouchableOpacity, Text, Image, Modal, Platform, ActivityIndicator } from "react-native";
+import { View, StyleSheet, TextInput, ScrollView, TouchableOpacity, Text, Image, Modal, Platform, ActivityIndicator, Alert } from "react-native";
 import { Colors, Fonts, Sizes } from "../../constants/styles";
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
@@ -10,6 +10,7 @@ import { useMutation, useQuery } from "@apollo/client";
 import { UPDATE_USER, GET_ACTIVE_CUSTOMER } from "../../services/Editprofile"; // Adjust with your actual imports
 
 const EditProfileScreen = ({ navigation }) => {
+    const [error, setError] = useState('');
     const [state, setState] = useState({
         firstName: '',
         lastName: '',
@@ -120,6 +121,7 @@ const EditProfileScreen = ({ navigation }) => {
     const { firstName, lastName, phoneNumber, showBottomSheet } = state;
 
     const handleUpdateProfile = async () => {
+        if(error === '') {
         try {
             await updateCustomer({
                 variables: {
@@ -132,6 +134,9 @@ const EditProfileScreen = ({ navigation }) => {
             });
         } catch (err) {
             console.error("Error updating profile:", err);
+        }
+        }else{
+            Alert.alert("Somthing went wrong")
         }
     };
 
@@ -147,7 +152,7 @@ const EditProfileScreen = ({ navigation }) => {
                     {profilePicSection()}
                     {renderInputField("First Name", firstName, (text) => updateState({ firstName: text }))}
                     {renderInputField("Last Name", lastName, (text) => updateState({ lastName: text }))}
-                    {renderInputField("Phone Number", phoneNumber, (text) => updateState({ phoneNumber: text }), "phone-pad")}
+                    {renderInputField("Phone Number", phoneNumber, (text) => updateState({ phoneNumber: text }), "phone-pad", 10 , true)}
                     {updateProfileButton()}
                 </ScrollView>
             </View>
@@ -243,19 +248,36 @@ const EditProfileScreen = ({ navigation }) => {
         );
     }
 
-    function renderInputField(label, value, onChangeText, keyboardType = "default") {
+   
+
+    function renderInputField(label, value, onChangeText, keyboardType = "default", maxLength=100 ,validateInput=false) {
+        const handleTextChange = (text) => {
+            onChangeText(text); // Call the onChangeText function to update state
+    
+            if (validateInput) {
+                // Perform additional validation (if needed)
+                const regex = /^[0-9]*$/;
+                if (!regex.test(text) && text !== '') {
+                    setError("you can only use numbers ");
+                }else{
+                    setError('');
+                }
+            }
+        };
         return (
             <View style={styles.inputFieldContainer}>
                 <Text style={styles.labelText}>{label}</Text>
                 <TextInput
                     placeholder={`Enter ${label}`}
                     value={value}
-                    onChangeText={onChangeText}
+                    onChangeText={handleTextChange}
                     placeholderTextColor={Colors.grayColor}
                     selectionColor={Colors.primaryColor}
                     style={styles.textFieldStyle}
                     keyboardType={keyboardType}
+                    maxLength={maxLength}
                 />
+                {label === "Phone Number" && error ? <Text style={styles.errorText}>{error}</Text> : null}
             </View>
         )
     }

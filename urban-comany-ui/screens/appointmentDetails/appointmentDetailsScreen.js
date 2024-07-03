@@ -6,7 +6,15 @@ import MyStatusBar from "../../components/myStatusBar";
 
 const servicesList = ['Hair wash herbal', 'Hair color', 'Simple hair cuting - hair wash']
 
-const AppointmentDetailsScreen = ({ navigation }) => {
+const AppointmentDetailsScreen = ({ navigation ,route }) => {
+
+    const{id,SalonName, date,selectedSlot,salonAddress} = route.params;
+
+    console.log('ID:', id);
+    console.log('Name:', SalonName);
+    console.log('date:', date);
+    console.log('slot: ', selectedSlot);
+
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
             <MyStatusBar />
@@ -31,7 +39,13 @@ const AppointmentDetailsScreen = ({ navigation }) => {
         return (
             <TouchableOpacity
                 activeOpacity={0.9}
-                onPress={() => navigation.push('PaymentMethod')}
+                onPress={() => navigation.push('PaymentMethod', {
+                    id: id, 
+                    SalonName: SalonName, 
+                    date: date,
+                    selectedSlot: selectedSlot ,
+                    salonAddress: salonAddress
+                })}
                 style={styles.bookNowButtonStyle}
             >
                 <Text style={{ ...Fonts.whiteColor18SemiBold }}>
@@ -53,7 +67,7 @@ const AppointmentDetailsScreen = ({ navigation }) => {
             </View>
         )
     }
-
+//Thursday •
     function dateTimeInfo() {
         return (
             <View style={{
@@ -64,7 +78,7 @@ const AppointmentDetailsScreen = ({ navigation }) => {
                     Appointment Date Time
                 </Text>
                 <Text style={{ ...Fonts.grayColor13SemiBold }}>
-                    Thursday • 14 August,2021 • 2:00 pm
+                    {date} • {selectedSlot}
                 </Text>
             </View>
         )
@@ -115,10 +129,10 @@ const AppointmentDetailsScreen = ({ navigation }) => {
                 />
                 <View style={{ marginLeft: Sizes.fixPadding, }}>
                     <Text style={{ lineHeight: 16.0, ...Fonts.blackColor14Bold }}>
-                        Crown salon
+                        {SalonName}
                     </Text>
                     <Text style={{ ...Fonts.grayColor12SemiBold }}>
-                        A 9/a Sector 16,Gautam Budh Nagar
+                        {salonAddress}
                     </Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center', }}>
                         <AntDesign

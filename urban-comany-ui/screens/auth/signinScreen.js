@@ -87,26 +87,25 @@ const SigninScreen = ({ navigation }) => {
         }
     });
 
-    const handleSignin = async() => {
-        
-        if (userName !== null || !userName.includes('@') || !userName.includes('.')) {
+    const handleSignin = () => {
+        if(userName !== null && password !== null) {
+            if (userName.includes('@') && userName.includes('.')) {
 
-            if (!userName.includes('@')) {
-                setErrorMessage('Username must include @ symbol');
+                login({ variables: { username: userName, password: password } }); 
+           
+            } else {
+           
+                if (!userName.includes('@')) {
+                    setErrorMessage('Username must include @ symbol');
+                }
+                else if (!userName.includes('.')) {
+                    setErrorMessage('Username must include . symbol');
+                }
             }
-            else if (!userName.includes('.')) {
-                setErrorMessage('Username must include . symbol');
-            }
-
-        } else {
-            setErrorMessage(''); 
-        }
-
-        if (userName !== null  && password !== null ) {
-            login({ variables: { username: userName, password: password } });
-        } else {
-            Alert.alert("Error", "Please enter both username and password");
-        }
+        }else {
+            Alert.alert("Error","Please enter both username and password");
+        }  
+       
     };
 
     const handleUserNameChange = (text) => {
