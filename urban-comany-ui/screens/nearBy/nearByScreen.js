@@ -169,6 +169,24 @@ const NearByScreen = ({ navigation }) => {
         markers,
     } = state;
 
+
+    const filterSearchData = (data) => {
+        const uniqueProducts = [];
+        const productIds = new Set();
+
+        data.forEach(item => {
+            console.log("product id: ",item.productAsset.id);
+            if (!productIds.has(item.productAsset.id)) {
+                uniqueProducts.push(item);
+                productIds.add(item.productAsset.id);
+            }
+        });
+
+        return uniqueProducts;
+    };
+
+    const filteredSearchProductData = filterSearchData(searchProductData);
+
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
             <View style={{ flex: 1 }}>
@@ -410,7 +428,7 @@ const NearByScreen = ({ navigation }) => {
         const renderItem = ({ item }) => (
             <TouchableOpacity
                 activeOpacity={0.9}
-                onPress={() => {navigation.push('SalonDetail', { item })
+                onPress={() => {navigation.push('SalonDetail',{ variantSlug: item.slug })
                 //console.log("image url: ",item.productAsset.preview)
                 }}
                 style={styles.salonInfoWrapStyle}
@@ -438,28 +456,28 @@ const NearByScreen = ({ navigation }) => {
                             }}
                         /> */}
                     </View>
-                    {/* <Text numberOfLines={1} style={{ ...Fonts.grayColor12SemiBold }} >
-                        {item.salonAddress}
-                    </Text> */}
-                    {/* <View style={{ flexDirection: 'row', alignItems: 'center', }}>
+                    <Text numberOfLines={1} style={{ ...Fonts.grayColor12SemiBold }} >
+                    {'A 9/a Sector 16,Gautam Budh Nagar'}
+                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', }}>
                         <MaterialIcons
                             name="star"
                             color={Colors.yellowColor}
                             size={15}
                         />
                         <Text style={{ marginLeft: Sizes.fixPadding - 7.0, ...Fonts.grayColor12SemiBold }}>
-                            {item.rating.toFixed(1)} ({item.reviews} reviews)
+                        {"4.6 (100 reviews)"}
                         </Text>
                     </View>
                     <Text numberOfLines={1} style={{ ...Fonts.grayColor12SemiBold }}>
-                        {item.salonOpenTime} - {item.salonCloseTime}
-                    </Text> */}
+                    {"9:00 am"} - {"9:00 pm"}
+                    </Text>
                 </View>
             </TouchableOpacity>
         )
         return (
             <FlatList
-                data={searchProductData}
+                data={filteredSearchProductData}
                 keyExtractor={(item) => `${item.id}`}
                 renderItem={renderItem}
                 showsVerticalScrollIndicator={false}

@@ -2,12 +2,10 @@ import React, { useState, useEffect } from "react";
 import { View, StyleSheet, TextInput, ScrollView, TouchableOpacity, Text, Image, Modal, Platform, ActivityIndicator, Alert } from "react-native";
 import { Colors, Fonts, Sizes } from "../../constants/styles";
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
 import { MaterialIcons } from '@expo/vector-icons';
 import MyStatusBar from "../../components/myStatusBar";
-import { UPDATE_PROFILE_PIC } from "../../services/Profile";
 import { useMutation, useQuery } from "@apollo/client";
-import { UPDATE_USER, GET_ACTIVE_CUSTOMER } from "../../services/Editprofile"; // Adjust with your actual imports
+import { UPDATE_USER, GET_ACTIVE_CUSTOMER } from "../../services/Editprofile";
 
 const EditProfileScreen = ({ navigation }) => {
     const [error, setError] = useState('');
@@ -18,35 +16,11 @@ const EditProfileScreen = ({ navigation }) => {
         showBottomSheet: false,
         profilePic: require('../../assets/images/users/user3.png'),
     })
-    const [base64Code, setBase64Code] = useState(null);
-    const [upadteProfilePic, {loading}] = useMutation(UPDATE_PROFILE_PIC);
 
-    // const updateState = (data) => setState((state) => ({ ...state, ...data }))
+    const updateState = (newData) => setState((prevState) => ({ ...prevState, ...newData }));
 
-    const {
-        userName,
-        email,
-        mobileNumber,
-        password,
-        // showBottomSheet,
-        profilePic
-    } = state;
+    const { firstName, lastName, phoneNumber, showBottomSheet, profilePic } = state;
 
-    const uploadImage = async (uri) => {
-        try {
-            const data = await upadteProfilePic({
-                variables: {
-                    code: uri,
-                }
-            })
-            console.log("data: ",data);
-
-        } catch (error) {
-            console.error("Error uploading image:", error);
-            Alert.alert("Error", "An error occurred while uploading the image.");
-            return false;
-        }
-    };
 
     const pickImageFromCamera = async () => {
         const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
@@ -56,14 +30,6 @@ const EditProfileScreen = ({ navigation }) => {
         }
 
         const result = await ImagePicker.launchCameraAsync();
-        if (!result.canceled) {
-            const base64 = await convertToBase64(result.assets[0].uri);
-            setBase64Code(base64);
-            const assetId = await uploadImage(base64);
-            if (assetId) {
-                updateState({ profilePic: { uri: result.assets[0].uri }, showBottomSheet: false });
-            }
-        }
     };
 
     const pickImageFromGallery = async () => {
@@ -74,21 +40,6 @@ const EditProfileScreen = ({ navigation }) => {
         }
 
         const result = await ImagePicker.launchImageLibraryAsync();
-        if (!result.canceled) {
-            const base64 = await convertToBase64(result.assets[0].uri);
-            setBase64Code(base64);
-            const assetId = await uploadImage(base64);
-            if (assetId) {
-                updateState({ profilePic: { uri: result.assets[0].uri }, showBottomSheet: false });
-            }
-        }
-    };
-
-    const convertToBase64 = async (uri) => {
-        const base64 = await FileSystem.readAsStringAsync(uri, {
-            encoding: FileSystem.EncodingType.Base64,
-        });
-        return base64;
     };
     
     const { loading: queryLoading, error: queryError, data, refetch } = useQuery(GET_ACTIVE_CUSTOMER);
@@ -115,10 +66,6 @@ const EditProfileScreen = ({ navigation }) => {
             console.error("Error updating profile:", error);
         },
     });
-
-    const updateState = (newData) => setState((prevState) => ({ ...prevState, ...newData }));
-
-    const { firstName, lastName, phoneNumber, showBottomSheet } = state;
 
     const handleUpdateProfile = async () => {
         if(error === '') {

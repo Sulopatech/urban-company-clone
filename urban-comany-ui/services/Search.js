@@ -11,7 +11,7 @@ export const GETSEARCHLIST = gql`
           id
           preview
         }
-        
+        slug
         # Include other fields you need
       }
       totalItems

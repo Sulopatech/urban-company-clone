@@ -80,7 +80,6 @@ const CategoryDetailScreen = ({ navigation, route }) => {
         const imageSource = item.product.featuredAsset ? { uri: item.product.featuredAsset.preview } : require('../../assets/images/dummyimage.png');
         return (
             <View style={styles.variantContainer}>
-            {console.log("poduct id: ",item.product.id)}
                 <TouchableOpacity
                     activeOpacity={0.9}
                     onPress={() => navigation.push('SalonDetail', { variantSlug: item.product.slug })}
@@ -100,7 +99,7 @@ const CategoryDetailScreen = ({ navigation, route }) => {
                         <Text numberOfLines={1} style={{ ...Fonts.blackColor14Bold, flex: 1 }}>
                             {item.product.name}
                         </Text>
-                        <MaterialIcons
+                        {/* <MaterialIcons
                             name={item.isFavorite ? "favorite" : "favorite-border"}
                             color={Colors.blackColor}
                             size={17}
@@ -108,7 +107,7 @@ const CategoryDetailScreen = ({ navigation, route }) => {
                             //     updateSalons({ id: item.id })
                             //     updateState({ showSnackBar: true })
                             // }}
-                        />
+                        /> */}
                     </View>
                     <Text numberOfLines={1} style={{ ...Fonts.grayColor12SemiBold }} >
                         {'A 9/a Sector 16,Gautam Budh Nagar'}
