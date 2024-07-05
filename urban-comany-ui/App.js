@@ -31,6 +31,7 @@ import * as ExpoSplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
 import { ApolloClient, ApolloProvider, HttpLink, InMemoryCache } from '@apollo/client';
 import API_URL from './services/Environment';
+import NearByScreen from './screens/nearBy/nearByScreen';
 
 ExpoSplashScreen.preventAutoHideAsync();
 
@@ -99,6 +100,7 @@ const App = () => {
             <Stack.Screen name="InviteFriends" component={InviteFriendsScreen} />
             <Stack.Screen name="Setting" component={SettingScreen} />
             <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+            <Stack.Screen name="Nearby" component={NearByScreen} />
           </Stack.Navigator>
         </NavigationContainer>
       </ApolloProvider>
