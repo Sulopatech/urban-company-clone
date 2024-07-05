@@ -140,7 +140,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
                     showsVerticalScrollIndicator={false}
                 />
             </View>
-            {bookAppintmentButton()}
+            {bookAppointmentButton()}
             <Snackbar
                 style={styles.snackBarStyle}
                 visible={showSnackBar}
@@ -214,11 +214,16 @@ const SalonDetailScreen = ({ navigation, route }) => {
                                     ...Fonts.whiteColor13Medium
                                 }}
                             >
-                                {"item.salonAddress"}
+                                {product.address ? product.address : "A 9/a Sector 16,Gautam Budh Nagar"}
                             </Text>
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <AntDesign
+                                name="star"
+                                color={Colors.yellowColor}
+                                size={13}
+                            />
                                 <Text style={{ ...Fonts.whiteColor12Medium }}>
-                                {"4.6 Ratings"} | {"100 Reviews"}
+                                {product.ratings ? product.ratings : " 4.6 (100 Reviews)"}
                                 </Text>
                             </View>
                         </View>
@@ -327,20 +332,24 @@ const SalonDetailScreen = ({ navigation, route }) => {
                                 <View style={{
                                     flexDirection: 'row',
                                     alignItems: 'center',
+                                    width: "70%"
                                 }}>
                                     <View style={{
                                         ...styles.salonServiceImageWrapStyle,
                                         backgroundColor: item.bgColor,
                                     }}>
                                         <Image
-                                            source={{ uri : item.assets ? item.assets.preview : product.featuredAsset.preview }}
-                                            style={{ width: 22.0, height: 22.0, }}
-                                            resizeMode="contain"
-                                            tintColor={Colors.whiteColor}
+                                            source={{ uri : item.featuredAsset ? item.featuredAsset.preview : "" }}
+                                            style={{ width: "100%", height: "100%" , borderRadius: Sizes.fixPadding, }}
+                                            resizeMode="cover"
                                         />
                                     </View>
                                     <View style={{ marginLeft: Sizes.fixPadding, }}>
-                                        <Text style={{ marginTop: Sizes.fixPadding - 5.0, lineHeight: 15.0, ...Fonts.blackColor13Bold }}>
+                                        <Text 
+                                            style={{ marginTop: Sizes.fixPadding - 5.0, lineHeight: 15.0, ...Fonts.blackColor13Bold }}
+                                            numberOfLines={2}
+                                            ellipsizeMode="tail"
+                                        >
                                             {item.name}
                                         </Text>
                                         <Text style={{ ...Fonts.grayColor11SemiBold }}>
@@ -365,20 +374,6 @@ const SalonDetailScreen = ({ navigation, route }) => {
                                         </Text>
                                     </TouchableOpacity>
                                 )}
-                                {/* <TouchableOpacity onPress={() => addService(item)} style={styles.addButton}>
-                                <Text
-                                    // onPress={() => navigation.push('ServiceDetail')}
-                                    style={{ marginHorizontal: Sizes.fixPadding, ...Fonts.primaryColor14Bold }}
-                                >
-                                    Add
-                                </Text>
-                                </TouchableOpacity> */}
-                                {/* <Text
-                                    onPress={() => navigation.push('ServiceDetail')}
-                                    // style={{ marginHorizontal: Sizes.fixPadding, ...Fonts.primaryColor14Bold }}
-                                >
-                                    View
-                                </Text> */}
                                 </View>
                             </View>
                         </View>
@@ -396,26 +391,35 @@ const SalonDetailScreen = ({ navigation, route }) => {
                 {openingHoursInfo()}
                 {/* {divider()}
                 {locationInfo()} */}
-                {divider()}
-                {currentPackageAndOffersInfo()}
+                {/* {divider()}
+                {currentPackageAndOffersInfo()} */}
             </View>
         )
     }
 
-    function bookAppintmentButton() {
+    function bookAppointmentButton() {
+        const isDisabled = selectedServices.length === 0;
+    
         return (
             <View>
                 <TouchableOpacity
                     activeOpacity={0.9}
-                    onPress={() => navigation.push('ScheduleAppointment',{selectedServices})}
-                    style={styles.bookAppointmentButtonStyle}
+                    onPress={() => navigation.push('ScheduleAppointment', {
+                        selectedServices: selectedServices,
+                        product: product
+                    })}
+                    style={[
+                        styles.bookAppointmentButtonStyle,
+                        isDisabled && styles.disabledButtonStyle
+                    ]}
+                    disabled={isDisabled}
                 >
                     <Text style={{ ...Fonts.whiteColor18SemiBold }}>
                         Book Appointment
                     </Text>
                 </TouchableOpacity>
             </View>
-        )
+        );
     }
 
     function currentPackageAndOffersInfo() {
@@ -428,7 +432,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
                     packageAndOffersList.map((item) => (
                         <View key={`${item.id}`}>
                             <ImageBackground
-                                source={{uri: product.featuredAsset.preview}}
+                                source={{uri: ""}}
                                 style={styles.packageAndOffersImageStyle}
                                 borderRadius={Sizes.fixPadding}
                             >
@@ -731,6 +735,9 @@ const styles = StyleSheet.create({
         marginHorizontal: Sizes.fixPadding * 2.0,
         marginBottom: Sizes.fixPadding * 2.0,
     },
+    disabledButtonStyle: {
+        backgroundColor: Colors.grayColor,
+    },
     tabBarWrapStyle: {
         backgroundColor: Colors.whiteColor,
         elevation: 2.0,
@@ -781,6 +788,7 @@ const styles = StyleSheet.create({
     },
     salonServicesWrapStyle: {
         flexDirection: 'row',
+        width: "100%",
         alignItems: 'center',
         justifyContent: 'space-between',
         backgroundColor: Colors.whiteColor,
@@ -788,7 +796,6 @@ const styles = StyleSheet.create({
         borderRadius: Sizes.fixPadding,
         borderColor: '#f1f1f1',
         borderWidth: 0.40,
-        paddingVertical: 4,
         marginBottom: Sizes.fixPadding * 2.0,
         ...CommonStyles.shadow
     },
@@ -796,7 +803,7 @@ const styles = StyleSheet.create({
         borderRadius: Sizes.fixPadding,
         alignItems: 'center',
         justifyContent: 'center',
-        height: 47.0,
+        height: 70,
         width: 47.0,
     },
     reviewTextFieldWrapStyle: {

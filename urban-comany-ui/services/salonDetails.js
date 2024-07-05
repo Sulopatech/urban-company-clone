@@ -16,16 +16,12 @@ export const GET_PRODUCT_DETAIL = gql`
           code
           name
         }
-        assets {
+        featuredAsset {
           id
-          width
-          height
           name
           preview
-          focalPoint {
-            x
-            y
-          }
+          width
+          height
         }
       }
       featuredAsset {

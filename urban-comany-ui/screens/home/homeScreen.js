@@ -360,7 +360,7 @@ const HomeScreen = ({ navigation }) => {
     }
 
     function popularCategoryInfo() {
-        const limitedProductData = mainCollectionData.slice(0, 9);
+        const limitedProductData = mainCollectionData;
         const renderItem = ({ item }) => (
             <View style={{ alignItems: 'center', marginRight: Sizes.fixPadding * 1.3, display: "flex", justifyContent: "center" }}>
                 <TouchableOpacity
@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
         borderRadius: Sizes.fixPadding - 3.0,
         // marginRight: Sizes.fixPadding + 10.0,
         paddingHorizontal: 30,
-        paddingVertical: 20
+        paddingVertical: 20,
     },
     offerPercentageWrapStyle: {
         backgroundColor: Colors.primaryColor,

@@ -29,7 +29,22 @@ const CategoryDetailScreen = ({ navigation, route }) => {
 
     const product = data ? data.collection : null;
     const variantList = product?.productVariants?.items || [];
-    
+
+    const filterUniqueProducts = (data) => {
+        const uniqueProducts = [];
+        const productIds = new Set();
+
+        data.forEach(item => {
+            if (!productIds.has(item.product.id)) {
+                uniqueProducts.push(item);
+                productIds.add(item.product.id);
+            }
+        });
+
+        return uniqueProducts;
+    };
+
+    const filteredVariantList = filterUniqueProducts(variantList);
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
@@ -37,7 +52,7 @@ const CategoryDetailScreen = ({ navigation, route }) => {
             <View style={{ flex: 1 }}>
                 {header()}
                 {/* {product && availableSalons(product)} */}
-                {variantList && renderVariants(variantList)}
+                {variantList && renderVariants(filteredVariantList)}
             </View>
             <Snackbar
                 style={styles.snackBarStyle}
@@ -65,6 +80,7 @@ const CategoryDetailScreen = ({ navigation, route }) => {
         const imageSource = item.product.featuredAsset ? { uri: item.product.featuredAsset.preview } : require('../../assets/images/dummyimage.png');
         return (
             <View style={styles.variantContainer}>
+            {console.log("poduct id: ",item.product.id)}
                 <TouchableOpacity
                     activeOpacity={0.9}
                     onPress={() => navigation.push('SalonDetail', { variantSlug: item.product.slug })}
@@ -113,79 +129,6 @@ const CategoryDetailScreen = ({ navigation, route }) => {
                 </View>
                 </TouchableOpacity>
             </View>
-        );
-    }
-
-    function updateSalons({ id }) {
-        const newList = salons.map((item) => {
-            if (item.id === id) {
-                const updatedItem = { ...item, isFavorite: !item.isFavorite };
-                updateState({ addToFavorite: updatedItem.isFavorite });
-                return updatedItem;
-            }
-            return item;
-        });
-        updateState({ salons: newList })
-    }
-
-    function availableSalons(product) {
-        const renderItem = ({ item }) => (
-            <TouchableOpacity
-                activeOpacity={0.9}
-                onPress={() => navigation.push('SalonDetail', { item })}
-                style={styles.salonInfoWrapStyle}
-            >
-                <Image
-                    source={item.salonImage}
-                    style={{ width: 110.0, height: 95.0, borderRadius: Sizes.fixPadding }}
-                />
-                <View style={styles.salonDetailWrapper}>
-                    <View style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                    }}>
-                        <Text numberOfLines={1} style={{ ...Fonts.blackColor14Bold, width: width - 210, }}>
-                            {item.salonName}
-                        </Text>
-                        <MaterialIcons
-                            name={item.isFavorite ? "favorite" : "favorite-border"}
-                            color={Colors.blackColor}
-                            size={17}
-                            onPress={() => {
-                                updateSalons({ id: item.id });
-                                updateState({ showSnackBar: true });
-                            }}
-                        />
-                    </View>
-                    <Text numberOfLines={1} style={{ ...Fonts.grayColor12SemiBold }} >
-                        {item.salonAddress}
-                    </Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', }}>
-                        <MaterialIcons
-                            name="star"
-                            color={Colors.yellowColor}
-                            size={15}
-                        />
-                        <Text style={{ marginLeft: Sizes.fixPadding - 7.0, ...Fonts.grayColor12SemiBold }}>
-                            {item.rating.toFixed(1)} ({item.reviews} reviews)
-                        </Text>
-                    </View>
-                    <Text style={{ ...Fonts.grayColor12SemiBold }}>
-                        {item.salonOpenTime} - {item.salonCloseTime}
-                    </Text>
-                </View>
-            </TouchableOpacity>
-        );
-
-        return (
-            <FlatList
-                data={product.salonDetails}
-                keyExtractor={(item) => `${item.id}`}
-                renderItem={renderItem}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: Sizes.fixPadding, paddingTop: Sizes.fixPadding - 5.0 }}
-            />
         );
     }
 

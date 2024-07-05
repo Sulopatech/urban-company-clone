@@ -4,6 +4,8 @@ import { Colors, Fonts, Sizes, CommonStyles } from "../../constants/styles";
 import { MaterialIcons } from '@expo/vector-icons';
 import { Modal } from "react-native-paper";
 import MyStatusBar from "../../components/myStatusBar";
+import { useMutation } from "@apollo/client";
+import { SERVICE_BOOKING } from "../../services/Bookings";
 
 const paymentMethods = [
     {
@@ -33,14 +35,26 @@ const paymentMethods = [
 
 const { width } = Dimensions.get('window');
 
-const PaymentMethodScreen = ({ navigation }) => {
+const PaymentMethodScreen = ({ navigation, route }) => {
 
     const [state, setState] = useState({
         selectedPaymentMethodId: paymentMethods[0].id,
         showSuccessfullyDialog: false,
     })
 
+    const {date, selectedSlot, selectedServices, product} = route.params ;
+
     const updateState = (data) => setState((state) => ({ ...state, ...data }))
+
+    const [serviceBooking, { loading, error }] = useMutation(SERVICE_BOOKING, {
+        onCompleted: async (data) => {
+            console.log("BOOKING successfully:", data);
+            navigation.pop();
+        },
+        onError: (error) => {
+            console.error("Error BOOKING:", error);
+        },
+    });
 
     const {
         selectedPaymentMethodId,
@@ -122,6 +136,21 @@ const PaymentMethodScreen = ({ navigation }) => {
                 </Text>
             </TouchableOpacity>
         )
+    }
+
+    const handleBooking =  async () => {
+        try {
+            await serviceBooking({
+                variables: {
+                    input: {
+                        "productVariantId": "1",
+                        "quantity": 2
+                      }
+                }
+            })
+        } catch (error) {
+            console.error("Error Booking: ",error);
+        }
     }
 
     function cards() {

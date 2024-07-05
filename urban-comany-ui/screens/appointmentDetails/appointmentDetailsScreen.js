@@ -8,12 +8,10 @@ const servicesList = ['Hair wash herbal', 'Hair color', 'Simple hair cuting - ha
 
 const AppointmentDetailsScreen = ({ navigation ,route }) => {
 
-    const{id,SalonName, date,selectedSlot,salonAddress} = route.params;
+    const{date, selectedSlot, selectedServices, product} = route.params;
 
-    console.log('ID:', id);
-    console.log('Name:', SalonName);
-    console.log('date:', date);
-    console.log('slot: ', selectedSlot);
+    console.log("product: ", product);
+    console.log("selected services: ",selectedServices);
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
@@ -26,7 +24,7 @@ const AppointmentDetailsScreen = ({ navigation ,route }) => {
                 >
                     {salonInfo()}
                     {servicesInfo()}
-                    {specialistsInfo()}
+                    {/* {specialistsInfo()} */}
                     {dateTimeInfo()}
                     {totalAmountInfo()}
                 </ScrollView>
@@ -40,11 +38,10 @@ const AppointmentDetailsScreen = ({ navigation ,route }) => {
             <TouchableOpacity
                 activeOpacity={0.9}
                 onPress={() => navigation.push('PaymentMethod', {
-                    id: id, 
-                    SalonName: SalonName, 
                     date: date,
                     selectedSlot: selectedSlot ,
-                    salonAddress: salonAddress
+                    selectedServices: selectedServices,
+                    product: product,
                 })}
                 style={styles.bookNowButtonStyle}
             >
@@ -62,7 +59,7 @@ const AppointmentDetailsScreen = ({ navigation ,route }) => {
                     Total Amount
                 </Text>
                 <Text style={{ ...Fonts.blackColor16Bold }}>
-                    $209.00
+                    {`$`}{selectedServices.reduce((total, item) => total = total + item.priceWithTax, 0).toFixed(2)}
                 </Text>
             </View>
         )
@@ -107,11 +104,11 @@ const AppointmentDetailsScreen = ({ navigation ,route }) => {
                     Services
                 </Text>
                 <Text>
-                    {servicesList.map((item, index) => (
+                    {selectedServices.map((item, index) => (
                         <Text key={`${index}`}
                             style={{ ...Fonts.grayColor13SemiBold }}
                         >
-                            {item} {index == servicesList.length - 1 ? '' : `• `}
+                            {item.name} {index == selectedServices.length - 1 ? '' : `• `}
                         </Text>
                     )
                     )}
@@ -124,15 +121,15 @@ const AppointmentDetailsScreen = ({ navigation ,route }) => {
         return (
             <View style={{ marginHorizontal: Sizes.fixPadding * 2.0, flexDirection: 'row', alignItems: 'center' }}>
                 <Image
-                    source={require('../../assets/images/salon/salon2.png')}
+                    source={{uri: product.featuredAsset.preview}}
                     style={{ width: 70.0, height: 70.0, borderRadius: Sizes.fixPadding }}
                 />
                 <View style={{ marginLeft: Sizes.fixPadding, }}>
                     <Text style={{ lineHeight: 16.0, ...Fonts.blackColor14Bold }}>
-                        {SalonName}
+                        {product.name}
                     </Text>
                     <Text style={{ ...Fonts.grayColor12SemiBold }}>
-                        {salonAddress}
+                        {product.address ? product.address : "A 9/a Sector 16,Gautam Budh Nagar"}
                     </Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center', }}>
                         <AntDesign
@@ -141,7 +138,7 @@ const AppointmentDetailsScreen = ({ navigation ,route }) => {
                             size={13}
                         />
                         <Text style={{ marginLeft: Sizes.fixPadding - 5.0, ...Fonts.grayColor12SemiBold }}>
-                            4.6 (100 Reviews)
+                            {product.ratings ? product.ratings : " 4.6 (100 Reviews)"}
                         </Text>
                     </View>
                 </View>
