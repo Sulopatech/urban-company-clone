@@ -7,7 +7,11 @@ export const GETSEARCHLIST = gql`
         __typename
         productVariantName
         productName
-        description
+        productAsset{
+          id
+          preview
+        }
+        
         # Include other fields you need
       }
       totalItems
@@ -39,3 +43,42 @@ export const GET_SEARCH_FILTER_LIST = gql`
     }
   }
 `;
+export const SearchProducts = gql`
+  query SearchProducts($input: SearchInput!) {
+    search(input: $input) {
+      items {
+        productId
+        slug
+        productName
+        description
+        priceWithTax {
+          ... on PriceRange {
+            min
+            max
+          }
+        }
+        productAsset {
+          id
+          preview
+          focalPoint {
+            x
+            y
+          }
+        }
+      }
+      totalItems
+      facetValues {
+        count
+        facetValue {
+          id
+          name
+          facet {
+            id
+            name
+          }
+        }
+      }
+    }
+  }
+  `;
+
