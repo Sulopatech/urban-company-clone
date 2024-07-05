@@ -126,6 +126,7 @@ const HomeScreen = ({ navigation }) => {
 
     const scrollY = useRef(new Animated.Value(0)).current;
 
+    
     const searchField = () => (
         <View style={styles.searchFieldWrapStyle}>
             <MaterialIcons
