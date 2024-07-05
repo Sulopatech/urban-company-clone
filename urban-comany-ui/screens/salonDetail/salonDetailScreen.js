@@ -30,12 +30,12 @@ const packageAndOffersList = [
     }
 ];
 
-// const aboutList = [
-//     'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-//     'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.Lorem ipsum dolor sit amet',
-//     'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-//     'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-// ];
+const aboutList = [
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+    'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.Lorem ipsum dolor sit amet',
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+];
 
 // const specialists = [
 //     {
@@ -76,57 +76,57 @@ const packageAndOffersList = [
 //     }
 // ];
 
-// const servicesList = [
-//     {
-//         id: '1',
-//         serviceImage: require('../../assets/images/icons/hairstyle.png'),
-//         serviceName: 'Hairstyle',
-//         serviceTypes: 10,
-//         bgColor: '#EF9A9A',
-//     },
-//     {
-//         id: '2',
-//         serviceImage: require('../../assets/images/icons/hairdryer.png'),
-//         serviceName: 'Hairdryer',
-//         serviceTypes: 5,
-//         bgColor: '#F48FB1',
-//     },
-//     {
-//         id: '3',
-//         serviceImage: require('../../assets/images/icons/shaving.png'),
-//         serviceName: 'Shaving',
-//         serviceTypes: 6,
-//         bgColor: '#CE93D8',
-//     },
-//     {
-//         id: '4',
-//         serviceImage: require('../../assets/images/icons/makeup.png'),
-//         serviceName: 'Makeup',
-//         serviceTypes: 10,
-//         bgColor: '#90CAF9',
-//     },
-//     {
-//         id: '5',
-//         serviceImage: require('../../assets/images/icons/nails.png'),
-//         serviceName: 'Nails',
-//         serviceTypes: 5,
-//         bgColor: '#80CBC4',
-//     },
-//     {
-//         id: '6',
-//         serviceImage: require('../../assets/images/icons/coloring.png'),
-//         serviceName: 'Coloring',
-//         serviceTypes: 6,
-//         bgColor: '#EF9A9A',
-//     },
-//     {
-//         id: '7',
-//         serviceImage: require('../../assets/images/icons/massage.png'),
-//         serviceName: 'Massage',
-//         serviceTypes: 6,
-//         bgColor: '#F48FB1',
-//     },
-// ];
+const servicesList = [
+    {
+        id: '1',
+        serviceImage: require('../../assets/images/icons/hairstyle.png'),
+        serviceName: 'Hairstyle',
+        serviceTypes: 10,
+        bgColor: '#EF9A9A',
+    },
+    {
+        id: '2',
+        serviceImage: require('../../assets/images/icons/hairdryer.png'),
+        serviceName: 'Hairdryer',
+        serviceTypes: 5,
+        bgColor: '#F48FB1',
+    },
+    {
+        id: '3',
+        serviceImage: require('../../assets/images/icons/shaving.png'),
+        serviceName: 'Shaving',
+        serviceTypes: 6,
+        bgColor: '#CE93D8',
+    },
+    {
+        id: '4',
+        serviceImage: require('../../assets/images/icons/makeup.png'),
+        serviceName: 'Makeup',
+        serviceTypes: 10,
+        bgColor: '#90CAF9',
+    },
+    {
+        id: '5',
+        serviceImage: require('../../assets/images/icons/nails.png'),
+        serviceName: 'Nails',
+        serviceTypes: 5,
+        bgColor: '#80CBC4',
+    },
+    {
+        id: '6',
+        serviceImage: require('../../assets/images/icons/coloring.png'),
+        serviceName: 'Coloring',
+        serviceTypes: 6,
+        bgColor: '#EF9A9A',
+    },
+    {
+        id: '7',
+        serviceImage: require('../../assets/images/icons/massage.png'),
+        serviceName: 'Massage',
+        serviceTypes: 6,
+        bgColor: '#F48FB1',
+    },
+];
 
 // const galleryImagesList = [
 //     {
@@ -304,7 +304,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
     function salonImage() {
         return (
             <ImageBackground
-                source={{ uri: product.featuredAsset.preview }} // Assuming 'preview' contains the image URL
+                source={item.salonImage}
                 style={{
                     width: '100%',
                     height: 230,
@@ -354,8 +354,9 @@ const SalonDetailScreen = ({ navigation, route }) => {
                         </View>
                     </View>
                 </View>
+
             </ImageBackground>
-        );
+        )
     }
 
     function reviewInfo() {
@@ -489,35 +490,10 @@ const SalonDetailScreen = ({ navigation, route }) => {
     function salonServicesInfo() {
         return (
             <View style={{ marginHorizontal: Sizes.fixPadding * 2.0, }}>
-                 <Text style={{ marginBottom: Sizes.fixPadding, ...Fonts.blackColor16Bold }}>
-          Services
-        </Text>
-        {product.variants.map((variant) => (
-          <View key={variant.id} style={styles.salonServicesWrapStyle}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <View style={{ ...styles.salonServiceImageWrapStyle, backgroundColor: '#EF9A9A' }}>
-                <Image
-                  source={require('../../assets/images/icons/hairdryer.png')}
-                  style={{ width: 22.0, height: 22.0 }}
-                  resizeMode="contain"
-                  tintColor={Colors.whiteColor}
-                />
-              </View>
-              <View style={{ marginLeft: Sizes.fixPadding }}>
-                <Text style={{ marginTop: Sizes.fixPadding - 5.0, lineHeight: 15.0, ...Fonts.blackColor13Bold }}>
-                  {variant.name}
+                <Text style={{ marginBottom: Sizes.fixPadding, ...Fonts.blackColor16Bold }}>
+                    Services
                 </Text>
-                <Text style={{ ...Fonts.grayColor11SemiBold }}>
-                  {variant.options.length} types
-                </Text>
-              </View>
-            </View>
-            <Text onPress={() => navigation.push('ServiceDetail')} style={{ marginHorizontal: Sizes.fixPadding, ...Fonts.primaryColor14Bold }}>
-              View
-            </Text>
-          </View>
-        ))}
-                {/* {
+                {
                     servicesList.map((item) => (
                         <View key={`${item.id}`}>
                             <View style={styles.salonServicesWrapStyle}>
@@ -554,7 +530,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
                             </View>
                         </View>
                     ))
-                } */}
+                }
             </View>
         )
     }
