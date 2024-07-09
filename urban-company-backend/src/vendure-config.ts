@@ -62,6 +62,10 @@ export const config: VendureConfig = {
     // When adding or altering custom field definitions, the database will
     // need to be updated. See the "Migrations" section in README.md.
     customFields: {
+        Order: [
+            {name: 'date', type: 'string', nullable: true},
+            {name: 'time', type: 'string', nullable: true},
+        ],
         Product: [
             {name: 'weekdays', type: 'string', nullable: true},
             {name: 'weekends', type: 'string', nullable: true},
@@ -73,7 +77,7 @@ export const config: VendureConfig = {
             {name: 'currentLocation', type: 'string', nullable: true},
             {name: 'x_coordinaties', type: 'float', nullable: true},
             {name: 'y_coordinates', type: 'float', nullable: true}
-        ]
+        ],
     },
     plugins: [
         AssetServerPlugin.init({
