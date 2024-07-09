@@ -14,6 +14,7 @@ const { width } = Dimensions.get('screen');
 const SigninScreen = ({ navigation }) => {
 
     const [errorMessage, setErrorMessage] = useState('');
+    const [loggingIn, setLoggingIn] = useState(false);
 
    const [id, setId] = useState(null);
 
@@ -68,7 +69,7 @@ const SigninScreen = ({ navigation }) => {
         
         onCompleted: async(data) => {
             if (data.login.__typename === "CurrentUser") {
-
+                setLoggingIn(false);
                 await AsyncStorage.setItem("id", JSON.stringify(data.login.channels[0].id));
                 await AsyncStorage.setItem(`token`, JSON.stringify(data.login.channels[0].token));
                 
@@ -88,11 +89,11 @@ const SigninScreen = ({ navigation }) => {
     });
 
     const handleSignin = () => {
+        setLoggingIn(true);
         if(userName !== null && password !== null) {
-            if (userName.includes('@') && userName.includes('.')) {
-
+            if (userName.includes('@') && userName.includes('.')) { 
                 login({ variables: { username: userName, password: password } }); 
-           
+                
             } else {
            
                 if (!userName.includes('@')) {
@@ -105,7 +106,6 @@ const SigninScreen = ({ navigation }) => {
         }else {
             Alert.alert("Error","Please enter both username and password");
         }  
-       
     };
 
     const handleUserNameChange = (text) => {
@@ -232,7 +232,7 @@ const SigninScreen = ({ navigation }) => {
                 style={styles.signinButtonStyle}
             >
                 <Text style={{ ...Fonts.whiteColor18SemiBold }}>
-                    Sign In
+                    {loggingIn ? "Signing In...." : "Sign In"}
                 </Text>
             </TouchableOpacity>
         )

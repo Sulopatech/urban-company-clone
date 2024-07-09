@@ -5,8 +5,7 @@ import { Colors, Fonts, Sizes } from "../../constants/styles";
 import { MaterialIcons } from '@expo/vector-icons';
 import { Snackbar } from 'react-native-paper';
 import CollapsibleToolbar from 'react-native-collapsible-toolbar';
-import { GETCOLLECTIONSLIST  } from "../../services/Product";
-import { GET_CATEGORY_LIST } from "../../services/Product";
+import { GETCOLLECTIONSLIST, GET_PRODUCT_LIST  } from "../../services/Product";
 import { GETSEARCHLIST } from "../../services/Search";
 import * as Location from "expo-location";
 import LocationFetching from "../locationFetching/locationFetching";
@@ -56,6 +55,7 @@ const HomeScreen = ({ navigation }) => {
     const { data: collectionData } = useQuery(GETCOLLECTIONSLIST);
     const [getSearchResults, { loading: searchLoading, data: searchData }] = useLazyQuery(GETSEARCHLIST);
     const { loading: customerLoading, error, data: customerData } = useQuery(GET_ACTIVE_CUSTOMER);
+    const { data: nearByData } = useQuery(GET_PRODUCT_LIST);
     const [mainCollectionData, setMainCollectionData] = useState([]);
     const firstName = customerData?.activeCustomer?.firstName;
     const lastName = customerData?.activeCustomer?.lastName;
@@ -281,12 +281,11 @@ const HomeScreen = ({ navigation }) => {
     }
     
     function bestSalonInfo() {
-        const limitedProductData = productData.slice(0, 4); // Display only the first four products
-    
+        const limitedProductData = nearByData?.products?.items || [];
         const renderItem = ({ item }) => (
             <TouchableOpacity
                 activeOpacity={0.6}
-                onPress={() => navigation.push('SalonDetail', { item })}
+                onPress={() => navigation.push('SalonDetail', { variantSlug: item.slug })}
                 style={{
                     alignItems: 'center',
                     marginRight: Sizes.fixPadding * 2.0,
@@ -313,7 +312,7 @@ const HomeScreen = ({ navigation }) => {
                                 {/* {item.salonAddress || 'No Address available'} */}
                             </Text>
                         </View>
-                        <MaterialIcons
+                        {/* <MaterialIcons
                             name={item.isFavorite ? "favorite" : "favorite-border"}
                             color={Colors.whiteColor}
                             size={15}
@@ -322,7 +321,7 @@ const HomeScreen = ({ navigation }) => {
                                 updateBestSalons({ id: item.id });
                                 updateState({ showSnackBar: true });
                             }}
-                        />
+                        /> */}
                     </View>
                     <View style={{
                         flexDirection: 'row',
@@ -347,22 +346,22 @@ const HomeScreen = ({ navigation }) => {
             </TouchableOpacity>
         );
     
-        const renderFooter = () => (
-            <TouchableOpacity
-                style={{ alignItems: 'center', justifyContent: 'center', padding: Sizes.fixPadding * 2.0 }}
+    
+        return (
+            <View style={{ marginVertical: Sizes.fixPadding + 5.0 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between'}}>
+                <Text style={{ marginHorizontal: Sizes.fixPadding * 2.0, ...Fonts.blackColor16Bold }}>
+                    Best services around you
+                </Text>
+                <TouchableOpacity
+                style={{ marginHorizontal: Sizes.fixPadding * 2.0}}
                 onPress={() => navigation.push('Nearby')}
             >
                 <Text style={{ ...Fonts.primaryColor14Medium }}>
                     View All
                 </Text>
             </TouchableOpacity>
-        );
-    
-        return (
-            <View style={{ marginVertical: Sizes.fixPadding + 5.0 }}>
-                <Text style={{ marginHorizontal: Sizes.fixPadding * 2.0, ...Fonts.blackColor16Bold }}>
-                    Best salon around you
-                </Text>
+            </View>
                 <FlatList
                     data={limitedProductData}
                     keyExtractor={(item) => `${item.id}`}
@@ -373,7 +372,7 @@ const HomeScreen = ({ navigation }) => {
                         paddingLeft: Sizes.fixPadding * 2.0,
                         paddingTop: Sizes.fixPadding + 5.0,
                     }}
-                    ListFooterComponent={renderFooter}
+                    // ListFooterComponent={renderFooter}
                 />
             </View>
         );

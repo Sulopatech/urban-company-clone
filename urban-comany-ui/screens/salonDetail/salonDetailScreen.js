@@ -7,7 +7,8 @@ import { Snackbar } from 'react-native-paper';
 import MyStatusBar from "../../components/myStatusBar";
 import CollapsibleToolbar from 'react-native-collapsible-toolbar';
 import { GET_PRODUCT_DETAIL } from "../../services/salonDetails";
-import { useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
+import { SERVICE_BOOKING } from "../../services/Bookings";
 
 const { width } = Dimensions.get('window');
 
@@ -79,13 +80,25 @@ const SalonDetailScreen = ({ navigation, route }) => {
         variables: { slug: variantSlug },
         skip: !variantSlug,  
     });
+
+    const [serviceBooking, { loading: serviceBookingBloading, error: serviceBookingError }] = useMutation(SERVICE_BOOKING, {
+        onCompleted: async (data) => {
+            console.log("BOOKING successfully:", data);
+            console.log("order line",data.addItemToOrder.lines);
+            // navigation.pop();
+        },
+        onError: (error) => {
+            console.error("Error BOOKING:", error);
+        },
+    });
     
-    if (loading) return <Text>Loading...</Text>;
+    if (loading) return <Text style={{ marginLeft: Sizes.fixPadding, ...Fonts.blackColor18Bold }}>Loading...</Text>;
     if (error) return <Text>Error: {error.message}</Text>;
     
     const { product } = data;
     console.log("data",data)
     const servicesListData = product?.variants || [] ;
+    console.log("servicelistdata: ",servicesListData);
 
     const addService = (service) => {
         setSelectedServices((prevServices) => [...prevServices, service]);
@@ -102,6 +115,20 @@ const SalonDetailScreen = ({ navigation, route }) => {
     };
 
     console.log("selected sevices : ",selectedServices);
+
+    const handleServiceBooking = async (item) => {
+        console.log("items: ", item);
+        try {
+            await serviceBooking({
+                variables: {
+                    productVariantId: parseInt(item.id, 10), // Convert to integer
+                    quantity: 1
+                }
+            });
+        } catch (error) {
+            console.error("Error Booking: ", error);
+        }
+    }
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
@@ -367,7 +394,11 @@ const SalonDetailScreen = ({ navigation, route }) => {
                                         </Text>
                                     </TouchableOpacity>
                                 ) : (
-                                    <TouchableOpacity onPress={() => addService(item)} style={styles.addButton}>
+                                    <TouchableOpacity onPress={() => {
+                                        addService(item)
+                                        handleServiceBooking(item)
+                                        }}
+                                        style={styles.addButton}>
                                         <Text style={{ marginHorizontal: Sizes.fixPadding, ...Fonts.primaryColor14Bold }}>
                                             Add
                                         </Text>

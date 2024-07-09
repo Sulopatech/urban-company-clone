@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, Image, FlatList, StyleSheet } from "react-native";
 import { Colors, Fonts, Sizes,CommonStyles } from "../../constants/styles";
 import { MaterialIcons, FontAwesome } from '@expo/vector-icons';
 import { Collapse, CollapseHeader, CollapseBody } from "accordion-collapse-react-native";
+import { ORDER_HISTORY } from "../../services/OrderHistory";
+import { useQuery } from "@apollo/client";
 
 const upcomingAppointmentsList = [
     {
@@ -34,18 +36,33 @@ const upcomingAppointmentsList = [
 
 const AppointmentUpcoming = ({ navigation }) => {
 
-    const [upcomingAppointments, setUpcomingAppointments] = useState(upcomingAppointmentsList)
+    
+    const { loading, error, data : orderHistoryData } = useQuery(ORDER_HISTORY);
+    const [upcomingAppointments, setUpcomingAppointments] = useState([]);
+
+    useEffect(() => {
+        if (orderHistoryData?.activeCustomer?.orders?.items) {
+            setUpcomingAppointments(orderHistoryData.activeCustomer.orders.items);
+            console.log("upcoming data: ", orderHistoryData.activeCustomer.orders.items);
+        }
+    }, [orderHistoryData]);
+    
+    console.log("order data: ", orderHistoryData?.activeCustomer?.orders);
+    console.log("custom field: ", orderHistoryData?.activeCustomer?.orders?.items);
 
     const renderItem = ({ item }) => (
+        <View>
+        {item.state === "PaymentAuthorized" && (
         <View style={styles.appointmentInfoWrapStyle}>
             <Collapse
                 touchableOpacityProps={{ activeOpacity: 0.9 }}
                 onToggle={(isExpanded) => handleUpcomingBookingsUpdate({ id: item.id, isExpanded })}
             >
                 <CollapseHeader>
+                {item.lines.map((lines) => (
                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                         <Text style={{ ...Fonts.blackColor14Bold }}>
-                            {item.salonName}
+                        {lines?.productVariant?.product?.name || "Unknown Service"}
                         </Text>
                         <MaterialIcons
                             name={item.isExpandable ? "keyboard-arrow-up" : "keyboard-arrow-down"}
@@ -53,11 +70,13 @@ const AppointmentUpcoming = ({ navigation }) => {
                             color={Colors.blackColor}
                         />
                     </View>
+                ) )}
                     <Text style={{ ...Fonts.grayColor13SemiBold }}>
-                        {item.salonAddress}
+                        {'A 9/a Sector 16,Gautam Budh Nagar'}
                     </Text>
                     <Text style={{ lineHeight: 16.0, ...Fonts.grayColor13SemiBold }}>
-                        {item.appointmentDay} • {item.appointmentDate} • {item.appointmentTime}
+                        {/* {item.appointmentDay} • {item.appointmentDate} • {item.appointmentTime} */}
+                        {"Thursday"} • {"14 August 2024"} • {"2:00 pm"}
                     </Text>
                     <View style={{ marginTop: Sizes.fixPadding - 5.0, flexDirection: 'row', alignItems: 'center' }}>
                         <Image
@@ -86,16 +105,16 @@ const AppointmentUpcoming = ({ navigation }) => {
                     }} />
                 </CollapseHeader>
                 <CollapseBody>
-                    <Text style={{ ...Fonts.blackColor14Bold }}>
+                    {/* <Text style={{ ...Fonts.blackColor14Bold }}>
                         Specialists
                     </Text>
                     <Text style={{ ...Fonts.grayColor13SemiBold }}>
                         {item.specialistName} • {item.speciality}
-                    </Text>
+                    </Text> */}
                     <Text style={{ ...Fonts.blackColor14Bold }}>
                         Services
                     </Text>
-                    {item.services.map((item, index) => (
+                    {item.lines.map((lines, index) => (
                         <View key={index}>
                             <View style={{
                                 flexDirection: 'row',
@@ -103,10 +122,10 @@ const AppointmentUpcoming = ({ navigation }) => {
                                 justifyContent: 'space-between'
                             }}>
                                 <Text style={{ ...Fonts.grayColor13SemiBold }}>
-                                    {item.service}
+                                    {lines.productVariant.name}
                                 </Text>
                                 <Text style={{ ...Fonts.grayColor13SemiBold }}>
-                                    {`$`}{item.amount.toFixed(1)}
+                                    {`₹`}{lines.productVariant.priceWithTax.toFixed(1)}
                                 </Text>
                             </View>
                         </View>
@@ -120,7 +139,7 @@ const AppointmentUpcoming = ({ navigation }) => {
                             Total Amount
                         </Text>
                         <Text style={{ ...Fonts.primaryColor13Bold }}>
-                            {`$`}{item.services.reduce((total, item) => total = total + item.amount, 0).toFixed(2)}
+                            {`₹`}{item.totalWithTax.toFixed(2)}
                         </Text>
                     </View>
                      <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 10,gap: 7 }}>
@@ -151,6 +170,8 @@ const AppointmentUpcoming = ({ navigation }) => {
                 </CollapseBody>
             </Collapse>
         </View>
+        )}
+        </View>
     )
 
     function cancelAppointment({ id }) {
@@ -172,7 +193,7 @@ const AppointmentUpcoming = ({ navigation }) => {
     return (
         <View style={{ flex: 1 }}>
             {
-                upcomingAppointments.length == 0
+                upcomingAppointments.length === 0
                     ?
                     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                         <Image
