@@ -126,6 +126,7 @@ const HomeScreen = ({ navigation }) => {
 
     const scrollY = useRef(new Animated.Value(0)).current;
 
+    
     const searchField = () => (
         <View style={styles.searchFieldWrapStyle}>
             <MaterialIcons
@@ -278,8 +279,10 @@ const HomeScreen = ({ navigation }) => {
         });
         updateState({ bestSalons: newList });
     }
-
+    
     function bestSalonInfo() {
+        const limitedProductData = productData.slice(0, 4); // Display only the first four products
+    
         const renderItem = ({ item }) => (
             <TouchableOpacity
                 activeOpacity={0.6}
@@ -290,7 +293,7 @@ const HomeScreen = ({ navigation }) => {
                 }}
             >
                 <Image
-                    source={item.salonImage}
+                    source={{ uri: item.featuredAsset ? item.featuredAsset.preview : 'https://via.placeholder.com/210x130' }}
                     style={styles.bestSalonImageStyle}
                 />
                 <View style={styles.bestSalonDetailWrapStyle}>
@@ -300,13 +303,14 @@ const HomeScreen = ({ navigation }) => {
                                 numberOfLines={1}
                                 style={{ ...Fonts.whiteColor14Medium }}
                             >
-                                {item.salonName}
+                                {item.name}
                             </Text>
                             <Text
                                 numberOfLines={2}
                                 style={{ lineHeight: 15.0, ...Fonts.whiteColor12Light }}
                             >
-                                {item.salonAddress}
+                                'A 9/a Sector 16,Gautam Budh Nagar',
+                                {/* {item.salonAddress || 'No Address available'} */}
                             </Text>
                         </View>
                         <MaterialIcons
@@ -330,22 +334,37 @@ const HomeScreen = ({ navigation }) => {
                             size={15}
                         />
                         <Text style={{ marginLeft: Sizes.fixPadding - 5.0, ...Fonts.whiteColor14Medium }}>
-                            {item.rating.toFixed(1)}
+                            {/* {item.rating ? item.rating.toFixed(1) : 'N/A'} */}
+                                         4.6
+
                         </Text>
                         <Text style={{ marginLeft: Sizes.fixPadding - 5.0, ...Fonts.whiteColor14Medium }}>
-                            ({item.reviews} reviews)
+                            {/* ({item.reviews ? item.reviews : 0} reviews)  */}
+                            (100 reviews)
                         </Text>
                     </View>
                 </View>
             </TouchableOpacity>
         );
+    
+        const renderFooter = () => (
+            <TouchableOpacity
+                style={{ alignItems: 'center', justifyContent: 'center', padding: Sizes.fixPadding * 2.0 }}
+                onPress={() => navigation.push('Nearby')}
+            >
+                <Text style={{ ...Fonts.primaryColor14Medium }}>
+                    View All
+                </Text>
+            </TouchableOpacity>
+        );
+    
         return (
             <View style={{ marginVertical: Sizes.fixPadding + 5.0 }}>
                 <Text style={{ marginHorizontal: Sizes.fixPadding * 2.0, ...Fonts.blackColor16Bold }}>
                     Best salon around you
                 </Text>
                 <FlatList
-                    data={bestSalons}
+                    data={limitedProductData}
                     keyExtractor={(item) => `${item.id}`}
                     renderItem={renderItem}
                     horizontal
@@ -354,6 +373,7 @@ const HomeScreen = ({ navigation }) => {
                         paddingLeft: Sizes.fixPadding * 2.0,
                         paddingTop: Sizes.fixPadding + 5.0,
                     }}
+                    ListFooterComponent={renderFooter}
                 />
             </View>
         );

@@ -58,3 +58,4 @@ export const GET_PRODUCT_DETAIL = gql`
     }
   }
 `;
+

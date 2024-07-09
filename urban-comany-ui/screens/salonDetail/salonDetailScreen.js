@@ -234,9 +234,8 @@ const SalonDetailScreen = ({ navigation, route }) => {
                         </View>
                     </View>
                 </View>
-
             </ImageBackground>
-        )
+        );
     }
 
     function reviewInfo() {
@@ -378,7 +377,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
                             </View>
                         </View>
                     ))
-                }
+                } 
             </View>
         )
     }
