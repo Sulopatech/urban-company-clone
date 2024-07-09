@@ -24,6 +24,7 @@ export interface CustomerProfilePicPluginOptions {
             label: [{ languageCode: LanguageCode.en, value: 'Profile Picture' }],
             entity: Asset,
             nullable: true,
+            eager: true
         });
         return config;
     },

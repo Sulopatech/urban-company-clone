@@ -7,7 +7,9 @@ import {
     CustomerService, 
     RequestContext, 
     isGraphQlErrorResult,
-    ConfigService
+    TransactionalConnection,
+    ConfigService,
+    Customer,
 } from '@vendure/core';
 import { Asset, AssetType, Coordinate } from '@vendure/common/lib/generated-types';
 
@@ -16,13 +18,14 @@ export class CustomerProfilePicService {
     constructor(
         private assetService: AssetService,
         private customerService: CustomerService,
-        private configService: ConfigService
+        private configService: ConfigService,
+        private connection: TransactionalConnection 
     ) {}
 
     async setProfilePic(ctx: RequestContext, file: any): Promise<Asset | undefined> {
         const userId = ctx.activeUserId;
         if (!userId) {
-            return undefined;
+            throw new Error("unable to find user") ;
         }
 
         const customer = await this.customerService.findOneByUserId(ctx, userId);
@@ -44,6 +47,15 @@ export class CustomerProfilePicService {
             customFields: {
                 profilePicId: asset.id,
             },
+        });
+
+        const pcustomer = await this.connection.getRepository(ctx, Customer).findOne({
+            where: { id:customer.id  },
+            relations: {
+                customFields: {
+                    profilePic:true
+                }
+            }
         });
 
         // Convert AssetEntity to Asset (GraphQL type)
