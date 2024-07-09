@@ -789,6 +789,13 @@ export type CreateCountryInput = {
   translations: Array<CountryTranslationInput>;
 };
 
+export type CreateCustomerCustomFieldsInput = {
+  currentLocation?: InputMaybe<Scalars['String']['input']>;
+  profilePicId?: InputMaybe<Scalars['ID']['input']>;
+  x_coordinaties?: InputMaybe<Scalars['Float']['input']>;
+  y_coordinates?: InputMaybe<Scalars['Float']['input']>;
+};
+
 export type CreateCustomerGroupInput = {
   customFields?: InputMaybe<Scalars['JSON']['input']>;
   customerIds?: InputMaybe<Array<Scalars['ID']['input']>>;
@@ -796,7 +803,7 @@ export type CreateCustomerGroupInput = {
 };
 
 export type CreateCustomerInput = {
-  customFields?: InputMaybe<Scalars['JSON']['input']>;
+  customFields?: InputMaybe<CreateCustomerCustomFieldsInput>;
   emailAddress: Scalars['String']['input'];
   firstName: Scalars['String']['input'];
   lastName: Scalars['String']['input'];
@@ -848,9 +855,17 @@ export type CreatePaymentMethodInput = {
   translations: Array<PaymentMethodTranslationInput>;
 };
 
+export type CreateProductCustomFieldsInput = {
+  location?: InputMaybe<Scalars['String']['input']>;
+  weekdays?: InputMaybe<Scalars['String']['input']>;
+  weekends?: InputMaybe<Scalars['String']['input']>;
+  x_coordinate?: InputMaybe<Scalars['Float']['input']>;
+  y_coordinate?: InputMaybe<Scalars['Float']['input']>;
+};
+
 export type CreateProductInput = {
   assetIds?: InputMaybe<Array<Scalars['ID']['input']>>;
-  customFields?: InputMaybe<Scalars['JSON']['input']>;
+  customFields?: InputMaybe<CreateProductCustomFieldsInput>;
   enabled?: InputMaybe<Scalars['Boolean']['input']>;
   facetValueIds?: InputMaybe<Array<Scalars['ID']['input']>>;
   featuredAssetId?: InputMaybe<Scalars['ID']['input']>;
@@ -1363,7 +1378,7 @@ export type Customer = Node & {
   __typename?: 'Customer';
   addresses?: Maybe<Array<Address>>;
   createdAt: Scalars['DateTime']['output'];
-  customFields?: Maybe<Scalars['JSON']['output']>;
+  customFields?: Maybe<CustomerCustomFields>;
   emailAddress: Scalars['String']['output'];
   firstName: Scalars['String']['output'];
   groups: Array<CustomerGroup>;
@@ -1387,10 +1402,19 @@ export type CustomerOrdersArgs = {
   options?: InputMaybe<OrderListOptions>;
 };
 
+export type CustomerCustomFields = {
+  __typename?: 'CustomerCustomFields';
+  currentLocation?: Maybe<Scalars['String']['output']>;
+  profilePic?: Maybe<Asset>;
+  x_coordinaties?: Maybe<Scalars['Float']['output']>;
+  y_coordinates?: Maybe<Scalars['Float']['output']>;
+};
+
 export type CustomerFilterParameter = {
   _and?: InputMaybe<Array<CustomerFilterParameter>>;
   _or?: InputMaybe<Array<CustomerFilterParameter>>;
   createdAt?: InputMaybe<DateOperators>;
+  currentLocation?: InputMaybe<StringOperators>;
   emailAddress?: InputMaybe<StringOperators>;
   firstName?: InputMaybe<StringOperators>;
   id?: InputMaybe<IdOperators>;
@@ -1399,6 +1423,8 @@ export type CustomerFilterParameter = {
   postalCode?: InputMaybe<StringOperators>;
   title?: InputMaybe<StringOperators>;
   updatedAt?: InputMaybe<DateOperators>;
+  x_coordinaties?: InputMaybe<NumberOperators>;
+  y_coordinates?: InputMaybe<NumberOperators>;
 };
 
 export type CustomerGroup = Node & {
@@ -1472,13 +1498,17 @@ export type CustomerListOptions = {
 
 export type CustomerSortParameter = {
   createdAt?: InputMaybe<SortOrder>;
+  currentLocation?: InputMaybe<SortOrder>;
   emailAddress?: InputMaybe<SortOrder>;
   firstName?: InputMaybe<SortOrder>;
   id?: InputMaybe<SortOrder>;
   lastName?: InputMaybe<SortOrder>;
   phoneNumber?: InputMaybe<SortOrder>;
+  profilePic?: InputMaybe<SortOrder>;
   title?: InputMaybe<SortOrder>;
   updatedAt?: InputMaybe<SortOrder>;
+  x_coordinaties?: InputMaybe<SortOrder>;
+  y_coordinates?: InputMaybe<SortOrder>;
 };
 
 /** Operators for filtering on a list of Date fields */
@@ -4539,7 +4569,7 @@ export type Product = Node & {
   channels: Array<Channel>;
   collections: Array<Collection>;
   createdAt: Scalars['DateTime']['output'];
-  customFields?: Maybe<Scalars['JSON']['output']>;
+  customFields?: Maybe<ProductCustomFields>;
   description: Scalars['String']['output'];
   enabled: Scalars['Boolean']['output'];
   facetValues: Array<FacetValue>;
@@ -4562,6 +4592,15 @@ export type ProductVariantListArgs = {
   options?: InputMaybe<ProductVariantListOptions>;
 };
 
+export type ProductCustomFields = {
+  __typename?: 'ProductCustomFields';
+  location?: Maybe<Scalars['String']['output']>;
+  weekdays?: Maybe<Scalars['String']['output']>;
+  weekends?: Maybe<Scalars['String']['output']>;
+  x_coordinate?: Maybe<Scalars['Float']['output']>;
+  y_coordinate?: Maybe<Scalars['Float']['output']>;
+};
+
 export type ProductFilterParameter = {
   _and?: InputMaybe<Array<ProductFilterParameter>>;
   _or?: InputMaybe<Array<ProductFilterParameter>>;
@@ -4571,10 +4610,15 @@ export type ProductFilterParameter = {
   facetValueId?: InputMaybe<IdOperators>;
   id?: InputMaybe<IdOperators>;
   languageCode?: InputMaybe<StringOperators>;
+  location?: InputMaybe<StringOperators>;
   name?: InputMaybe<StringOperators>;
   sku?: InputMaybe<StringOperators>;
   slug?: InputMaybe<StringOperators>;
   updatedAt?: InputMaybe<DateOperators>;
+  weekdays?: InputMaybe<StringOperators>;
+  weekends?: InputMaybe<StringOperators>;
+  x_coordinate?: InputMaybe<NumberOperators>;
+  y_coordinate?: InputMaybe<NumberOperators>;
 };
 
 export type ProductList = PaginatedList & {
@@ -4667,9 +4711,14 @@ export type ProductSortParameter = {
   createdAt?: InputMaybe<SortOrder>;
   description?: InputMaybe<SortOrder>;
   id?: InputMaybe<SortOrder>;
+  location?: InputMaybe<SortOrder>;
   name?: InputMaybe<SortOrder>;
   slug?: InputMaybe<SortOrder>;
   updatedAt?: InputMaybe<SortOrder>;
+  weekdays?: InputMaybe<SortOrder>;
+  weekends?: InputMaybe<SortOrder>;
+  x_coordinate?: InputMaybe<SortOrder>;
+  y_coordinate?: InputMaybe<SortOrder>;
 };
 
 export type ProductTranslation = {
@@ -6330,6 +6379,13 @@ export type UpdateCountryInput = {
   translations?: InputMaybe<Array<CountryTranslationInput>>;
 };
 
+export type UpdateCustomerCustomFieldsInput = {
+  currentLocation?: InputMaybe<Scalars['String']['input']>;
+  profilePicId?: InputMaybe<Scalars['ID']['input']>;
+  x_coordinaties?: InputMaybe<Scalars['Float']['input']>;
+  y_coordinates?: InputMaybe<Scalars['Float']['input']>;
+};
+
 export type UpdateCustomerGroupInput = {
   customFields?: InputMaybe<Scalars['JSON']['input']>;
   id: Scalars['ID']['input'];
@@ -6337,7 +6393,7 @@ export type UpdateCustomerGroupInput = {
 };
 
 export type UpdateCustomerInput = {
-  customFields?: InputMaybe<Scalars['JSON']['input']>;
+  customFields?: InputMaybe<UpdateCustomerCustomFieldsInput>;
   emailAddress?: InputMaybe<Scalars['String']['input']>;
   firstName?: InputMaybe<Scalars['String']['input']>;
   id: Scalars['ID']['input'];
@@ -6412,9 +6468,17 @@ export type UpdatePaymentMethodInput = {
   translations?: InputMaybe<Array<PaymentMethodTranslationInput>>;
 };
 
+export type UpdateProductCustomFieldsInput = {
+  location?: InputMaybe<Scalars['String']['input']>;
+  weekdays?: InputMaybe<Scalars['String']['input']>;
+  weekends?: InputMaybe<Scalars['String']['input']>;
+  x_coordinate?: InputMaybe<Scalars['Float']['input']>;
+  y_coordinate?: InputMaybe<Scalars['Float']['input']>;
+};
+
 export type UpdateProductInput = {
   assetIds?: InputMaybe<Array<Scalars['ID']['input']>>;
-  customFields?: InputMaybe<Scalars['JSON']['input']>;
+  customFields?: InputMaybe<UpdateProductCustomFieldsInput>;
   enabled?: InputMaybe<Scalars['Boolean']['input']>;
   facetValueIds?: InputMaybe<Array<Scalars['ID']['input']>>;
   featuredAssetId?: InputMaybe<Scalars['ID']['input']>;
