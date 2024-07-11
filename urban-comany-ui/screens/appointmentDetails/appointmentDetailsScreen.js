@@ -3,12 +3,29 @@ import { View, StyleSheet, ScrollView, Image, TouchableOpacity, Text } from "rea
 import { Colors, Fonts, Sizes, } from "../../constants/styles";
 import { MaterialIcons, AntDesign } from '@expo/vector-icons';
 import MyStatusBar from "../../components/myStatusBar";
+import { UPDATE_BOOKING } from "../../services/Bookings";
+import { useMutation } from "@apollo/client";
 
 const servicesList = ['Hair wash herbal', 'Hair color', 'Simple hair cuting - hair wash']
 
 const AppointmentDetailsScreen = ({ navigation ,route }) => {
 
     const{date, selectedSlot, selectedServices, product} = route.params;
+
+    const [serviceBookingUpdate, { loading, error }] = useMutation(UPDATE_BOOKING, {
+        onCompleted: async (data) => {
+            console.log("BOOKING successfully update:", data);
+            navigation.push('PaymentMethod', {
+                    date: date,
+                    selectedSlot: selectedSlot ,
+                    selectedServices: selectedServices,
+                    product: product,
+                })
+        },
+        onError: (error) => {
+            console.error("Error BOOKING update:", error);
+        },
+    });
 
     console.log("product: ", product);
     console.log("selected services: ",selectedServices);
@@ -37,12 +54,13 @@ const AppointmentDetailsScreen = ({ navigation ,route }) => {
         return (
             <TouchableOpacity
                 activeOpacity={0.9}
-                onPress={() => navigation.push('PaymentMethod', {
-                    date: date,
-                    selectedSlot: selectedSlot ,
-                    selectedServices: selectedServices,
-                    product: product,
-                })}
+                // onPress={() => navigation.push('PaymentMethod', {
+                //     date: date,
+                //     selectedSlot: selectedSlot ,
+                //     selectedServices: selectedServices,
+                //     product: product,
+                // })}
+                onPress={() => handleBooking()}
                 style={styles.bookNowButtonStyle}
             >
                 <Text style={{ ...Fonts.whiteColor18SemiBold }}>
@@ -50,6 +68,23 @@ const AppointmentDetailsScreen = ({ navigation ,route }) => {
                 </Text>
             </TouchableOpacity>
         )
+    }
+
+    function handleBooking() {
+        try {
+            serviceBookingUpdate({
+                variables: {
+                    input: {
+                        customFields: {
+                            date: date,
+                            time: selectedSlot
+                        }
+                      }
+                }
+            })
+        } catch (error) {
+            console.error("Error Booking: ",error);
+        }
     }
 
     function totalAmountInfo() {

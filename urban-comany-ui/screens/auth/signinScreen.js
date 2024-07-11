@@ -77,13 +77,14 @@ const SigninScreen = ({ navigation }) => {
 
             } else {
                 if(errorMessage === '') {
+                    setLoggingIn(false);
                     Alert.alert("Error","invalid user name password");
                 }
                 
             }
         },
         onError: (error) => {
-
+            setLoggingIn(false);
             Alert.alert("Error", error.message);
         }
     });

@@ -15,7 +15,7 @@ const IS_DEV = process.env.APP_ENV === 'dev';
 
 export const config: VendureConfig = {
     apiOptions: {
-        port: 3000,
+        port: 4001,
         adminApiPath: 'admin-api',
         shopApiPath: 'shop-api',
         // The following options are useful in development mode,
@@ -109,7 +109,7 @@ export const config: VendureConfig = {
             route: 'admin',
             port: 3002,
             adminUiConfig: {
-                apiPort: 3000,
+                apiPort: 4001,
             },
         }),
         CustomerProfilePicPlugin.init({

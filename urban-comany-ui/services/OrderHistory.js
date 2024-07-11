@@ -29,6 +29,10 @@ export const ORDER_HISTORY = gql`
               preview
             }
           }
+          customFields{
+            date
+            time
+          }
         }
         totalItems
       }

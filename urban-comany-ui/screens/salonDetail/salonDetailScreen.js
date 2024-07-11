@@ -8,7 +8,7 @@ import MyStatusBar from "../../components/myStatusBar";
 import CollapsibleToolbar from 'react-native-collapsible-toolbar';
 import { GET_PRODUCT_DETAIL } from "../../services/salonDetails";
 import { useMutation, useQuery } from "@apollo/client";
-import { SERVICE_BOOKING } from "../../services/Bookings";
+import { REMOVE_BOOKING, SERVICE_BOOKING } from "../../services/Bookings";
 
 const { width } = Dimensions.get('window');
 
@@ -73,6 +73,9 @@ const SalonDetailScreen = ({ navigation, route }) => {
     } = state;
     
     const [selectedServices, setSelectedServices] = useState([]);
+    const [loadingServiceId, setLoadingServiceId] = useState(null);
+    const [adding, setAdding] = useState(false);
+    const [removing, setRemoving] = useState(false);
 
     const { variantSlug } = route.params;
 
@@ -81,16 +84,34 @@ const SalonDetailScreen = ({ navigation, route }) => {
         skip: !variantSlug,  
     });
 
-    const [serviceBooking, { loading: serviceBookingBloading, error: serviceBookingError }] = useMutation(SERVICE_BOOKING, {
+    const [serviceBooking, { loading: serviceBookingLoading, error: serviceBookingError }] = useMutation(SERVICE_BOOKING, {
         onCompleted: async (data) => {
             console.log("BOOKING successfully:", data);
-            console.log("order line",data.addItemToOrder.lines);
-            // navigation.pop();
+            console.log("order line", data.addItemToOrder.lines);
+
+            const newServices = data.addItemToOrder.lines.map(line => ({
+                id: line.productVariant.id,
+                name: line.productVariant.name,
+                price: line.productVariant.price,
+                priceWithTax: line.productVariant.priceWithTax,
+                featuredAsset: line.productVariant.featuredAsset,
+                orderLineId: line.id, // Store orderLineId
+            }));
+
+            setSelectedServices(prevServices => {
+                // Filter out any existing services to avoid duplicates
+                const updatedServices = prevServices.filter(
+                    service => !newServices.some(newService => newService.id === service.id)
+                );
+                return [...updatedServices, ...newServices];
+            });
         },
         onError: (error) => {
             console.error("Error BOOKING:", error);
         },
     });
+
+    const [removeServiceMutation, { loading: removeServiceLoading, error: removeServiceError }] = useMutation(REMOVE_BOOKING);
     
     if (loading) return <Text style={{ marginLeft: Sizes.fixPadding, ...Fonts.blackColor18Bold }}>Loading...</Text>;
     if (error) return <Text>Error: {error.message}</Text>;
@@ -100,14 +121,43 @@ const SalonDetailScreen = ({ navigation, route }) => {
     const servicesListData = product?.variants || [] ;
     console.log("servicelistdata: ",servicesListData);
 
-    const addService = (service) => {
-        setSelectedServices((prevServices) => [...prevServices, service]);
+    const addService = async (service) => {
+        setLoadingServiceId(service.id);
+        setAdding(true);
+        try {
+            await serviceBooking({
+                variables: {
+                    productVariantId: parseInt(service.id, 10),
+                    quantity: 1
+                }
+            });
+            // setSelectedServices(prevServices => prevServices.filter(item => item.id !== service.id));
+        } catch (error) {
+            console.error("Error Booking: ", error);
+        }
+        setAdding(false);
+        setLoadingServiceId(null);
     };
 
-    const removeService = (service) => {
-        setSelectedServices((prevServices) =>
-            prevServices.filter((item) => item.id !== service.id)
-        );
+    const removeService = async (service) => {
+        const serviceToRemove = selectedServices.find(item => item.id === service.id);
+        if (!serviceToRemove) return;
+        setLoadingServiceId(service.id);
+        setRemoving(true);
+
+        try {
+            await removeServiceMutation({
+                variables: {
+                    orderLineId: parseInt(serviceToRemove.orderLineId, 10)
+                }
+            });
+
+            setSelectedServices(prevServices => prevServices.filter(item => item.id !== service.id));
+        } catch (error) {
+            console.error("Error Removing Service: ", error);
+        }
+        setRemoving(false);
+        setLoadingServiceId(null);
     };
 
     const isServiceSelected = (service) => {
@@ -115,20 +165,6 @@ const SalonDetailScreen = ({ navigation, route }) => {
     };
 
     console.log("selected sevices : ",selectedServices);
-
-    const handleServiceBooking = async (item) => {
-        console.log("items: ", item);
-        try {
-            await serviceBooking({
-                variables: {
-                    productVariantId: parseInt(item.id, 10), // Convert to integer
-                    quantity: 1
-                }
-            });
-        } catch (error) {
-            console.error("Error Booking: ", error);
-        }
-    }
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
@@ -390,17 +426,17 @@ const SalonDetailScreen = ({ navigation, route }) => {
                                 {isServiceSelected(item) ? (
                                     <TouchableOpacity onPress={() => removeService(item)} style={styles.addButton}>
                                         <Text style={{ marginHorizontal: Sizes.fixPadding, ...Fonts.primaryColor14Bold }}>
-                                            Remove
+                                        {loadingServiceId === item.id && removing ? 'Removing..' : 'Remove'}
                                         </Text>
                                     </TouchableOpacity>
                                 ) : (
                                     <TouchableOpacity onPress={() => {
                                         addService(item)
-                                        handleServiceBooking(item)
+                                        // handleServiceBooking(item)
                                         }}
                                         style={styles.addButton}>
                                         <Text style={{ marginHorizontal: Sizes.fixPadding, ...Fonts.primaryColor14Bold }}>
-                                            Add
+                                        {loadingServiceId === item.id && adding ? 'Adding..' : 'Add'}
                                         </Text>
                                     </TouchableOpacity>
                                 )}

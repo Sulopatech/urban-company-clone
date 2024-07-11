@@ -5,7 +5,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Modal } from "react-native-paper";
 import MyStatusBar from "../../components/myStatusBar";
 import { useMutation } from "@apollo/client";
-import { SERVICE_BOOKING } from "../../services/Bookings";
+import { SERVICE_BOOKING, UPDATE_BOOKING } from "../../services/Bookings";
 
 const paymentMethods = [
     {
@@ -46,10 +46,11 @@ const PaymentMethodScreen = ({ navigation, route }) => {
 
     const updateState = (data) => setState((state) => ({ ...state, ...data }))
 
-    const [serviceBooking, { loading, error }] = useMutation(SERVICE_BOOKING, {
+    const [serviceBookingUpdate, { loading, error }] = useMutation(UPDATE_BOOKING, {
         onCompleted: async (data) => {
             console.log("BOOKING successfully:", data);
-            navigation.pop();
+            // navigation.pop();
+            updateState({ showSuccessfullyDialog: true })
         },
         onError: (error) => {
             console.error("Error BOOKING:", error);
@@ -129,6 +130,7 @@ const PaymentMethodScreen = ({ navigation, route }) => {
             <TouchableOpacity
                 activeOpacity={0.9}
                 onPress={() => updateState({ showSuccessfullyDialog: true })}
+                // onPress={() => handleBooking()}
                 style={styles.continueWithCreditCardButtonStyle}
             >
                 <Text style={{ ...Fonts.whiteColor18SemiBold }}>
@@ -138,13 +140,15 @@ const PaymentMethodScreen = ({ navigation, route }) => {
         )
     }
 
-    const handleBooking =  async () => {
+    function handleBooking() {
         try {
-            await serviceBooking({
+            serviceBookingUpdate({
                 variables: {
                     input: {
-                        "productVariantId": "1",
-                        "quantity": 2
+                        customFields: {
+                            date: date,
+                            time: selectedSlot
+                        }
                       }
                 }
             })
