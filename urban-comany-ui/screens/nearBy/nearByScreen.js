@@ -1,9 +1,11 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef,useEffect } from "react";
 import { View, Dimensions, Animated, StyleSheet, FlatList, TextInput, TouchableOpacity, Text, Image, Platform } from "react-native";
 import { Colors, Fonts, Sizes, CommonStyles } from "../../constants/styles";
 import { MaterialIcons } from '@expo/vector-icons';
 import { Snackbar } from "react-native-paper";
 import MapView, { Marker } from "react-native-maps";
+import { GETSEARCHLIST, SearchProducts } from "../../services/Search";
+import { useLazyQuery } from "@apollo/client";
 
 const { width } = Dimensions.get('window');
 
@@ -134,6 +136,13 @@ const markersList = [
 const cardWidth = width / 1.5;
 
 const NearByScreen = ({ navigation }) => {
+    const [getSearchProducts, { loading: searchLoading, data: searchData }] = useLazyQuery(GETSEARCHLIST);
+    useEffect(() => {
+    getSearchProducts({ variables: { term: "" } });
+    
+    }, [])
+   
+
 
     const animation = useRef(new Animated.Value(0)).current;
 
@@ -146,6 +155,9 @@ const NearByScreen = ({ navigation }) => {
         markers: markersList,
     })
 
+    //console.log("search data: ", searchData?.search?.items);
+    const searchProductData = searchData?.search?.items || [];
+
     const updateState = (data) => setState((state) => ({ ...state, ...data }))
 
     const {
@@ -156,6 +168,24 @@ const NearByScreen = ({ navigation }) => {
         showMapView,
         markers,
     } = state;
+
+
+    const filterSearchData = (data) => {
+        const uniqueProducts = [];
+        const productIds = new Set();
+
+        data.forEach(item => {
+            console.log("product id: ",item.productAsset.id);
+            if (!productIds.has(item.productAsset.id)) {
+                uniqueProducts.push(item);
+                productIds.add(item.productAsset.id);
+            }
+        });
+
+        return uniqueProducts;
+    };
+
+    const filteredSearchProductData = filterSearchData(searchProductData);
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
@@ -398,11 +428,13 @@ const NearByScreen = ({ navigation }) => {
         const renderItem = ({ item }) => (
             <TouchableOpacity
                 activeOpacity={0.9}
-                onPress={() => navigation.push('SalonDetail', { item })}
+                onPress={() => {navigation.push('SalonDetail',{ variantSlug: item.slug })
+                //console.log("image url: ",item.productAsset.preview)
+                }}
                 style={styles.salonInfoWrapStyle}
             >
                 <Image
-                    source={item.salonImage}
+                    source={{uri: item.productAsset.preview}}
                     style={{ width: 110.0, height: 95.0, borderRadius: Sizes.fixPadding }}
                 />
                 <View style={styles.salonDetailWrapper}>
@@ -412,9 +444,9 @@ const NearByScreen = ({ navigation }) => {
                         justifyContent: 'space-between',
                     }}>
                         <Text numberOfLines={1} style={{ ...Fonts.blackColor14Bold, flex: 1 }}>
-                            {item.salonName}
+                            {item.productName}
                         </Text>
-                        <MaterialIcons
+                        {/* <MaterialIcons
                             name={item.isFavorite ? "favorite" : "favorite-border"}
                             color={Colors.blackColor}
                             size={17}
@@ -422,10 +454,10 @@ const NearByScreen = ({ navigation }) => {
                                 updateSalons({ id: item.id })
                                 updateState({ showSnackBar: true })
                             }}
-                        />
+                        /> */}
                     </View>
                     <Text numberOfLines={1} style={{ ...Fonts.grayColor12SemiBold }} >
-                        {item.salonAddress}
+                    {'A 9/a Sector 16,Gautam Budh Nagar'}
                     </Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center', }}>
                         <MaterialIcons
@@ -434,18 +466,18 @@ const NearByScreen = ({ navigation }) => {
                             size={15}
                         />
                         <Text style={{ marginLeft: Sizes.fixPadding - 7.0, ...Fonts.grayColor12SemiBold }}>
-                            {item.rating.toFixed(1)} ({item.reviews} reviews)
+                        {"4.6 (100 reviews)"}
                         </Text>
                     </View>
                     <Text numberOfLines={1} style={{ ...Fonts.grayColor12SemiBold }}>
-                        {item.salonOpenTime} - {item.salonCloseTime}
+                    {"9:00 am"} - {"9:00 pm"}
                     </Text>
                 </View>
             </TouchableOpacity>
         )
         return (
             <FlatList
-                data={salons}
+                data={filteredSearchProductData}
                 keyExtractor={(item) => `${item.id}`}
                 renderItem={renderItem}
                 showsVerticalScrollIndicator={false}
@@ -468,7 +500,9 @@ const NearByScreen = ({ navigation }) => {
                 <TextInput
                     placeholder="Search salon services..."
                     value={search}
-                    onChangeText={(text) => updateState({ search: text })}
+                    onChangeText={(text) => {updateState({ search: text })
+                    getSearchProducts({ variables: { term: text } });
+                    }}
                     style={{ flex: 1, marginLeft: Sizes.fixPadding, ...Fonts.blackColor13Bold }}
                     placeholderTextColor={Colors.grayColor}
                     selectionColor={Colors.primaryColor}

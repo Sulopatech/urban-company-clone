@@ -1,13 +1,22 @@
-import React, { useState, useCallback } from "react";
-import { Dimensions, BackHandler, View, ScrollView, TouchableOpacity, ImageBackground, TextInput, Image, StyleSheet, Text, Platform } from "react-native";
+import React, { useState, useCallback, useEffect } from "react";
+import { Dimensions, BackHandler, View, ScrollView, TouchableOpacity, ImageBackground, TextInput, Image, StyleSheet, Text, Platform, Alert } from "react-native";
 import { Colors, Fonts, Sizes, } from "../../constants/styles";
 import { FontAwesome, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
-import { useFocusEffect } from "@react-navigation/native";
+import { CurrentRenderContext, useFocusEffect } from "@react-navigation/native";
 import MyStatusBar from "../../components/myStatusBar";
+import { useMutation } from "@apollo/client";
+import { LOGIN } from "../../services/Auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+//import ID from "../../id/id";
 
 const { width } = Dimensions.get('screen');
 
 const SigninScreen = ({ navigation }) => {
+
+    const [errorMessage, setErrorMessage] = useState('');
+    const [loggingIn, setLoggingIn] = useState(false);
+
+   const [id, setId] = useState(null);
 
     const backAction = () => {
         if (Platform.OS === "ios") {
@@ -54,6 +63,61 @@ const SigninScreen = ({ navigation }) => {
         backClickCount,
     } = state;
 
+    //add method -------------------------------------------------------------------------
+
+    const [login, { loading , error}] = useMutation(LOGIN, {
+        
+        onCompleted: async(data) => {
+            if (data.login.__typename === "CurrentUser") {
+                setLoggingIn(false);
+                await AsyncStorage.setItem("id", JSON.stringify(data.login.channels[0].id));
+                await AsyncStorage.setItem(`token`, JSON.stringify(data.login.channels[0].token));
+                
+                navigation.push('BottomTabBar');
+
+            } else {
+                if(errorMessage === '') {
+                    setLoggingIn(false);
+                    Alert.alert("Error","invalid user name password");
+                }
+                
+            }
+        },
+        onError: (error) => {
+            setLoggingIn(false);
+            Alert.alert("Error", error.message);
+        }
+    });
+
+    const handleSignin = () => {
+        setLoggingIn(true);
+        if(userName !== null && password !== null) {
+            if (userName.includes('@') && userName.includes('.')) { 
+                login({ variables: { username: userName, password: password } }); 
+                
+            } else {
+           
+                if (!userName.includes('@')) {
+                    setErrorMessage('Username must include @ symbol');
+                }
+                else if (!userName.includes('.')) {
+                    setErrorMessage('Username must include . symbol');
+                }
+            }
+        }else {
+            Alert.alert("Error","Please enter both username and password");
+        }  
+    };
+
+    const handleUserNameChange = (text) => {
+        updateState({ userName: text });
+        setErrorMessage('');
+    };
+
+
+    //end of the added method-------------------------------------------------
+
+    
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
             <MyStatusBar />
@@ -164,11 +228,12 @@ const SigninScreen = ({ navigation }) => {
         return (
             <TouchableOpacity
                 activeOpacity={0.9}
-                onPress={() => navigation.push('Signup')}
+                 onPress={handleSignin}
+                // onPress={() => navigation.push('BottomTabBar')}
                 style={styles.signinButtonStyle}
             >
                 <Text style={{ ...Fonts.whiteColor18SemiBold }}>
-                    Sign In
+                    {loggingIn ? "Signing In...." : "Sign In"}
                 </Text>
             </TouchableOpacity>
         )
@@ -222,13 +287,16 @@ const SigninScreen = ({ navigation }) => {
     }
 
     function userNameTextField() {
+
         return (
             <View style={{ marginTop: Sizes.fixPadding + 5.0, marginHorizontal: Sizes.fixPadding * 2.0, }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <FontAwesome name="user" size={17} color={Colors.grayColor} />
                     <TextInput
                         value={userName}
-                        onChangeText={(text) => updateState({ userName: text })}
+                        onChangeText={handleUserNameChange
+
+                        }
                         placeholder="User Name"
                         placeholderTextColor={Colors.grayColor}
                         selectionColor={Colors.primaryColor}
@@ -242,9 +310,15 @@ const SigninScreen = ({ navigation }) => {
                     backgroundColor: Colors.grayColor, height: 1.5,
                     marginVertical: Sizes.fixPadding - 5.0,
                 }} />
+
+                {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+
             </View>
+
         )
     }
+
+
 
     function header() {
         return (
@@ -258,6 +332,7 @@ const SigninScreen = ({ navigation }) => {
 }
 
 const styles = StyleSheet.create({
+
     animatedView: {
         backgroundColor: "#333333",
         position: "absolute",
@@ -301,6 +376,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         flex: 1,
         marginHorizontal: Sizes.fixPadding * 2.0,
+    },
+    errorText: {
+        color: 'red',
     }
 });
 

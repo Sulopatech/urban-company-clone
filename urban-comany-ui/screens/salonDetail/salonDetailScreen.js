@@ -6,6 +6,9 @@ import MapView from 'react-native-maps';
 import { Snackbar } from 'react-native-paper';
 import MyStatusBar from "../../components/myStatusBar";
 import CollapsibleToolbar from 'react-native-collapsible-toolbar';
+import { GET_PRODUCT_DETAIL } from "../../services/salonDetails";
+import { useMutation, useQuery } from "@apollo/client";
+import { REMOVE_BOOKING, SERVICE_BOOKING } from "../../services/Bookings";
 
 const { width } = Dimensions.get('window');
 
@@ -25,152 +28,6 @@ const packageAndOffersList = [
         packageAvailable: 'Nov 26,2021',
         packageAmount: 850.50,
         offer: 25
-    }
-];
-
-const aboutList = [
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-    'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.Lorem ipsum dolor sit amet',
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-];
-
-const specialists = [
-    {
-        id: '1',
-        specialistImage: require('../../assets/images/specialists/specialist1.png'),
-        specialistName: 'Sora',
-        speciality: 'Manager',
-    },
-    {
-        id: '2',
-        specialistImage: require('../../assets/images/specialists/specialist2.png'),
-        specialistName: 'Joya',
-        speciality: 'Hair stylist',
-    },
-    {
-        id: '3',
-        specialistImage: require('../../assets/images/salon/salon4.png'),
-        specialistName: 'Doe',
-        speciality: 'St.Barber',
-    },
-    {
-        id: '4',
-        specialistImage: require('../../assets/images/specialists/specialist3.png'),
-        specialistName: 'Helina',
-        speciality: 'M.Artist',
-    },
-    {
-        id: '5',
-        specialistImage: require('../../assets/images/specialists/specialist4.png'),
-        specialistName: 'Robat',
-        speciality: 'Hair Stylist',
-    },
-    {
-        id: '6',
-        specialistImage: require('../../assets/images/specialists/specialist4.png'),
-        specialistName: 'Robat',
-        speciality: 'Hair Stylist',
-    }
-];
-
-const servicesList = [
-    {
-        id: '1',
-        serviceImage: require('../../assets/images/icons/hairstyle.png'),
-        serviceName: 'Hairstyle',
-        serviceTypes: 10,
-        bgColor: '#EF9A9A',
-    },
-    {
-        id: '2',
-        serviceImage: require('../../assets/images/icons/hairdryer.png'),
-        serviceName: 'Hairdryer',
-        serviceTypes: 5,
-        bgColor: '#F48FB1',
-    },
-    {
-        id: '3',
-        serviceImage: require('../../assets/images/icons/shaving.png'),
-        serviceName: 'Shaving',
-        serviceTypes: 6,
-        bgColor: '#CE93D8',
-    },
-    {
-        id: '4',
-        serviceImage: require('../../assets/images/icons/makeup.png'),
-        serviceName: 'Makeup',
-        serviceTypes: 10,
-        bgColor: '#90CAF9',
-    },
-    {
-        id: '5',
-        serviceImage: require('../../assets/images/icons/nails.png'),
-        serviceName: 'Nails',
-        serviceTypes: 5,
-        bgColor: '#80CBC4',
-    },
-    {
-        id: '6',
-        serviceImage: require('../../assets/images/icons/coloring.png'),
-        serviceName: 'Coloring',
-        serviceTypes: 6,
-        bgColor: '#EF9A9A',
-    },
-    {
-        id: '7',
-        serviceImage: require('../../assets/images/icons/massage.png'),
-        serviceName: 'Massage',
-        serviceTypes: 6,
-        bgColor: '#F48FB1',
-    },
-];
-
-const galleryImagesList = [
-    {
-        id: '1',
-        image: require('../../assets/images/gallery/img1.png'),
-        aspectRatio: 1
-    },
-    {
-        id: '2',
-        image: require('../../assets/images/gallery/img2.png'),
-        aspectRatio: 200 / 145,
-    },
-    {
-        id: '3',
-        image: require('../../assets/images/gallery/img3.png'),
-        aspectRatio: 180 / 145,
-    },
-    {
-        id: '4',
-        image: require('../../assets/images/gallery/img4.png'),
-        aspectRatio: 180 / 145,
-    },
-    {
-        id: '5',
-        image: require('../../assets/images/gallery/img5.png'),
-        aspectRatio: 1,
-    },
-    {
-        id: '6',
-        image: require('../../assets/images/gallery/img6.png'),
-        aspectRatio: 120 / 145,
-    },
-    {
-        id: '7',
-        image: require('../../assets/images/gallery/img7.png'),
-        aspectRatio: 210 / 145,
-    },
-    {
-        id: '8',
-        image: require('../../assets/images/gallery/img8.png'),
-        aspectRatio: 160 / 145,
-    },
-    {
-        id: '9',
-        image: require('../../assets/images/gallery/img9.png'),
-        aspectRatio: 130 / 145,
     }
 ];
 
@@ -214,6 +71,100 @@ const SalonDetailScreen = ({ navigation, route }) => {
         isFavorite,
         showSnackBar,
     } = state;
+    
+    const [selectedServices, setSelectedServices] = useState([]);
+    const [loadingServiceId, setLoadingServiceId] = useState(null);
+    const [adding, setAdding] = useState(false);
+    const [removing, setRemoving] = useState(false);
+
+    const { variantSlug } = route.params;
+
+    const { loading, error, data } = useQuery(GET_PRODUCT_DETAIL, {
+        variables: { slug: variantSlug },
+        skip: !variantSlug,  
+    });
+
+    const [serviceBooking, { loading: serviceBookingLoading, error: serviceBookingError }] = useMutation(SERVICE_BOOKING, {
+        onCompleted: async (data) => {
+            console.log("BOOKING successfully:", data);
+            console.log("order line", data.addItemToOrder.lines);
+
+            const newServices = data.addItemToOrder.lines.map(line => ({
+                id: line.productVariant.id,
+                name: line.productVariant.name,
+                price: line.productVariant.price,
+                priceWithTax: line.productVariant.priceWithTax,
+                featuredAsset: line.productVariant.featuredAsset,
+                orderLineId: line.id, // Store orderLineId
+            }));
+
+            setSelectedServices(prevServices => {
+                // Filter out any existing services to avoid duplicates
+                const updatedServices = prevServices.filter(
+                    service => !newServices.some(newService => newService.id === service.id)
+                );
+                return [...updatedServices, ...newServices];
+            });
+        },
+        onError: (error) => {
+            console.error("Error BOOKING:", error);
+        },
+    });
+
+    const [removeServiceMutation, { loading: removeServiceLoading, error: removeServiceError }] = useMutation(REMOVE_BOOKING);
+    
+    if (loading) return <Text style={{ marginLeft: Sizes.fixPadding, ...Fonts.blackColor18Bold }}>Loading...</Text>;
+    if (error) return <Text>Error: {error.message}</Text>;
+    
+    const { product } = data;
+    console.log("data",data)
+    const servicesListData = product?.variants || [] ;
+    console.log("servicelistdata: ",servicesListData);
+
+    const addService = async (service) => {
+        setLoadingServiceId(service.id);
+        setAdding(true);
+        try {
+            await serviceBooking({
+                variables: {
+                    productVariantId: parseInt(service.id, 10),
+                    quantity: 1
+                }
+            });
+            // setSelectedServices(prevServices => prevServices.filter(item => item.id !== service.id));
+        } catch (error) {
+            console.error("Error Booking: ", error);
+        }
+        setAdding(false);
+        setLoadingServiceId(null);
+    };
+
+    const removeService = async (service) => {
+        const serviceToRemove = selectedServices.find(item => item.id === service.id);
+        if (!serviceToRemove) return;
+        setLoadingServiceId(service.id);
+        setRemoving(true);
+
+        try {
+            await removeServiceMutation({
+                variables: {
+                    orderLineId: parseInt(serviceToRemove.orderLineId, 10)
+                }
+            });
+
+            setSelectedServices(prevServices => prevServices.filter(item => item.id !== service.id));
+        } catch (error) {
+            console.error("Error Removing Service: ", error);
+        }
+        setRemoving(false);
+        setLoadingServiceId(null);
+    };
+
+    const isServiceSelected = (service) => {
+        return selectedServices.some((item) => item.id === service.id);
+    };
+
+    console.log("selected sevices : ",selectedServices);
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
@@ -224,7 +175,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
                         <View style={{ flex: 1 }}>
                             {options()}
                             {divider()}
-                            {salonSpecialists()}
+                            {/* {salonSpecialists()} */}
                             {tabBarOptions()}
                             {
                                 currentSelectedIndex == 1
@@ -235,11 +186,12 @@ const SalonDetailScreen = ({ navigation, route }) => {
                                         ?
                                         salonServicesInfo()
                                         :
-                                        currentSelectedIndex == 3
-                                            ?
-                                            galleryInfo()
-                                            :
-                                            reviewInfo()
+                                        reviewInfo()
+                                        // currentSelectedIndex == 3
+                                        //     ?
+                                        //     galleryInfo()
+                                        //     :
+                                          
                             }
                         </View>
                     )}
@@ -251,7 +203,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
                     showsVerticalScrollIndicator={false}
                 />
             </View>
-            {bookAppintmentButton()}
+            {bookAppointmentButton()}
             <Snackbar
                 style={styles.snackBarStyle}
                 visible={showSnackBar}
@@ -291,7 +243,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
     function salonImage() {
         return (
             <ImageBackground
-                source={item.salonImage}
+                source={{uri: product.featuredAsset.preview}}
                 style={{
                     width: '100%',
                     height: 230,
@@ -311,10 +263,10 @@ const SalonDetailScreen = ({ navigation, route }) => {
                                     numberOfLines={1}
                                     style={{ maxWidth: width - 150.0, ...Fonts.whiteColor16Bold }}
                                 >
-                                    {item.salonName}
+                                    {product.name}
                                 </Text>
                                 <Text style={{ marginLeft: Sizes.fixPadding - 6.0, ...Fonts.primaryColor10Bold }}>
-                                    WOMEN ONLY
+                                    {/* {product.name} */}
                                 </Text>
                             </View>
                             <Text
@@ -325,12 +277,16 @@ const SalonDetailScreen = ({ navigation, route }) => {
                                     ...Fonts.whiteColor13Medium
                                 }}
                             >
-                                {item.salonAddress}
+                                {product.address ? product.address : "A 9/a Sector 16,Gautam Budh Nagar"}
                             </Text>
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                {showRating({ rate: item.rating })}
-                                <Text style={{ marginLeft: Sizes.fixPadding, ...Fonts.whiteColor12Medium }}>
-                                    ({item.reviews} Reviews)
+                            <AntDesign
+                                name="star"
+                                color={Colors.yellowColor}
+                                size={13}
+                            />
+                                <Text style={{ ...Fonts.whiteColor12Medium }}>
+                                {product.ratings ? product.ratings : " 4.6 (100 Reviews)"}
                                 </Text>
                             </View>
                         </View>
@@ -341,9 +297,8 @@ const SalonDetailScreen = ({ navigation, route }) => {
                         </View>
                     </View>
                 </View>
-
             </ImageBackground>
-        )
+        );
     }
 
     function reviewInfo() {
@@ -426,54 +381,6 @@ const SalonDetailScreen = ({ navigation, route }) => {
         )
     }
 
-    function galleryInfo() {
-        return (
-            <ScrollView
-                automaticallyAdjustKeyboardInsets={true}
-                contentContainerStyle={styles.galleryInfoWrapStyle}
-                showsVerticalScrollIndicator={false}
-            >
-                <View style={{ flexDirection: 'row' }}>
-                    <View>
-                        {galleryImagesList
-                            .filter((_, i) => i % 2 !== 0)
-                            .map((item,) =>
-                            (
-                                <Image
-                                    key={`${item.id}`}
-                                    source={item.image}
-                                    style={{
-                                        marginRight: Sizes.fixPadding + 5.0,
-                                        ...styles.galleryImagesStyle,
-                                        width: (width - 60) / 2.0,
-                                        height: ((width - 40) / 2.0) * item.aspectRatio
-                                    }}
-                                    resizeMode="cover"
-                                />
-                            ))}
-                    </View>
-                    <View>
-                        {galleryImagesList
-                            .filter((_, i) => i % 2 === 0)
-                            .map((item,) =>
-                            (
-                                <Image
-                                    key={`${item.id}`}
-                                    source={item.image}
-                                    style={{
-                                        ...styles.galleryImagesStyle,
-                                        width: (width - 40) / 2.0,
-                                        height: ((width - 40) / 2.0) * item.aspectRatio
-                                    }}
-                                    resizeMode="cover"
-                                />
-                            ))}
-                    </View>
-                </View>
-            </ScrollView>
-        )
-    }
-
     function salonServicesInfo() {
         return (
             <View style={{ marginHorizontal: Sizes.fixPadding * 2.0, }}>
@@ -481,43 +388,63 @@ const SalonDetailScreen = ({ navigation, route }) => {
                     Services
                 </Text>
                 {
-                    servicesList.map((item) => (
+                    servicesListData.map((item) => (
                         <View key={`${item.id}`}>
                             <View style={styles.salonServicesWrapStyle}>
                                 <View style={{
                                     flexDirection: 'row',
                                     alignItems: 'center',
+                                    width: "70%"
                                 }}>
                                     <View style={{
                                         ...styles.salonServiceImageWrapStyle,
                                         backgroundColor: item.bgColor,
                                     }}>
                                         <Image
-                                            source={item.serviceImage}
-                                            style={{ width: 22.0, height: 22.0, }}
-                                            resizeMode="contain"
-                                            tintColor={Colors.whiteColor}
+                                            source={{ uri : item.featuredAsset ? item.featuredAsset.preview : "" }}
+                                            style={{ width: "100%", height: "100%" , borderRadius: Sizes.fixPadding, }}
+                                            resizeMode="cover"
                                         />
                                     </View>
                                     <View style={{ marginLeft: Sizes.fixPadding, }}>
-                                        <Text style={{ marginTop: Sizes.fixPadding - 5.0, lineHeight: 15.0, ...Fonts.blackColor13Bold }}>
-                                            {item.serviceName}
+                                        <Text 
+                                            style={{ marginTop: Sizes.fixPadding - 5.0, lineHeight: 15.0, ...Fonts.blackColor13Bold }}
+                                            numberOfLines={2}
+                                            ellipsizeMode="tail"
+                                        >
+                                            {item.name}
                                         </Text>
                                         <Text style={{ ...Fonts.grayColor11SemiBold }}>
-                                            {item.serviceTypes}types
+                                            ₹: {item.price} + tax : {item.priceWithTax - item.price} Rs
+                                        </Text>
+                                        <Text style={{ ...Fonts.grayColor11SemiBold }}>
+                                            Total ₹: {item.priceWithTax} Rs
                                         </Text>
                                     </View>
                                 </View>
-                                <Text
-                                    onPress={() => navigation.push('ServiceDetail')}
-                                    style={{ marginHorizontal: Sizes.fixPadding, ...Fonts.primaryColor14Bold }}
-                                >
-                                    View
-                                </Text>
+                                <View>
+                                {isServiceSelected(item) ? (
+                                    <TouchableOpacity onPress={() => removeService(item)} style={styles.addButton}>
+                                        <Text style={{ marginHorizontal: Sizes.fixPadding, ...Fonts.primaryColor14Bold }}>
+                                        {loadingServiceId === item.id && removing ? 'Removing..' : 'Remove'}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ) : (
+                                    <TouchableOpacity onPress={() => {
+                                        addService(item)
+                                        // handleServiceBooking(item)
+                                        }}
+                                        style={styles.addButton}>
+                                        <Text style={{ marginHorizontal: Sizes.fixPadding, ...Fonts.primaryColor14Bold }}>
+                                        {loadingServiceId === item.id && adding ? 'Adding..' : 'Add'}
+                                        </Text>
+                                    </TouchableOpacity>
+                                )}
+                                </View>
                             </View>
                         </View>
                     ))
-                }
+                } 
             </View>
         )
     }
@@ -528,28 +455,37 @@ const SalonDetailScreen = ({ navigation, route }) => {
                 {aboutInfo()}
                 {divider()}
                 {openingHoursInfo()}
-                {divider()}
-                {locationInfo()}
-                {divider()}
-                {currentPackageAndOffersInfo()}
+                {/* {divider()}
+                {locationInfo()} */}
+                {/* {divider()}
+                {currentPackageAndOffersInfo()} */}
             </View>
         )
     }
 
-    function bookAppintmentButton() {
+    function bookAppointmentButton() {
+        const isDisabled = selectedServices.length === 0;
+    
         return (
             <View>
                 <TouchableOpacity
                     activeOpacity={0.9}
-                    onPress={() => navigation.push('ScheduleAppointment')}
-                    style={styles.bookAppointmentButtonStyle}
+                    onPress={() => navigation.push('ScheduleAppointment', {
+                        selectedServices: selectedServices,
+                        product: product
+                    })}
+                    style={[
+                        styles.bookAppointmentButtonStyle,
+                        isDisabled && styles.disabledButtonStyle
+                    ]}
+                    disabled={isDisabled}
                 >
                     <Text style={{ ...Fonts.whiteColor18SemiBold }}>
                         Book Appointment
                     </Text>
                 </TouchableOpacity>
             </View>
-        )
+        );
     }
 
     function currentPackageAndOffersInfo() {
@@ -562,7 +498,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
                     packageAndOffersList.map((item) => (
                         <View key={`${item.id}`}>
                             <ImageBackground
-                                source={item.salonImage}
+                                source={{uri: ""}}
                                 style={styles.packageAndOffersImageStyle}
                                 borderRadius={Sizes.fixPadding}
                             >
@@ -604,53 +540,6 @@ const SalonDetailScreen = ({ navigation, route }) => {
         )
     }
 
-    function locationInfo() {
-        return (
-            <View style={{
-                marginVertical: Sizes.fixPadding - 5.0,
-                marginHorizontal: Sizes.fixPadding * 2.0,
-            }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', }}>
-                    <View>
-                        <Text style={{
-                            marginBottom: Sizes.fixPadding,
-                            lineHeight: 18.0, ...Fonts.blackColor16Bold
-                        }}>
-                            Location
-                        </Text>
-                        <Text style={{ maxWidth: width - 160.0, ...Fonts.grayColor12SemiBold }}>
-                            {item.salonAddress}
-                        </Text>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <FontAwesome
-                                name="location-arrow"
-                                size={15}
-                                color={Colors.primaryColor}
-                            />
-                            <Text style={{ marginLeft: Sizes.fixPadding - 5.0, ...Fonts.primaryColor12Bold }}>
-                                Get directions - 5.2km
-                            </Text>
-                        </View>
-                    </View>
-                    <View style={styles.mapViewWrapStyle}>
-                        <MapView
-                            style={{
-                                width: 110.0,
-                                height: 90.0,
-                            }}
-                            initialRegion={{
-                                latitude: 37.78825,
-                                longitude: -122.4324,
-                                latitudeDelta: 0.0922,
-                                longitudeDelta: 0.0421,
-                            }}
-                        />
-                    </View>
-                </View>
-            </View>
-        )
-    }
-
     function openingHoursInfo() {
         return (
             <View style={{
@@ -688,48 +577,10 @@ const SalonDetailScreen = ({ navigation, route }) => {
                 <Text style={{ marginBottom: Sizes.fixPadding - 5.0, ...Fonts.blackColor16Bold }}>
                     About
                 </Text>
-                <View>
-                    {
-                        aboutList.map((item, index) => (
-                            <View key={`${index}`} >
-                                {readMore ?
-                                    <View style={{}}>
-                                        <Text style={{ ...Fonts.grayColor13Bold }}>
-                                            {`        `}{item}
-                                        </Text>
-                                        {index == aboutList.length - 1 ?
-                                            <Text
-                                                onPress={() => updateState({ readMore: false })}
-                                                style={{ alignSelf: 'flex-end', ...Fonts.primaryColor14Bold }}
-                                            >
-                                                Show Less
-                                            </Text>
-                                            : null
-                                        }
-                                    </View>
-                                    :
-                                    index < 2
-                                        ?
-                                        <View style={{}}>
-                                            <Text style={{ ...Fonts.grayColor13Bold }}>
-                                                {`        `}{item}
-                                            </Text>
-                                            {index == 1 ?
-                                                <Text
-                                                    onPress={() => updateState({ readMore: true })}
-                                                    style={{ alignSelf: 'flex-end', ...Fonts.primaryColor14Bold }}
-                                                >
-                                                    ReadMore
-                                                </Text>
-                                                : null}
-                                        </View>
-                                        :
-                                        null
-                                }
-                            </View>
-                        ))
-                    }
-                </View>
+                <Text style={{ marginBottom: Sizes.fixPadding - 5.0 , ...Fonts.grayColor13Bold }}>
+                    {product.description}
+                </Text>
+               
             </View >
         )
     }
@@ -749,12 +600,12 @@ const SalonDetailScreen = ({ navigation, route }) => {
                 >
                     Services
                 </Text>
-                <Text
+                {/* <Text
                     onPress={() => updateState({ currentSelectedIndex: 3 })}
                     style={currentSelectedIndex == 3 ? { ...Fonts.primaryColor15Bold } : { ...Fonts.grayColor15Bold }}
                 >
                     Gallery
-                </Text>
+                </Text> */}
                 <Text
                     onPress={() => updateState({ currentSelectedIndex: 4 })}
                     style={currentSelectedIndex == 4 ? { ...Fonts.primaryColor15Bold } : { ...Fonts.grayColor15Bold }}
@@ -765,48 +616,6 @@ const SalonDetailScreen = ({ navigation, route }) => {
         )
     }
 
-    function salonSpecialists() {
-
-        const renderItem = ({ item }) => (
-            <TouchableOpacity
-                activeOpacity={0.9}
-                onPress={() => navigation.push('SpecialistDetail', { item: item, salonInfo: route.params.item })}
-                style={{
-                    alignItems: 'center',
-                    marginRight: Sizes.fixPadding + 5.0,
-                }}
-            >
-                <Image
-                    source={item.specialistImage}
-                    style={{ width: 45.0, height: 45.0, borderRadius: Sizes.fixPadding - 5.0, }}
-                />
-                <Text style={{ ...Fonts.blackColor12Bold, marginTop: Sizes.fixPadding - 7.0 }}>
-                    {item.specialistName}
-                </Text>
-                <Text style={{ lineHeight: 11.0, ...Fonts.grayColor11SemiBold }}>
-                    {item.speciality}
-                </Text>
-            </TouchableOpacity>
-        )
-        return (
-            <View>
-                <Text style={{ marginHorizontal: Sizes.fixPadding * 2.0, ...Fonts.blackColor16Bold }}>
-                    Our Salon Specialists
-                </Text>
-                <FlatList
-                    data={specialists}
-                    keyExtractor={(item) => `${item.id}`}
-                    renderItem={renderItem}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{
-                        paddingLeft: Sizes.fixPadding * 2.0,
-                        paddingTop: Sizes.fixPadding,
-                    }}
-                />
-            </View>
-        )
-    }
 
     function divider() {
         return (
@@ -842,47 +651,6 @@ const SalonDetailScreen = ({ navigation, route }) => {
                 <Text style={{ ...Fonts.primaryColor13Bold }}>
                     {option}
                 </Text>
-            </View>
-        )
-    }
-
-    function salonInfo() {
-        return (
-            <View style={styles.salonInfoWrapStyle}>
-                <View>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Text
-                            numberOfLines={1}
-                            style={{ maxWidth: width - 150.0, ...Fonts.whiteColor16Bold }}
-                        >
-                            {item.salonName}
-                        </Text>
-                        <Text style={{ marginLeft: Sizes.fixPadding - 6.0, ...Fonts.primaryColor10Bold }}>
-                            WOMEN ONLY
-                        </Text>
-                    </View>
-                    <Text
-                        numberOfLines={1}
-                        style={{
-                            width: width - 120.0,
-                            lineHeight: 17.0,
-                            ...Fonts.whiteColor13Medium
-                        }}
-                    >
-                        {item.salonAddress}
-                    </Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        {showRating({ rate: item.rating })}
-                        <Text style={{ marginLeft: Sizes.fixPadding, ...Fonts.whiteColor12Medium }}>
-                            ({item.reviews} Reviews)
-                        </Text>
-                    </View>
-                </View>
-                <View style={styles.openButtonWrapStyle}>
-                    <Text style={{ ...Fonts.whiteColor11Bold }}>
-                        Open
-                    </Text>
-                </View>
             </View>
         )
     }
@@ -1033,6 +801,9 @@ const styles = StyleSheet.create({
         marginHorizontal: Sizes.fixPadding * 2.0,
         marginBottom: Sizes.fixPadding * 2.0,
     },
+    disabledButtonStyle: {
+        backgroundColor: Colors.grayColor,
+    },
     tabBarWrapStyle: {
         backgroundColor: Colors.whiteColor,
         elevation: 2.0,
@@ -1083,6 +854,7 @@ const styles = StyleSheet.create({
     },
     salonServicesWrapStyle: {
         flexDirection: 'row',
+        width: "100%",
         alignItems: 'center',
         justifyContent: 'space-between',
         backgroundColor: Colors.whiteColor,
@@ -1097,7 +869,7 @@ const styles = StyleSheet.create({
         borderRadius: Sizes.fixPadding,
         alignItems: 'center',
         justifyContent: 'center',
-        height: 47.0,
+        height: 70,
         width: 47.0,
     },
     reviewTextFieldWrapStyle: {
@@ -1116,7 +888,15 @@ const styles = StyleSheet.create({
         right: -10.0,
         backgroundColor: '#333333',
         elevation: 0.0,
-    }
+    },
+    addButton: {
+        paddingVertical: 2,
+        paddingHorizontal: 4,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: "#D66986",
+        marginRight: 4,
+    },
 });
 
 export default SalonDetailScreen;

@@ -9,12 +9,13 @@ import { AssetServerPlugin } from '@vendure/asset-server-plugin';
 import { AdminUiPlugin } from '@vendure/admin-ui-plugin';
 import 'dotenv/config';
 import path from 'path';
+import { CustomerProfilePicPlugin } from './plugins/customer-profile/customer-profile.plugin';
 
 const IS_DEV = process.env.APP_ENV === 'dev';
 
 export const config: VendureConfig = {
     apiOptions: {
-        port: 3000,
+        port: 4001,
         adminApiPath: 'admin-api',
         shopApiPath: 'shop-api',
         // The following options are useful in development mode,
@@ -32,6 +33,7 @@ export const config: VendureConfig = {
         } : {}),
     },
     authOptions: {
+        requireVerification: false,
         tokenMethod: ['bearer', 'cookie'],
         superadminCredentials: {
             identifier: process.env.SUPERADMIN_USERNAME,
@@ -46,7 +48,7 @@ export const config: VendureConfig = {
         // See the README.md "Migrations" section for an explanation of
         // the `synchronize` and `migrations` options.
         synchronize: false,
-        migrations: [path.join(__dirname, './migrations/*.+(js|ts)')],
+        migrations: [path.join(__dirname, '../migrations/*.+(js|ts)')],
         logging: false,
         database: process.env.DB_NAME,
         host: process.env.DB_HOST,
@@ -59,7 +61,24 @@ export const config: VendureConfig = {
     },
     // When adding or altering custom field definitions, the database will
     // need to be updated. See the "Migrations" section in README.md.
-    customFields: {},
+    customFields: {
+        Order: [
+            {name: 'date', type: 'string', nullable: true},
+            {name: 'time', type: 'string', nullable: true},
+        ],
+        Product: [
+            {name: 'weekdays', type: 'string', nullable: true},
+            {name: 'weekends', type: 'string', nullable: true},
+            {name: 'location', type: 'string', nullable: true},
+            {name: 'x_coordinate', type: 'float', nullable: true},
+            {name: 'y_coordinate', type: 'float', nullable: true}
+        ],
+        Customer: [
+            {name: 'currentLocation', type: 'string', nullable: true},
+            {name: 'x_coordinaties', type: 'float', nullable: true},
+            {name: 'y_coordinates', type: 'float', nullable: true}
+        ],
+    },
     plugins: [
         AssetServerPlugin.init({
             route: 'assets',
@@ -90,8 +109,12 @@ export const config: VendureConfig = {
             route: 'admin',
             port: 3002,
             adminUiConfig: {
-                apiPort: 3000,
+                apiPort: 4001,
             },
+        }),
+        CustomerProfilePicPlugin.init({
+            route: 'profilepic',
+            assetUploadDir: path.join(__dirname, '../static/profilepic')
         }),
     ],
 };

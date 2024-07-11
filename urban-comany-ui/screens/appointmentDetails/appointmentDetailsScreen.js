@@ -3,10 +3,33 @@ import { View, StyleSheet, ScrollView, Image, TouchableOpacity, Text } from "rea
 import { Colors, Fonts, Sizes, } from "../../constants/styles";
 import { MaterialIcons, AntDesign } from '@expo/vector-icons';
 import MyStatusBar from "../../components/myStatusBar";
+import { UPDATE_BOOKING } from "../../services/Bookings";
+import { useMutation } from "@apollo/client";
 
 const servicesList = ['Hair wash herbal', 'Hair color', 'Simple hair cuting - hair wash']
 
-const AppointmentDetailsScreen = ({ navigation }) => {
+const AppointmentDetailsScreen = ({ navigation ,route }) => {
+
+    const{date, selectedSlot, selectedServices, product} = route.params;
+
+    const [serviceBookingUpdate, { loading, error }] = useMutation(UPDATE_BOOKING, {
+        onCompleted: async (data) => {
+            console.log("BOOKING successfully update:", data);
+            navigation.push('PaymentMethod', {
+                    date: date,
+                    selectedSlot: selectedSlot ,
+                    selectedServices: selectedServices,
+                    product: product,
+                })
+        },
+        onError: (error) => {
+            console.error("Error BOOKING update:", error);
+        },
+    });
+
+    console.log("product: ", product);
+    console.log("selected services: ",selectedServices);
+
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
             <MyStatusBar />
@@ -18,7 +41,7 @@ const AppointmentDetailsScreen = ({ navigation }) => {
                 >
                     {salonInfo()}
                     {servicesInfo()}
-                    {specialistsInfo()}
+                    {/* {specialistsInfo()} */}
                     {dateTimeInfo()}
                     {totalAmountInfo()}
                 </ScrollView>
@@ -31,7 +54,13 @@ const AppointmentDetailsScreen = ({ navigation }) => {
         return (
             <TouchableOpacity
                 activeOpacity={0.9}
-                onPress={() => navigation.push('PaymentMethod')}
+                // onPress={() => navigation.push('PaymentMethod', {
+                //     date: date,
+                //     selectedSlot: selectedSlot ,
+                //     selectedServices: selectedServices,
+                //     product: product,
+                // })}
+                onPress={() => handleBooking()}
                 style={styles.bookNowButtonStyle}
             >
                 <Text style={{ ...Fonts.whiteColor18SemiBold }}>
@@ -41,6 +70,23 @@ const AppointmentDetailsScreen = ({ navigation }) => {
         )
     }
 
+    function handleBooking() {
+        try {
+            serviceBookingUpdate({
+                variables: {
+                    input: {
+                        customFields: {
+                            date: date,
+                            time: selectedSlot
+                        }
+                      }
+                }
+            })
+        } catch (error) {
+            console.error("Error Booking: ",error);
+        }
+    }
+
     function totalAmountInfo() {
         return (
             <View style={styles.totalAmountInfoWrapStyle}>
@@ -48,12 +94,12 @@ const AppointmentDetailsScreen = ({ navigation }) => {
                     Total Amount
                 </Text>
                 <Text style={{ ...Fonts.blackColor16Bold }}>
-                    $209.00
+                    {`$`}{selectedServices.reduce((total, item) => total = total + item.priceWithTax, 0).toFixed(2)}
                 </Text>
             </View>
         )
     }
-
+//Thursday •
     function dateTimeInfo() {
         return (
             <View style={{
@@ -64,7 +110,7 @@ const AppointmentDetailsScreen = ({ navigation }) => {
                     Appointment Date Time
                 </Text>
                 <Text style={{ ...Fonts.grayColor13SemiBold }}>
-                    Thursday • 14 August,2021 • 2:00 pm
+                    {date} • {selectedSlot}
                 </Text>
             </View>
         )
@@ -93,11 +139,11 @@ const AppointmentDetailsScreen = ({ navigation }) => {
                     Services
                 </Text>
                 <Text>
-                    {servicesList.map((item, index) => (
+                    {selectedServices.map((item, index) => (
                         <Text key={`${index}`}
                             style={{ ...Fonts.grayColor13SemiBold }}
                         >
-                            {item} {index == servicesList.length - 1 ? '' : `• `}
+                            {item.name} {index == selectedServices.length - 1 ? '' : `• `}
                         </Text>
                     )
                     )}
@@ -110,15 +156,15 @@ const AppointmentDetailsScreen = ({ navigation }) => {
         return (
             <View style={{ marginHorizontal: Sizes.fixPadding * 2.0, flexDirection: 'row', alignItems: 'center' }}>
                 <Image
-                    source={require('../../assets/images/salon/salon2.png')}
+                    source={{uri: product.featuredAsset.preview}}
                     style={{ width: 70.0, height: 70.0, borderRadius: Sizes.fixPadding }}
                 />
                 <View style={{ marginLeft: Sizes.fixPadding, }}>
                     <Text style={{ lineHeight: 16.0, ...Fonts.blackColor14Bold }}>
-                        Crown salon
+                        {product.name}
                     </Text>
                     <Text style={{ ...Fonts.grayColor12SemiBold }}>
-                        A 9/a Sector 16,Gautam Budh Nagar
+                        {product.address ? product.address : "A 9/a Sector 16,Gautam Budh Nagar"}
                     </Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center', }}>
                         <AntDesign
@@ -127,7 +173,7 @@ const AppointmentDetailsScreen = ({ navigation }) => {
                             size={13}
                         />
                         <Text style={{ marginLeft: Sizes.fixPadding - 5.0, ...Fonts.grayColor12SemiBold }}>
-                            4.6 (100 Reviews)
+                            {product.ratings ? product.ratings : " 4.6 (100 Reviews)"}
                         </Text>
                     </View>
                 </View>

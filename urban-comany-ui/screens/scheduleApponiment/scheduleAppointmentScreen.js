@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Image, FlatList, TouchableOpacity, StyleSheet, Text } from "react-native";
 import { Colors, Fonts, Sizes, } from "../../constants/styles";
 import { MaterialIcons } from '@expo/vector-icons';
 import CalendarStrip from 'react-native-calendar-strip';
 import MyStatusBar from "../../components/myStatusBar";
+import moment from "moment";
 
 const slotsList = [
     '09:30 am', '10:00 am', '10:30 am', '11:00 am', '11:30 am', '12:00 am', '01:30 pm', '02:00 pm', '02:30 pm', '03:00 pm', '03:30 pm', '04:00 pm', '04:30 pm', '05:00 pm',
@@ -67,15 +68,41 @@ const selectedServicesList = [
     },
 ];
 
-const ScheduleAppointmentScreen = ({ navigation }) => {
+const ScheduleAppointmentScreen = ({ navigation ,route }) => {
 
     const [state, setState] = useState({
         specialists: specialistsData,
         selectedSpecialistId: specialistsData[0].id,
-        selectedSlot: '02:00 pm',
+        selectedSlot: '',
     })
 
+    const [selectedDate, setSelectedDate] = useState(null);
+    const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+
+    const today = moment();
+
+    useEffect(() => {
+        if (selectedDate && state.selectedSlot) {
+            setIsButtonDisabled(false);
+        } else {
+            setIsButtonDisabled(true);
+        }
+    }, [selectedDate, state.selectedSlot]);
+
+    const handleDateSelected = (date) => {
+        const FormatedDate = formatDate(date); 
+      setSelectedDate(FormatedDate);  // Update state with the selected date
+        
+    };
+    const formatDate = (date) => {
+        if (!date) return '';
+        const isoString = date.toISOString();  // Get ISO 8601 string
+        return isoString.split('T')[0];  // Split by 'T' and take the date part
+    };
+
     const updateState = (data) => setState((state) => ({ ...state, ...data }))
+
+    const { selectedServices, product } = route.params;
 
     const {
         specialists,
@@ -92,7 +119,7 @@ const ScheduleAppointmentScreen = ({ navigation }) => {
                     ListHeaderComponent={
                         <>
                             {selectDateInfo()}
-                            {selectSpecialistInfo()}
+                            {/* {selectSpecialistInfo()} */}
                             {availableSlotInfo()}
                             {selectedServicesInfo()}
                             {totalAmountInfo()}
@@ -106,12 +133,24 @@ const ScheduleAppointmentScreen = ({ navigation }) => {
         </View>
     )
 
+    
+
     function continueButton() {
+        
         return (
             <TouchableOpacity
                 activeOpacity={0.9}
-                onPress={() => navigation.push('AppointmentDetail')}
-                style={styles.continueButtonStyle}
+                onPress={() => navigation.push('AppointmentDetail',{
+                    selectedServices: selectedServices,
+                    date: selectedDate,
+                    selectedSlot: state.selectedSlot,
+                    product: product,
+                })}
+                style={[
+                    styles.continueButtonStyle,
+                    { backgroundColor: isButtonDisabled ? Colors.grayColor : Colors.primaryColor },
+                ]}
+                disabled={isButtonDisabled}
             >
                 <Text style={{ ...Fonts.whiteColor18SemiBold }}>
                     Continue
@@ -127,7 +166,7 @@ const ScheduleAppointmentScreen = ({ navigation }) => {
                     Total Amount
                 </Text>
                 <Text style={{ ...Fonts.blackColor13Bold }}>
-                    {`$`}{selectedServicesList.reduce((total, item) => total = total + item.amount, 0).toFixed(2)}
+                    {`$`}{selectedServices.reduce((total, item) => total = total + item.priceWithTax, 0).toFixed(2)}
                 </Text>
             </View>
         )
@@ -142,10 +181,10 @@ const ScheduleAppointmentScreen = ({ navigation }) => {
                 justifyContent: 'space-between'
             }}>
                 <Text style={{ ...Fonts.grayColor14Bold }}>
-                    {item.serviceName}
+                    {item.name}
                 </Text>
                 <Text style={{ ...Fonts.grayColor13Bold }}>
-                    {`$`}{item.amount.toFixed(2)}
+                    {`$`}{item.priceWithTax.toFixed(2)}
                 </Text>
             </View>
         )
@@ -156,7 +195,7 @@ const ScheduleAppointmentScreen = ({ navigation }) => {
                 </Text>
                 <FlatList
                     listKey="services"
-                    data={selectedServicesList}
+                    data={selectedServices}
                     keyExtractor={(item) => `${item.id}`}
                     renderItem={renderItem}
                     scrollEnabled={false}
@@ -275,6 +314,8 @@ const ScheduleAppointmentScreen = ({ navigation }) => {
                         dateNameStyle={{ fontSize: 10, color: Colors.blackColor }}
                         highlightDateNameStyle={{ fontSize: 10, color: Colors.whiteColor }}
                         highlightDateNumberStyle={{ fontSize: 14, color: Colors.whiteColor }}
+                        onDateSelected={handleDateSelected}
+                        minDate={today}
                         useIsoWeekday={false}
                         scrollable={true}
                         upperCaseDays={true}

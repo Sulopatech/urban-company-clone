@@ -1,160 +1,116 @@
 import React, { useState } from "react";
 import { View, StyleSheet, FlatList, TouchableOpacity, Dimensions, Text, Image } from "react-native";
+import { useQuery } from '@apollo/client';
 import { Colors, Fonts, Sizes, CommonStyles } from "../../constants/styles";
 import { MaterialIcons } from '@expo/vector-icons';
 import { Snackbar } from "react-native-paper";
 import MyStatusBar from "../../components/myStatusBar";
+import {  GET_SINGLE_COLLECTION_LIST } from '../../services/Product'
 
 const { width } = Dimensions.get('screen');
 
-const salonsList = [
-    {
-        id: '1',
-        salonImage: require('../../assets/images/salon/salon2.png'),
-        salonName: 'Crown salon',
-        salonAddress: 'A 9/a Sector 16,Gautam Budh Nagar',
-        rating: 4.6,
-        reviews: 100,
-        salonOpenTime: '9:00 am',
-        salonCloseTime: '9:00 pm',
-        isFavorite: false,
-    },
-    {
-        id: '2',
-        salonImage: require('../../assets/images/salon/salon3.png'),
-        salonName: 'RedBox salon',
-        salonAddress: 'A 9/a Sector 16,Gautam Budh Nagar',
-        rating: 4.6,
-        reviews: 100,
-        salonOpenTime: '9:00 am',
-        salonCloseTime: '9:00 pm',
-        isFavorite: true,
-    },
-    {
-        id: '3',
-        salonImage: require('../../assets/images/salon/salon4.png'),
-        salonName: 'Ultra unisex salon',
-        salonAddress: 'A 9/a Sector 16,Gautam Budh Nagar',
-        rating: 4.6,
-        reviews: 100,
-        salonOpenTime: '9:00 am',
-        salonCloseTime: '9:00 pm',
-        isFavorite: true,
-    },
-    {
-        id: '4',
-        salonImage: require('../../assets/images/salon/salon5.png'),
-        salonName: 'Livestyle salon',
-        salonAddress: 'A 9/a Sector 16,Gautam Budh Nagar',
-        rating: 4.6,
-        reviews: 100,
-        salonOpenTime: '9:00 am',
-        salonCloseTime: '9:00 pm',
-        isFavorite: false,
-    },
-    {
-        id: '5',
-        salonImage: require('../../assets/images/salon/salon6.png'),
-        salonName: 'Opera city salon',
-        salonAddress: 'A 9/a Sector 16,Gautam Budh Nagar',
-        rating: 4.6,
-        reviews: 100,
-        salonOpenTime: '9:00 am',
-        salonCloseTime: '9:00 pm',
-        isFavorite: false,
-    },
-    {
-        id: '6',
-        salonImage: require('../../assets/images/salon/salon7.png'),
-        salonName: 'Wonder spot salon',
-        salonAddress: 'A 9/a Sector 16,Gautam Budh Nagar',
-        rating: 4.6,
-        reviews: 100,
-        salonOpenTime: '9:00 am',
-        salonCloseTime: '9:00 pm',
-        isFavorite: false,
-    },
-];
-
 const CategoryDetailScreen = ({ navigation, route }) => {
+    const { productSlug } = route.params;
+    console.log("slug: ",productSlug);
 
-    const item = route.params.item;
+    const { data } = useQuery(GET_SINGLE_COLLECTION_LIST(productSlug));
 
     const [state, setState] = useState({
-        salons: salonsList,
         showSnackBar: false,
         addToFavorite: false,
-    })
+    });
 
-    const updateState = (data) => setState((state) => ({ ...state, ...data }))
+    const updateState = (data) => setState((state) => ({ ...state, ...data }));
 
     const {
-        salons,
         showSnackBar,
         addToFavorite,
     } = state;
+
+    const product = data ? data.collection : null;
+    const variantList = product?.productVariants?.items || [];
+
+    const filterUniqueProducts = (data) => {
+        const uniqueProducts = [];
+        const productIds = new Set();
+
+        data.forEach(item => {
+            if (!productIds.has(item.product.id)) {
+                uniqueProducts.push(item);
+                productIds.add(item.product.id);
+            }
+        });
+
+        return uniqueProducts;
+    };
+
+    const filteredVariantList = filterUniqueProducts(variantList);
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
             <MyStatusBar />
             <View style={{ flex: 1 }}>
                 {header()}
-                {availableSalons()}
+                {/* {product && availableSalons(product)} */}
+                {variantList && renderVariants(filteredVariantList)}
             </View>
             <Snackbar
                 style={styles.snackBarStyle}
                 visible={showSnackBar}
                 onDismiss={() => updateState({ showSnackBar: false })}
             >
-                {addToFavorite ? 'Item add to favorite' : 'Item remove from favorite'}
+                {addToFavorite ? 'Item added to favorite' : 'Item removed from favorite'}
             </Snackbar>
         </View>
-    )
+    );
 
-    function updateSalons({ id }) {
-        const newList = salons.map((item) => {
-            if (item.id === id) {
-                const updatedItem = { ...item, isFavorite: !item.isFavorite };
-                updateState({ addToFavorite: updatedItem.isFavorite });
-                return updatedItem;
-            }
-            return item;
-        });
-        updateState({ salons: newList })
+    function renderVariants(variants) {
+        return (
+            <FlatList
+                data={variants}
+                keyExtractor={(item, index) => `${item.name}-${index}`}
+                renderItem={renderVariantItem}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: Sizes.fixPadding, paddingTop: Sizes.fixPadding - 5.0 }}
+            />
+        );
     }
 
-    function availableSalons() {
-        const renderItem = ({ item }) => (
-            <TouchableOpacity
-                activeOpacity={0.9}
-                onPress={() => navigation.push('SalonDetail', { item })}
-                style={styles.salonInfoWrapStyle}
-            >
-                <Image
-                    source={item.salonImage}
-                    style={{ width: 110.0, height: 95.0, borderRadius: Sizes.fixPadding }}
-                />
-                <View style={styles.salonDetailWrapper}>
+    function renderVariantItem({ item }) {
+        const imageSource = item.product.featuredAsset ? { uri: item.product.featuredAsset.preview } : require('../../assets/images/dummyimage.png');
+        return (
+            <View style={styles.variantContainer}>
+                <TouchableOpacity
+                    activeOpacity={0.9}
+                    onPress={() => navigation.push('SalonDetail', { variantSlug: item.product.slug })}
+                    style={styles.variantItem}
+                >
+                    <Image
+                        source={imageSource}
+                        style={styles.variantImage}
+                        resizeMode="cover"
+                    />
+                    <View style={styles.salonDetailWrapper}>
                     <View style={{
                         flexDirection: 'row',
                         alignItems: 'center',
                         justifyContent: 'space-between',
                     }}>
-                        <Text numberOfLines={1} style={{ ...Fonts.blackColor14Bold, width: width - 210, }}>
-                            {item.salonName}
+                        <Text numberOfLines={1} style={{ ...Fonts.blackColor14Bold, flex: 1 }}>
+                            {item.product.name}
                         </Text>
-                        <MaterialIcons
+                        {/* <MaterialIcons
                             name={item.isFavorite ? "favorite" : "favorite-border"}
                             color={Colors.blackColor}
                             size={17}
-                            onPress={() => {
-                                updateSalons({ id: item.id })
-                                updateState({ showSnackBar: true })
-                            }}
-                        />
+                            // onPress={() => {
+                            //     updateSalons({ id: item.id })
+                            //     updateState({ showSnackBar: true })
+                            // }}
+                        /> */}
                     </View>
                     <Text numberOfLines={1} style={{ ...Fonts.grayColor12SemiBold }} >
-                        {item.salonAddress}
+                        {'A 9/a Sector 16,Gautam Budh Nagar'}
                     </Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center', }}>
                         <MaterialIcons
@@ -163,24 +119,16 @@ const CategoryDetailScreen = ({ navigation, route }) => {
                             size={15}
                         />
                         <Text style={{ marginLeft: Sizes.fixPadding - 7.0, ...Fonts.grayColor12SemiBold }}>
-                            {item.rating.toFixed(1)} ({item.reviews} reviews)
+                            {"4.6 (100 reviews)"}
                         </Text>
                     </View>
-                    <Text style={{ ...Fonts.grayColor12SemiBold }}>
-                        {item.salonOpenTime} - {item.salonCloseTime}
+                    <Text numberOfLines={1} style={{ ...Fonts.grayColor12SemiBold }}>
+                        {"9:00 am"} - {"9:00 pm"}
                     </Text>
                 </View>
-            </TouchableOpacity>
-        )
-        return (
-            <FlatList
-                data={salons}
-                keyExtractor={(item) => `${item.id}`}
-                renderItem={renderItem}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: Sizes.fixPadding, paddingTop: Sizes.fixPadding - 5.0 }}
-            />
-        )
+                </TouchableOpacity>
+            </View>
+        );
     }
 
     function header() {
@@ -193,12 +141,12 @@ const CategoryDetailScreen = ({ navigation, route }) => {
                     onPress={() => navigation.pop()}
                 />
                 <Text style={{ marginLeft: Sizes.fixPadding, ...Fonts.blackColor18Bold }}>
-                    {item.categoryName}
+                    {product ? product.name : 'Loading.....'}
                 </Text>
             </View>
-        )
+        );
     }
-}
+};
 
 const styles = StyleSheet.create({
     headerWrapStyle: {
@@ -230,6 +178,28 @@ const styles = StyleSheet.create({
         flex: 1,
         marginHorizontal: Sizes.fixPadding,
         marginVertical: Sizes.fixPadding - 5.0,
+    },
+    variantContainer: {
+        borderRadius: Sizes.fixPadding,
+        backgroundColor: Colors.whiteColor,
+        elevation: 3.0,
+        marginHorizontal: Sizes.fixPadding * 2.0,
+        marginBottom: Sizes.fixPadding * 2.0,
+        ...CommonStyles.shadow
+    },
+    variantItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    variantImage: {
+        width: 100,
+        height: "100%",
+        borderRadius: Sizes.fixPadding,
+    },
+    variantName: {
+        ...Fonts.blackColor14Bold,
+        marginLeft: Sizes.fixPadding,
+        flex: 1,
     }
 });
 
