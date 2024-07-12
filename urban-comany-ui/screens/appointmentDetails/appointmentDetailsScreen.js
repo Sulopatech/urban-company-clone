@@ -70,7 +70,7 @@ const AppointmentDetailsScreen = ({ navigation, route }) => {
                 style={styles.bookNowButtonStyle}
             >
                 <Text style={{ ...Fonts.whiteColor18SemiBold }}>
-                    Book Now
+                    {loading ? "Booking..." : "Book Now"}
                 </Text>
             </TouchableOpacity>
         )

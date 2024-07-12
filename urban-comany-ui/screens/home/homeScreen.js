@@ -207,10 +207,10 @@ const HomeScreen = ({ navigation }) => {
             >
                 <View style={{ margin: Sizes.fixPadding * 2.0 }}>
                     {userInfo()}
-                    <Text style={{ ...Fonts.whiteColor18SemiBold }}>
+                    {/* <Text style={{ ...Fonts.whiteColor18SemiBold }}>
                         Find and book best services
-                    </Text>
-                    {searchField()}
+                    </Text> */}
+                    {/* {searchField()} */}
                 </View>
             </ImageBackground >
         )
@@ -382,29 +382,34 @@ const HomeScreen = ({ navigation }) => {
         const limitedProductData = mainCollectionData;
         const renderItem = ({ item }) => (
             <View style={{ alignItems: 'center', marginRight: Sizes.fixPadding * 1.3, display: "flex", justifyContent: "center" }}>
-                <TouchableOpacity
-                    activeOpacity={0.6}
-                    onPress={() => navigation.push('CategoryDetail', { productSlug: item.slug })}
-                    style={{
-                        backgroundColor: "#f0f0f0",
-                        ...styles.popularCategoryWrapStyle,
-                    }}
-                >
-                    <View style={{ width: 40, height: 40, alignItems: 'center', justifyContent: 'center' }}>
-                        <Image
-                            source={{ uri: item.featuredAsset ? item.featuredAsset.preview : 'https://via.placeholder.com/40' }}
-                            style={{ width: 50, height: 50 }}
-                            resizeMode="cover"
-                        />
-                    </View>
-                </TouchableOpacity>
-                <Text
-                    numberOfLines={1}
-                    style={{ marginTop: Sizes.fixPadding - 8.0, ...Fonts.blackColor12Medium, textAlign: 'center', flexWrap: 'wrap', width: 100 }}
-                >
-                    {item.name}
-                </Text>
+    {!(item.name === "Electronics" || item.name === "Computers" || item.name === "Camera & Photo") && (
+        <TouchableOpacity
+            activeOpacity={0.6}
+            onPress={() => navigation.push('CategoryDetail', { productSlug: item.slug })}
+            style={{
+                backgroundColor: "#f0f0f0",
+                ...styles.popularCategoryWrapStyle,
+            }}
+        >
+            <View style={{ width: 40, height: 40, alignItems: 'center', justifyContent: 'center' }}>
+                <Image
+                    source={{ uri: item.featuredAsset ? item.featuredAsset.preview : 'https://via.placeholder.com/40' }}
+                    style={{ width: 50, height: 50 }}
+                    resizeMode="cover"
+                />
             </View>
+        </TouchableOpacity>
+    )}
+    {!(item.name === "Electronics" || item.name === "Computers" || item.name === "Camera & Photo") && (
+        <Text
+            numberOfLines={1}
+            style={{ marginTop: Sizes.fixPadding - 8.0, ...Fonts.blackColor12Medium, textAlign: 'center', flexWrap: 'wrap', width: 100 }}
+        >
+            {item.name}
+        </Text>
+    )}
+</View>
+
         );
 
         return (
@@ -457,12 +462,12 @@ const HomeScreen = ({ navigation }) => {
                         {address}
                     </Text>
                 </View>
-                <MaterialIcons
+                {/* <MaterialIcons
                     name="filter-alt"
                     size={22}
                     color={Colors.whiteColor}
                     onPress={() => navigation.push('Filter')}
-                />
+                /> */}
             </View>
         )
     }

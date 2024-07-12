@@ -33,6 +33,7 @@ import { useFonts } from "expo-font";
 import { ApolloClient, ApolloProvider, HttpLink, InMemoryCache } from '@apollo/client';
 import API_URL from './services/Environment';
 import NearByScreen from './screens/nearBy/nearByScreen';
+import AppointmentUpcoming from './screens/appointmentUpcoming/appointmentUpcomingScreen';
 
 ExpoSplashScreen.preventAutoHideAsync();
 
@@ -89,6 +90,7 @@ const App = () => {
             <Stack.Screen name="ScheduleAppointment" component={ScheduleAppointmentScreen} />
             <Stack.Screen name="AppointmentDetail" component={AppointmentDetailsScreen} />
             <Stack.Screen name="PaymentMethod" component={PaymentmethodScreen} />
+            <Stack.Screen name="AppointmentUpcoming" component={AppointmentUpcoming} />
             <Stack.Screen name="ShippingDetail" component={ShippingDetailScreen} />
             <Stack.Screen name="AddNewCard" component={AddNewCardScreen} />
             <Stack.Screen name="SpecialistDetail" component={SpecialistDetailScreen} />
