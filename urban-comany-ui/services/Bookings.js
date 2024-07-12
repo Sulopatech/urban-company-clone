@@ -167,161 +167,172 @@ mutation removeOrderLine($orderLineId: ID!) {
   }
 `;
 
-// export const COUNTRIES = gql`
-// query countries{
-//   availableCountries {
-//     code
-//     name
-//   }
-// }`
+export const COUNTRIES = gql`
+query countries{
+  availableCountries {
+    code
+    name
+  }
+}`
 
 
-// CreateAddressInput: {
-//   fullName:"ABCDEdd"
-//   streetLine1:"Bangalore"
-//   city:"Bangalore"
-//   countryCode:"IN"
-// }
+export const ADD_ADDRESS = gql`
+  mutation addingShippingAddress(
+  $fullName: String!,
+  $streetLine1: String!,
+  $city: String!,
+  $countryCode: String!
+  ){
+    setOrderShippingAddress(input: {
+    fullName: $fullName,
+  streetLine1: $streetLine1,
+  city: $city,
+  countryCode: $countryCode
+    }) {
+      ... on Order {
+        id
+        shippingAddress {
+          fullName
+          streetLine1
+          city
+          countryCode
+        }
+        shippingLines {
+          id
+          shippingMethod {
+            id
+            name
+            languageCode
+            code
+          }
+        }
+      }
+        ... on ErrorResult{
+    errorCode
+    message
+  }
+  ... on NoActiveOrderError{
+    errorCode
+    message
+  }
+    }
+  }
+`;
 
-// export const ADDING_ADDRESS = gql`
-// mutation addingAddress($input: CreateAddressInput!!){
-// setOrderShippingAddress(input: $input){
-//   ... on Order{
-//     id
-//     shippingAddress{
-//       fullName
-//       streetLine1
-//       city
-//       countryCode
-//     }
-//     shippingLines{
-//       id
-//       shippingMethod{
-//         id
-//         description
-//         name
-//       languageCode
-//         code
-//       }
-//     }
-//   }
-// }
-// }`
+export const SHIPPING_METHOD = gql`
+query shippingmethod{
+  eligibleShippingMethods{
+    id
+    name
+  }
+}`
 
-// export const SHIPPING_METHOD = gql`
-// query shippingmethod{
-//   eligibleShippingMethods{
-//     id
-//     name
-//   }
-// }`
+export const ADD_SHIPPING_METHOD = gql`
+mutation addingShippingMethod{
+  setOrderShippingMethod(shippingMethodId:1){
+    ... on Order{
+      shippingLines{
+        shippingMethod{
+          id
+          name
+        }
+      }
+    }
+  }
+}`
 
-// export const ADD_SHIPPING_METHOD = gql`
-// mutation addingShippingMethod{
-//   setOrderShippingMethod(shippingMethodId:1){
-//     ... on Order{
-//       shippingLines{
-//         shippingMethod{
-//           id
-//           name
-//         }
-//       }
-//     }
-//   }
-// }`
+export const ACTIVE_ORDER = gql`
+query activeOrder{
+  activeOrder{
+    id
+    state
+  }
+}`
 
-// export const ACTIVE_ORDER = gql`
-// query activeOrder{
-//   activeOrder{
-//     id
-//     state
-//   }
-// }`
+export const NEXT_STATES = gql`
+query NextStates {
+  nextOrderStates
+}`
 
-// export const NEXT_STATES = gql`
-// query NextStates {
-//   nextOrderStates
-// }`
+export const CHANGING_STATE = gql`
+mutation changingState{
+  transitionOrderToState(state: "ArrangingPayment") {
+   ... on Order{
+     id
+     state
+   }
+  }
+}`
 
-// export const CHANGING_STATE = gql`
-// mutation changingState{
-//   transitionOrderToState(state: "ArrangingPayment") {
-//    ... on Order{
-//      id
-//      state
-//    }
-//   }
-// }`
+export const ELIGIBLE_PAYMENT = gql`
+query eligiblePayment {
+  eligiblePaymentMethods{
+    id
+    name
+    code
+    description
+  }
+}`
 
-// export const ELIGIBLE_PAYMENT = gql`
-// query eligiblePayment {
-//   eligiblePaymentMethods{
-//     id
-//     name
-//     code
-//     description
-//   }
-// }`
+export const ADD_PAYMENT = gql`
+mutation addingPayment {
+addPaymentToOrder(input:{
+  method: "standard-payment"
+  metadata:{}
+}){
+  ... on Order{
+    id
+    state
+    payments{
+      id
+      transactionId
+      method
+    }
+  }
+}  
+}`
 
-// export const ADD_PAYMENT = gql`
-// mutation addingPayment {
-// addPaymentToOrder(input:{
-//   method: "standard-payment"
-//   metadata:{}
-// }){
-//   ... on Order{
-//     id
-//     state
-//     payments{
-//       id
-//       transactionId
-//       method
-//     }
-//   }
-// }  
-// }`
+export const CURRENT_PAYMENT_STATE = gql`
+query currentpaymentstate{
+  activeOrder{
+    id
+    state
+    total
+  }
+}`
 
-// export const CURRENT_PAYMENT_STATE = gql`
-// query currentpaymentstate{
-//   activeOrder{
-//     id
-//     state
-//     total
-//   }
-// }`
+export const CREATE_ORDER = gql`
+query CreateOrder {
+  nextOrderStates
+}`
 
-// export const CREATE_ORDER = gql`
-// query CreateOrder {
-//   nextOrderStates
-// }`
-
-// export const ADD_BILLING_ADDRESS = gql`
-// mutation addingBillingAddress{
-//   setOrderBillingAddress(input:{
-//     fullName:"Rishi"
-//     streetLine1:"Bangalore"
-//     city:"Bangalore"
-//     countryCode:"IN"
-//   }){
-//     ... on Order{
-//       id
-//       billingAddress{
-//         fullName
-//         streetLine1
-//         city
-//         countryCode
-//       }
-//       shippingLines{
-//         id
-//         shippingMethod{
-//           id
-//           description
-//           name
-//         languageCode
-//           code
-//         }
-//       }
-//     }
-//   }
-//   }
-// `
+export const ADD_BILLING_ADDRESS = gql`
+mutation addingBillingAddress{
+  setOrderBillingAddress(input:{
+    fullName:"Rishi"
+    streetLine1:"Bangalore"
+    city:"Bangalore"
+    countryCode:"IN"
+  }){
+    ... on Order{
+      id
+      billingAddress{
+        fullName
+        streetLine1
+        city
+        countryCode
+      }
+      shippingLines{
+        id
+        shippingMethod{
+          id
+          description
+          name
+        languageCode
+          code
+        }
+      }
+    }
+  }
+  }
+`

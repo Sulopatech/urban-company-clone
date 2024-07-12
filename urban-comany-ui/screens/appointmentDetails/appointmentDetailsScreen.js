@@ -8,19 +8,25 @@ import { useMutation } from "@apollo/client";
 
 const servicesList = ['Hair wash herbal', 'Hair color', 'Simple hair cuting - hair wash']
 
-const AppointmentDetailsScreen = ({ navigation ,route }) => {
+const AppointmentDetailsScreen = ({ navigation, route }) => {
 
-    const{date, selectedSlot, selectedServices, product} = route.params;
+    const { date, selectedSlot, selectedServices, product } = route.params;
 
     const [serviceBookingUpdate, { loading, error }] = useMutation(UPDATE_BOOKING, {
         onCompleted: async (data) => {
             console.log("BOOKING successfully update:", data);
-            navigation.push('PaymentMethod', {
-                    date: date,
-                    selectedSlot: selectedSlot ,
-                    selectedServices: selectedServices,
-                    product: product,
-                })
+            // navigation.push('PaymentMethod', {
+            //     date: date,
+            //     selectedSlot: selectedSlot,
+            //     selectedServices: selectedServices,
+            //     product: product,
+            // })
+            navigation.push('ShippingDetail', {
+                date: date,
+                selectedSlot: selectedSlot,
+                selectedServices: selectedServices,
+                product: product,
+            })
         },
         onError: (error) => {
             console.error("Error BOOKING update:", error);
@@ -28,7 +34,7 @@ const AppointmentDetailsScreen = ({ navigation ,route }) => {
     });
 
     console.log("product: ", product);
-    console.log("selected services: ",selectedServices);
+    console.log("selected services: ", selectedServices);
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
@@ -79,11 +85,11 @@ const AppointmentDetailsScreen = ({ navigation ,route }) => {
                             date: date,
                             time: selectedSlot
                         }
-                      }
+                    }
                 }
             })
         } catch (error) {
-            console.error("Error Booking: ",error);
+            console.error("Error Booking: ", error);
         }
     }
 
@@ -99,7 +105,7 @@ const AppointmentDetailsScreen = ({ navigation ,route }) => {
             </View>
         )
     }
-//Thursday •
+    //Thursday •
     function dateTimeInfo() {
         return (
             <View style={{
@@ -156,7 +162,7 @@ const AppointmentDetailsScreen = ({ navigation ,route }) => {
         return (
             <View style={{ marginHorizontal: Sizes.fixPadding * 2.0, flexDirection: 'row', alignItems: 'center' }}>
                 <Image
-                    source={{uri: product.featuredAsset.preview}}
+                    source={{ uri: product.featuredAsset.preview }}
                     style={{ width: 70.0, height: 70.0, borderRadius: Sizes.fixPadding }}
                 />
                 <View style={{ marginLeft: Sizes.fixPadding, }}>
