@@ -10,6 +10,7 @@ import SalonDetailScreen from "./screens/salonDetail/salonDetailScreen";
 import ScheduleAppointmentScreen from "./screens/scheduleApponiment/scheduleAppointmentScreen";
 import AppointmentDetailsScreen from "./screens/appointmentDetails/appointmentDetailsScreen";
 import PaymentmethodScreen from "./screens/paymentMethod/paymentmethodScreen";
+import ShippingDetailScreen from "./screens/shippingDetails/ShippingDetailScreen";
 import AddNewCardScreen from "./screens/addNewCard/addNewCardScreen";
 import SpecialistDetailScreen from "./screens/specialistDetail/specialistDetailScreen";
 import ChatDetailScreen from "./screens/chatDetail/chatDetailScreen";
@@ -88,6 +89,7 @@ const App = () => {
             <Stack.Screen name="ScheduleAppointment" component={ScheduleAppointmentScreen} />
             <Stack.Screen name="AppointmentDetail" component={AppointmentDetailsScreen} />
             <Stack.Screen name="PaymentMethod" component={PaymentmethodScreen} />
+            <Stack.Screen name="ShippingDetail" component={ShippingDetailScreen} />
             <Stack.Screen name="AddNewCard" component={AddNewCardScreen} />
             <Stack.Screen name="SpecialistDetail" component={SpecialistDetailScreen} />
             <Stack.Screen name="ServiceDetail" component={ServiceDetailScreen} />
