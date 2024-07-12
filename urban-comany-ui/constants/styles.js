@@ -6,6 +6,12 @@ export const Fonts = {
         fontFamily: 'Fahkwang_SemiBold',
     },
 
+    redColor11SemiBold: {
+        color: '#FF0000',
+        fontSize: 12,
+        fontFamily: 'Fahkwang_SemiBold',
+    },
+
     grayColor12SemiBold: {
         color: '#C5C5C5',
         fontSize: 12,

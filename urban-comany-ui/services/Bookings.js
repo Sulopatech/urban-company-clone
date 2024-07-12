@@ -238,10 +238,40 @@ mutation removeOrderLine($orderLineId: ID!) {
 //   }
 // }`
 
-// export const NEXT_STATES = gql`
-// query NextStates {
-//   nextOrderStates
-// }`
+export const NEXT_ORDER_STATE = gql`
+query NextStates {
+  nextOrderStates
+}`
+
+export const CHANGE_STATE = gql`
+mutation changingState($nextOrder: String! = "ArrangingPayment"){
+  transitionOrderToState(state: $nextOrder) {
+   ... on Order{
+     id
+     state
+   }
+  }
+}
+`
+
+export const ADD_PAYMENT = gql`
+mutation addingPayment($method: String!) {
+addPaymentToOrder(input:{
+  method: $method,
+  metadata: {}
+}){
+  ... on Order{
+    id
+    state
+    payments{
+      id
+      transactionId
+      method
+    }
+  }
+}  
+}
+`
 
 // export const CHANGING_STATE = gql`
 // mutation changingState{
@@ -253,15 +283,46 @@ mutation removeOrderLine($orderLineId: ID!) {
 //   }
 // }`
 
-// export const ELIGIBLE_PAYMENT = gql`
-// query eligiblePayment {
-//   eligiblePaymentMethods{
-//     id
-//     name
-//     code
-//     description
-//   }
-// }`
+export const ELIGIBLE_PAYMENT = gql`
+query eligiblePayment {
+  eligiblePaymentMethods{
+    id
+    name
+    code
+    description
+  }
+}`
+
+export const PAYMENT_INFO = gql`
+query neworder{
+    activeOrder{
+      id
+          type
+          total
+          subTotal
+      subTotalWithTax
+          totalWithTax
+          totalQuantity
+      shipping
+      lines{
+        id
+        quantity
+        productVariant{
+          name
+          price
+        }
+        featuredAsset{
+              preview
+            }
+      }
+          discounts{
+            description
+            amount
+            amountWithTax
+          }
+    }
+  }
+`
 
 // export const ADD_PAYMENT = gql`
 // mutation addingPayment {

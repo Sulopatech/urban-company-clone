@@ -6,6 +6,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import MyStatusBar from "../../components/myStatusBar";
 import { useMutation, useQuery } from "@apollo/client";
 import { UPDATE_USER, GET_ACTIVE_CUSTOMER } from "../../services/Editprofile";
+import { SET_CUSTOMER_PROFILE_PIC } from "../../services/Profile";
 
 const EditProfileScreen = ({ navigation }) => {
     const [error, setError] = useState('');
@@ -21,6 +22,36 @@ const EditProfileScreen = ({ navigation }) => {
 
     const { firstName, lastName, phoneNumber, showBottomSheet, profilePic } = state;
 
+    const [setCustomerProfilePic, { loading: picMutationLoading, error: picMutationError }] = useMutation(SET_CUSTOMER_PROFILE_PIC, {
+        onCompleted: async (data) => {
+            console.log("Profile picture updated successfully:", data);
+            // Optionally, update the profile picture URL in your app state or refetch user data
+        },
+        onError: (error) => {
+            console.error("Error updating profile picture:", error);
+        },
+    });
+
+
+    // const pickImageFromCamera = async () => {
+    //     const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+    //     if (!permissionResult.granted) {
+    //         alert("You've refused to allow this app to access your camera!");
+    //         return;
+    //     }
+
+    //     const result = await ImagePicker.launchCameraAsync();
+    // };
+
+    // const pickImageFromGallery = async () => {
+    //     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    //     if (!permissionResult.granted) {
+    //         alert("You've refused to allow this app to access your gallery!");
+    //         return;
+    //     }
+
+    //     const result = await ImagePicker.launchImageLibraryAsync();
+    // };
 
     const pickImageFromCamera = async () => {
         const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
@@ -30,6 +61,27 @@ const EditProfileScreen = ({ navigation }) => {
         }
 
         const result = await ImagePicker.launchCameraAsync();
+        console.log("result urii: ",result.assets[0].uri);
+        if (!result.canceled) {
+            try {
+
+                const response = await setCustomerProfilePic({
+                    variables: {
+                        file: {
+                            uri: result.assets[0].uri,
+                            type: 'image/jpeg', // Adjust MIME type if necessary
+                            name: 'profile.jpg', // Adjust filename if necessary
+                        },
+                    },
+                });
+
+                console.log("Response from image upload:", response);
+                // Handle response as needed
+            } catch (error) {
+                console.error('Error uploading profile picture:', error);
+                // Handle error (e.g., show an alert)
+            }
+        }
     };
 
     const pickImageFromGallery = async () => {
@@ -40,6 +92,11 @@ const EditProfileScreen = ({ navigation }) => {
         }
 
         const result = await ImagePicker.launchImageLibraryAsync();
+        
+        if (!result.canceled) {
+            setProfilePic({ uri: result.uri });
+            uploadProfilePic(result.uri); // Call function to upload the image
+        }
     };
     
     const { loading: queryLoading, error: queryError, data, refetch } = useQuery(GET_ACTIVE_CUSTOMER);
@@ -87,7 +144,13 @@ const EditProfileScreen = ({ navigation }) => {
         }
     };
 
-    if (queryLoading) return <ActivityIndicator size="large" color={Colors.primaryColor} />;
+    if (queryLoading) {
+        return (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color={Colors.primaryColor} />
+          </View>
+        );
+      }
     if (queryError) return <Text style={styles.errorText}>Error loading user data</Text>;
 
     return (
