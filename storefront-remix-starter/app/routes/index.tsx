@@ -15,7 +15,7 @@ export async function loader({ request }: LoaderArgs) {
 export default function Index() {
   const { collections } = useLoaderData<typeof loader>();
   const { t } = useTranslation();
-  const headerImage = collections[0]?.featuredAsset?.preview;
+  const headerImage = collections!== undefined && collections[0]?.featuredAsset?.preview;
 
   return (
     <>
@@ -88,7 +88,7 @@ export default function Index() {
           <div className="-my-2">
             <div className="box-content py-2 px-2 relative overflow-x-auto xl:overflow-visible">
               <div className="grid justify-items-center grid-cols-2 md:grid-cols-3 gap-y-8 gap-x-8 sm:px-6 lg:px-8 xl:relative xl:px-0 xl:space-x-0 xl:gap-x-8">
-                {collections.map((collection) => (
+                {collections !== undefined && collections.map((collection) => (
                   <CollectionCard key={collection.id} collection={collection} />
                 ))}
               </div>
