@@ -24,6 +24,10 @@ export default function Footer({
 }) {
   const { t } = useTranslation();
 
+  if (!Array.isArray(collections)) {
+    collections = [];
+  }
+
   return (
     <footer
       className="mt-24 border-t bg-gray-50"
