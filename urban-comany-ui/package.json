@@ -49,6 +49,7 @@
     "react-native-collapsible-toolbar": "^0.1.2",
     "react-native-credit-card-ui": "^0.1.1",
     "react-native-dashed-line": "^1.1.0",
+    "react-native-dropdown-picker": "^5.4.6",
     "react-native-gesture-handler": "~2.16.1",
     "react-native-linear-gradient": "^2.8.3",
     "react-native-maps": "1.14.0",
