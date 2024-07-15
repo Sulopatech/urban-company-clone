@@ -74,7 +74,7 @@ export type RootLoaderData = {
 
 export async function loader({ request, params, context }: DataFunctionArgs) {
   const collections = await getCollections(request, { take: 20 });
-  const topLevelCollections = collections.filter(
+  const topLevelCollections = collections !== undefined && collections.filter(
     (collection) => collection.parent?.name === '__root_collection__',
   );
   const activeCustomer = await getActiveCustomer({ request });
