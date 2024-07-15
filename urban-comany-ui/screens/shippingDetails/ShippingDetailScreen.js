@@ -39,6 +39,8 @@ const ShippingDetailScreen = ({ navigation, route }) => {
     const [countryShippingOpen, setCountryShippingOpen] = useState(false);
     const [countryShippingValue, setCountryShippingValue] = useState(null);
 
+    const [loading, setLoading] = useState(false);
+
     const { data: countriesData } = useQuery(COUNTRIES);
     const { data: shippingMethodsData } = useQuery(SHIPPING_METHOD);
 
@@ -83,117 +85,119 @@ const ShippingDetailScreen = ({ navigation, route }) => {
                 mobileNumberTextField()
             )
         },
-        {
-            id: 'billingHeader',
-            component: (<View style={styles.headerWrapStyle}>
-                <Text style={{ marginLeft: Sizes.fixPadding, ...Fonts.blackColor14Bold }}>
-                    Billing Details
-                </Text>
-            </View>)
-        },
-        {
-            id: 'shippingMethod',
-            component: (
-                <View style={{ marginTop: 0, marginHorizontal: Sizes.fixPadding * 2.0 }}>
-                    <DropDownPicker
-                        open={shippingMethodOpen}
-                        value={shippingMethodValue}
-                        items={shippingMethodItems}
-                        setOpen={setShippingMethodOpen}
-                        setValue={setShippingMethodValue}
-                        setItems={setShippingMethodItems}
-                        placeholder="Select shipping method"
-                        containerStyle={styles.dropdownContainerStyle}
-                        style={[styles.dropdownStyle]}
-                        dropDownContainerStyle={styles.dropdownMenu}
-                        listMode="MODAL"
-                        autoScroll={true}
-                        zIndex={1000}
-                        zIndexInverse={3000}
-                        onChangeValue={(value) => {
-                            setShippingMethodValue(value);
-                        }}
-                    />
+        // {
+        //     id: 'billingHeader',
+        //     component: (<View style={styles.headerWrapStyle}>
+        //         <Text style={{ marginLeft: Sizes.fixPadding, ...Fonts.blackColor14Bold }}>
+        //             Billing Details
+        //         </Text>
+        //     </View>)
+        // },
+        // {
+        //     id: 'shippingMethod',
+        //     component: (
+        //         <View style={{ marginTop: 0, marginHorizontal: Sizes.fixPadding * 2.0 }}>
+        //             <DropDownPicker
+        //                 open={shippingMethodOpen}
+        //                 value={shippingMethodValue}
+        //                 items={shippingMethodItems}
+        //                 searchable={true}
+        //                 setOpen={setShippingMethodOpen}
+        //                 setValue={setShippingMethodValue}
+        //                 setItems={setShippingMethodItems}
+        //                 placeholder="Select shipping method"
+        //                 containerStyle={styles.dropdownContainerStyle}
+        //                 style={[styles.dropdownStyle]}
+        //                 dropDownContainerStyle={styles.dropdownMenu}
+        //                 listMode="MODAL"
+        //                 autoScroll={true}
+        //                 zIndex={1000}
+        //                 zIndexInverse={3000}
+        //                 onChangeValue={(value) => {
+        //                     setShippingMethodValue(value);
+        //                 }}
+        //             />
 
-                </View>
-            )
-        },
-        {
-            id: 'streetBilling',
-            component: (
-                <View style={{ marginTop: Sizes.fixPadding + 5.0, marginHorizontal: Sizes.fixPadding * 2.0 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <TextInput
-                            value={billingAddressDetail.streetLine}
-                            onChangeText={e => updateBillingDetail('streetLine', e)}
-                            placeholder="Enter your street line"
-                            placeholderTextColor={Colors.grayColor}
-                            selectionColor={Colors.primaryColor}
-                            style={{
-                                marginLeft: Sizes.fixPadding,
-                                ...Fonts.blackColor15Bold, flex: 1
-                            }}
-                        />
-                    </View>
-                    <View style={{
-                        backgroundColor: Colors.grayColor, height: 1.5,
-                        marginVertical: Sizes.fixPadding - 5.0,
-                    }} />
-                </View>
-            )
-        },
-        {
-            id: 'cityBilling',
-            component: (
-                <View style={{ marginTop: Sizes.fixPadding + 5.0, marginHorizontal: Sizes.fixPadding * 2.0, }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <TextInput
-                            value={billingAddressDetail.city}
-                            onChangeText={e => updateBillingDetail('city', e)}
-                            placeholder="Enter your city"
-                            placeholderTextColor={Colors.grayColor}
-                            selectionColor={Colors.primaryColor}
-                            style={{
-                                marginLeft: Sizes.fixPadding,
-                                ...Fonts.blackColor15Bold, flex: 1
-                            }}
-                        />
-                    </View>
-                    <View style={{
-                        backgroundColor: Colors.grayColor, height: 1.5,
-                        marginVertical: Sizes.fixPadding - 5.0,
-                    }} />
-                </View>
-            )
-        },
-        {
-            id: 'countryBilling',
-            component: (
-                <View style={{ marginTop: Sizes.fixPadding + 5.0, marginHorizontal: Sizes.fixPadding * 2.0 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <DropDownPicker
-                            open={countryOpen}
-                            value={countryValue}
-                            items={countryItems}
-                            setOpen={setCountryOpen}
-                            setValue={setCountryValue}
-                            setItems={setCountryItems}
-                            placeholder="Select your country"
-                            containerStyle={styles.dropdownContainerStyle}
-                            style={styles.dropdownStyle}
-                            dropDownContainerStyle={styles.dropdownMenu}
-                            listMode="MODAL"
-                            autoScroll={true}
-                            zIndex={1000}
-                            zIndexInverse={3000}
-                            onChangeValue={(value) => {
-                                setCountryValue(value);
-                            }}
-                        />
-                    </View>
-                </View>
-            )
-        },
+        //         </View>
+        //     )
+        // },
+        // {
+        //     id: 'streetBilling',
+        //     component: (
+        //         <View style={{ marginTop: Sizes.fixPadding + 5.0, marginHorizontal: Sizes.fixPadding * 2.0 }}>
+        //             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        //                 <TextInput
+        //                     value={billingAddressDetail.streetLine}
+        //                     onChangeText={e => updateBillingDetail('streetLine', e)}
+        //                     placeholder="Enter your street line"
+        //                     placeholderTextColor={Colors.grayColor}
+        //                     selectionColor={Colors.primaryColor}
+        //                     style={{
+        //                         marginLeft: Sizes.fixPadding,
+        //                         ...Fonts.blackColor15Bold, flex: 1
+        //                     }}
+        //                 />
+        //             </View>
+        //             <View style={{
+        //                 backgroundColor: Colors.grayColor, height: 1.5,
+        //                 marginVertical: Sizes.fixPadding - 5.0,
+        //             }} />
+        //         </View>
+        //     )
+        // },
+        // {
+        //     id: 'cityBilling',
+        //     component: (
+        //         <View style={{ marginTop: Sizes.fixPadding + 5.0, marginHorizontal: Sizes.fixPadding * 2.0, }}>
+        //             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        //                 <TextInput
+        //                     value={billingAddressDetail.city}
+        //                     onChangeText={e => updateBillingDetail('city', e)}
+        //                     placeholder="Enter your city"
+        //                     placeholderTextColor={Colors.grayColor}
+        //                     selectionColor={Colors.primaryColor}
+        //                     style={{
+        //                         marginLeft: Sizes.fixPadding,
+        //                         ...Fonts.blackColor15Bold, flex: 1
+        //                     }}
+        //                 />
+        //             </View>
+        //             <View style={{
+        //                 backgroundColor: Colors.grayColor, height: 1.5,
+        //                 marginVertical: Sizes.fixPadding - 5.0,
+        //             }} />
+        //         </View>
+        //     )
+        // },
+        // {
+        //     id: 'countryBilling',
+        //     component: (
+        //         <View style={{ marginTop: Sizes.fixPadding + 5.0, marginHorizontal: Sizes.fixPadding * 2.0 }}>
+        //             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        //                 <DropDownPicker
+        //                     open={countryOpen}
+        //                     value={countryValue}
+        //                     items={countryItems}
+        //                     setOpen={setCountryOpen}
+        //                     setValue={setCountryValue}
+        //                     setItems={setCountryItems}
+        //                     searchable={true}
+        //                     placeholder="Select your country"
+        //                     containerStyle={styles.dropdownContainerStyle}
+        //                     style={styles.dropdownStyle}
+        //                     dropDownContainerStyle={styles.dropdownMenu}
+        //                     listMode="MODAL"
+        //                     autoScroll={true}
+        //                     zIndex={1000}
+        //                     zIndexInverse={3000}
+        //                     onChangeValue={(value) => {
+        //                         setCountryValue(value);
+        //                     }}
+        //                 />
+        //             </View>
+        //         </View>
+        //     )
+        // },
         {
             id: 'shippingHeader',
             component: (<View style={styles.headerWrapStyle}>
@@ -271,8 +275,10 @@ const ShippingDetailScreen = ({ navigation, route }) => {
                             setValue={setCountryShippingValue}
                             setItems={setCountryItems}
                             placeholder="Select your country"
+                            placeholderStyle={{color: Colors.grayColor, fontSize: 16}}
                             containerStyle={styles.dropdownContainerStyle}
                             style={styles.dropdownStyle}
+                            searchable={true}
                             dropDownContainerStyle={styles.dropdownMenu}
                             listMode="MODAL"
                             autoScroll={true}
@@ -283,6 +289,35 @@ const ShippingDetailScreen = ({ navigation, route }) => {
                             }}
                         />
                     </View>
+                </View>
+            )
+        },
+        {
+            id: 'shippingMethod',
+            component: (
+                <View style={{ marginTop: 16, marginHorizontal: Sizes.fixPadding * 2.0 }}>
+                    <DropDownPicker
+                        open={shippingMethodOpen}
+                        value={shippingMethodValue}
+                        items={shippingMethodItems}
+                        searchable={true}
+                        setOpen={setShippingMethodOpen}
+                        setValue={setShippingMethodValue}
+                        setItems={setShippingMethodItems}
+                        placeholder="Select shipping method"
+                        containerStyle={styles.dropdownContainerStyle}
+                        style={[styles.dropdownStyle]}
+                        placeholderStyle={{color: Colors.grayColor, fontSize: 16}}
+                        dropDownContainerStyle={styles.dropdownMenu}
+                        listMode="MODAL"
+                        autoScroll={true}
+                        zIndex={1000}
+                        zIndexInverse={3000}
+                        onChangeValue={(value) => {
+                            setShippingMethodValue(value);
+                        }}
+                    />
+
                 </View>
             )
         },
@@ -355,13 +390,14 @@ const ShippingDetailScreen = ({ navigation, route }) => {
     };
 
     const handleProceedToCheckout = async () => {
+        setLoading(true);
         try {
             await addingBillingAddress({
                 variables: {
                     fullName: addressingDetail.name,
-                    streetLine1: billingAddressDetail.streetLine,
-                    city: billingAddressDetail.city,
-                    countryCode: countryValue || '',
+                    streetLine1: shippingDetail.streetLine,
+                    city: shippingDetail.streetLine,
+                    countryCode: countryShippingValue || '',
                 }
             });
             await addAddress({
@@ -384,7 +420,7 @@ const ShippingDetailScreen = ({ navigation, route }) => {
         } catch (error) {
             console.error("Error during checkout: ", error);
         } finally {
-            // setLoading(false);
+            setLoading(false);
         }
     };
 
@@ -509,7 +545,7 @@ const ShippingDetailScreen = ({ navigation, route }) => {
                 disabled={isButtonDisabled()}
             >
                 <Text style={{ ...Fonts.whiteColor18SemiBold }}>
-                    Proceed to Payment
+                    {loading ? "Proceeding..." : "Proceed to Payment"}
                 </Text>
             </TouchableOpacity>
         )
@@ -548,6 +584,7 @@ const styles = StyleSheet.create({
     },
     dropdownStyle: {
         backgroundColor: '#fafafa',
+        borderColor: Colors.grayColor
     },
     dropdownMenu: {
         zIndex: 1001,

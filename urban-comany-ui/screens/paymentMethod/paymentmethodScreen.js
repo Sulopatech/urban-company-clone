@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
     },
     paymentMethodContainer: {
         marginHorizontal: Sizes.fixPadding * 2.0,
-        marginBottom: Sizes.fixPadding * 6.0,
+        marginBottom: Sizes.fixPadding * 4.0,
         // paddingBottom: Sizes.fixPadding * 2.0,
 
     },
