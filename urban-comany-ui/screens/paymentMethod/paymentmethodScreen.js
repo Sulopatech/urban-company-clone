@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, StyleSheet, Dimensions, ScrollView, Text, TouchableOpacity, Image } from "react-native";
 import { Colors, Fonts, Sizes, CommonStyles } from "../../constants/styles";
 import { MaterialIcons } from '@expo/vector-icons';
 import { Modal } from "react-native-paper";
 import MyStatusBar from "../../components/myStatusBar";
-import { useMutation } from "@apollo/client";
-import { SERVICE_BOOKING, UPDATE_BOOKING } from "../../services/Bookings";
+import { useMutation, useQuery } from "@apollo/client";
+import { ADD_PAYMENT, CHANGE_STATE, ELIGIBLE_PAYMENT, NEXT_ORDER_STATE, PAYMENT_INFO, SERVICE_BOOKING, UPDATE_BOOKING } from "../../services/Bookings";
+import DropDownPicker from 'react-native-dropdown-picker';
 
 const paymentMethods = [
     {
@@ -39,26 +40,49 @@ const PaymentMethodScreen = ({ navigation, route }) => {
 
     const [state, setState] = useState({
         selectedPaymentMethodId: paymentMethods[0].id,
+        selectedPaymentType: null,
+        // paymentMethodData: {},
         showSuccessfullyDialog: false,
     })
 
     const {date, selectedSlot, selectedServices, product} = route.params ;
 
-    const updateState = (data) => setState((state) => ({ ...state, ...data }))
+    const updateState = (data) => setState((state) => ({ ...state, ...data }));
+    const [paymentMethodData, setPaymentMethodData] = useState(null);
+    const [open, setOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
-    const [serviceBookingUpdate, { loading, error }] = useMutation(UPDATE_BOOKING, {
-        onCompleted: async (data) => {
-            console.log("BOOKING successfully:", data);
-            // navigation.pop();
-            updateState({ showSuccessfullyDialog: true })
-        },
-        onError: (error) => {
-            console.error("Error BOOKING:", error);
-        },
-    });
+    const { data: paymentTypeData } = useQuery(ELIGIBLE_PAYMENT);
+    const { data: paymentInfo } = useQuery(PAYMENT_INFO);
+    const { data: nextOrderData } = useQuery(NEXT_ORDER_STATE);
+
+    const [changeState] = useMutation(CHANGE_STATE);
+    const [addPayment] = useMutation(ADD_PAYMENT);
+
+    // const [serviceBookingUpdate, { loading, error }] = useMutation(UPDATE_BOOKING, {
+    //     onCompleted: async (data) => {
+    //         console.log("BOOKING successfully:", data);
+    //         // navigation.pop();
+    //         updateState({ showSuccessfullyDialog: true })
+    //     },
+    //     onError: (error) => {
+    //         console.error("Error BOOKING:", error);
+    //     },
+    // });
+
+    console.log("error m,sg: ",errorMessage);
+
+    const paymentMethodDatas = paymentTypeData?.eligiblePaymentMethods.map((method) => ({
+        label: method.name,
+        value: method.code,
+      })) || [];
+
 
     const {
         selectedPaymentMethodId,
+        selectedPaymentType,
+        // paymentMethodData,
         showSuccessfullyDialog,
     } = state;
 
@@ -68,8 +92,10 @@ const PaymentMethodScreen = ({ navigation, route }) => {
             <View style={{ flex: 1 }}>
                 {header()}
                 <ScrollView showsVerticalScrollIndicator={false}>
+                    {paymentMethod()}
                     {addNewCardText()}
                     {cards()}
+                    {priceDetails()}
                     {continueWithCreditCardButton()}
                 </ScrollView>
             </View>
@@ -129,33 +155,79 @@ const PaymentMethodScreen = ({ navigation, route }) => {
         return (
             <TouchableOpacity
                 activeOpacity={0.9}
-                onPress={() => updateState({ showSuccessfullyDialog: true })}
-                // onPress={() => handleBooking()}
+                // onPress={() => updateState({ showSuccessfullyDialog: true })}
+                onPress={() => handleBooking()}
                 style={styles.continueWithCreditCardButtonStyle}
             >
                 <Text style={{ ...Fonts.whiteColor18SemiBold }}>
-                    Continue with Credit Card
+                    {loading ? "Checking Payment..." : "Continue with Credit Card"}
                 </Text>
             </TouchableOpacity>
         )
     }
 
-    function handleBooking() {
+    async function handleBooking() {
+        if (!paymentMethodData) {
+            console.log("inside emptyy...........");
+            setErrorMessage('Please select a payment type');
+            return;
+        }
+
+        const nextOrder = nextOrderData?.nextOrderStates[0];
+        setLoading(true);
+        setErrorMessage('');
+    
         try {
-            serviceBookingUpdate({
-                variables: {
-                    input: {
-                        customFields: {
-                            date: date,
-                            time: selectedSlot
-                        }
-                      }
-                }
-            })
-        } catch (error) {
-            console.error("Error Booking: ",error);
+            await changeState({
+                variables: { state: nextOrder }
+            });
+    
+            await addPayment({
+                variables: { method: paymentMethodData, metadata: {} }
+            });
+    
+            updateState({ showSuccessfullyDialog: true });
+        } catch (e) {
+            console.error("Error Payment: ", e);
+        } finally {
+            setLoading(false); 
         }
     }
+    
+
+    function paymentMethod() {
+
+        return (
+            <View style={styles.paymentMethodContainer}>
+                <Text style={{ ...Fonts.blackColor14Bold, marginBottom: Sizes.fixPadding }}>
+                    Select Payment Type
+                </Text>
+                <DropDownPicker
+                    open={open}
+                    value={paymentMethodData}
+                    items={paymentMethodDatas}
+                    setOpen={setOpen}
+                    setValue={(value) => {
+                        setPaymentMethodData(value);
+                        setErrorMessage(''); // Clear error message on selection
+                    }}
+                    containerStyle={{ height: 40 }}
+                    style={styles.dropdown}
+                    itemStyle={{
+                        justifyContent: 'flex-start'
+                    }}
+                    dropDownStyle={styles.dropDownContainer}
+                    onChangeItem={(item) =>
+                        updateState({ selectedPaymentType: item.value })
+                    }
+                    placeholder="Select Payment Type"
+                />
+                {errorMessage ? (
+                        <Text style={styles.errorText}>{errorMessage}</Text>
+                    ) : null}
+            </View>
+        );
+    }    
 
     function cards() {
         return (
@@ -215,6 +287,33 @@ const PaymentMethodScreen = ({ navigation, route }) => {
             </View>
         )
     }
+
+    function priceDetails() {
+        return (
+            <View style={styles.priceDetailsContainer}>
+                <Text style={styles.priceDetailsTitle}>
+                    Payment info
+                </Text>
+                <View style={styles.priceRow}>
+                    <Text style={styles.priceLabel}>Shipping</Text>
+                    <Text style={styles.priceValue}>₹{paymentInfo?.activeOrder?.shipping}</Text>
+                </View>
+                <View style={styles.priceRow}>
+                    <Text style={styles.priceLabel}>Subtotal</Text>
+                    <Text style={styles.priceValue}>₹{paymentInfo?.activeOrder?.subTotal?.toFixed(2)}</Text>
+                </View>
+                <View style={styles.priceRow}>
+                    <Text style={styles.priceLabel}>Total</Text>
+                    <Text style={styles.priceValue}>₹{paymentInfo?.activeOrder?.total?.toFixed(2)}</Text>
+                </View>
+                <View style={styles.priceRow}>
+                    <Text style={styles.priceLabel}>Total with tax</Text>
+                    <Text style={styles.priceValue}>₹{paymentInfo?.activeOrder?.subTotalWithTax?.toFixed(2)}</Text>
+                </View>
+            </View>
+        );
+    }
+    
 
     function addNewCardText() {
         return (
@@ -309,7 +408,54 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         paddingHorizontal: Sizes.fixPadding * 2.0,
         paddingVertical: Sizes.fixPadding * 3.0,
-    }
+    },
+    paymentMethodContainer: {
+        marginHorizontal: Sizes.fixPadding * 2.0,
+        marginBottom: Sizes.fixPadding * 6.0,
+        // paddingBottom: Sizes.fixPadding * 2.0,
+
+    },
+    dropdown: {
+        backgroundColor: '#fafafa',
+        borderColor: '#e0e0e0',
+        borderWidth: 1,
+        borderRadius: Sizes.fixPadding,
+        marginBottom: Sizes.fixPadding,
+        // marginTop: Sizes.fixPadding,
+    },
+    dropDownContainer: {
+        borderColor: '#e0e0e0',
+        borderWidth: 1,
+        borderRadius: Sizes.fixPadding,
+        // marginTop: -1,
+    },
+    priceDetailsContainer: {
+        padding: 20,
+        borderRadius: 15,
+        backgroundColor: Colors.whiteColor,
+        elevation: 2.0,
+        margin: Sizes.fixPadding * 2.0,
+        ...CommonStyles.shadow
+    },
+    priceDetailsTitle: {
+        ...Fonts.blackColor14Bold,
+        marginBottom: Sizes.fixPadding,
+    },
+    priceRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: Sizes.fixPadding - 5.0,
+    },
+    priceLabel: {
+        ...Fonts.grayColor13SemiBold,
+    },
+    priceValue: {
+        ...Fonts.blackColor14Medium,
+    },
+    errorText: {
+        marginTop: 5,
+        ...Fonts.redColor11SemiBold,
+    },
 });
 
 export default PaymentMethodScreen;
