@@ -11,7 +11,6 @@ const { width } = Dimensions.get('screen');
 
 const CategoryDetailScreen = ({ navigation, route }) => {
     const { productSlug } = route.params;
-    console.log("slug: ",productSlug);
 
     const { data } = useQuery(GET_SINGLE_COLLECTION_LIST(productSlug));
 

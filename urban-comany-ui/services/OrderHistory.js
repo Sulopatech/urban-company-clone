@@ -12,6 +12,12 @@ export const ORDER_HISTORY = gql`
           total
           totalWithTax
           state
+          shippingAddress{
+            streetLine1
+            city
+            postalCode
+            country
+          }
           lines {
             id
             productVariant {
@@ -22,6 +28,10 @@ export const ORDER_HISTORY = gql`
               product {
                 name
                 slug
+                featuredAsset{
+                  id
+                  preview
+                }
               }
             }
             featuredAsset {

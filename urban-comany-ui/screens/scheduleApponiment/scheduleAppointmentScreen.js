@@ -104,6 +104,8 @@ const ScheduleAppointmentScreen = ({ navigation ,route }) => {
 
     const { selectedServices, product } = route.params;
 
+    console.log("product: ", product);
+
     const {
         specialists,
         selectedSpecialistId,
@@ -141,7 +143,7 @@ const ScheduleAppointmentScreen = ({ navigation ,route }) => {
             <TouchableOpacity
                 activeOpacity={0.9}
                 onPress={() => navigation.push('AppointmentDetail',{
-                    selectedServices: selectedServices,
+                    selectedServices: Array.isArray(selectedServices) ? selectedServices : [selectedServices],
                     date: selectedDate,
                     selectedSlot: state.selectedSlot,
                     product: product,
@@ -160,34 +162,35 @@ const ScheduleAppointmentScreen = ({ navigation ,route }) => {
     }
 
     function totalAmountInfo() {
+        const servicesArray = Array.isArray(selectedServices) ? selectedServices : [selectedServices];
         return (
             <View style={styles.totalAmountInfoWrapStyle}>
                 <Text style={{ ...Fonts.blackColor16Bold }}>
                     Total Amount
                 </Text>
                 <Text style={{ ...Fonts.blackColor13Bold }}>
-                    {`$`}{selectedServices.reduce((total, item) => total = total + item.priceWithTax, 0).toFixed(2)}
+                    {`$`}{servicesArray.reduce((total, item) => total = total + item.priceWithTax, 0).toFixed(2)}
                 </Text>
             </View>
         )
     }
 
     function selectedServicesInfo() {
-
         const renderItem = ({ item }) => (
             <View style={{
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'space-between'
             }}>
-                <Text style={{ ...Fonts.grayColor14Bold }}>
+                <Text style={{ ...Fonts.grayColor14Bold, width: "80%"}}>
                     {item.name}
                 </Text>
-                <Text style={{ ...Fonts.grayColor13Bold }}>
+                <Text style={{ ...Fonts.grayColor13Bold, width: "20%" }}>
                     {`$`}{item.priceWithTax.toFixed(2)}
                 </Text>
             </View>
         )
+        const servicesArray = Array.isArray(selectedServices) ? selectedServices : [selectedServices];
         return (
             <View style={{ marginHorizontal: Sizes.fixPadding * 2.0, }}>
                 <Text style={{ marginBottom: Sizes.fixPadding, marginTop: Sizes.fixPadding - 2.0, ...Fonts.blackColor16Bold }}>
@@ -195,7 +198,7 @@ const ScheduleAppointmentScreen = ({ navigation ,route }) => {
                 </Text>
                 <FlatList
                     listKey="services"
-                    data={selectedServices}
+                    data={servicesArray}
                     keyExtractor={(item) => `${item.id}`}
                     renderItem={renderItem}
                     scrollEnabled={false}

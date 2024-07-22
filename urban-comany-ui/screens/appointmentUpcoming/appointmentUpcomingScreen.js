@@ -12,34 +12,6 @@ import { useQuery } from "@apollo/client";
 import { format, parseISO } from "date-fns";
 import { useFocusEffect } from "@react-navigation/native";
 
-const upcomingAppointmentsList = [
-  {
-    id: "1",
-    isExpandable: false,
-    salonName: "Crown salon",
-    salonAddress: "A 9/a Sector 16,Gautam Budh Nagar",
-    appointmentDay: "Thursday",
-    appointmentDate: "14 August,2021",
-    appointmentTime: "2:00 pm",
-    specialistName: "Joya Patel",
-    speciality: "Hair Stylist",
-    services: [
-      {
-        service: "Hair wash herbal",
-        amount: 35.0,
-      },
-      {
-        service: "Hair color",
-        amount: 149.0,
-      },
-      {
-        service: "Simple hair cuting - hair wash",
-        amount: 25.0,
-      },
-    ],
-  },
-];
-
 const AppointmentUpcoming = ({ navigation }) => {
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
 
@@ -52,7 +24,6 @@ const AppointmentUpcoming = ({ navigation }) => {
 
   useFocusEffect(
     useCallback(() => {
-      // Refetch the ORDER_HISTORY query whenever the screen is focused
       refetch();
     }, [refetch])
   );
@@ -62,12 +33,6 @@ const AppointmentUpcoming = ({ navigation }) => {
       setUpcomingAppointments(orderHistoryData.activeCustomer.orders.items);
     }
   }, [orderHistoryData]);
-
-  console.log("order dataa: ", orderHistoryData?.activeCustomer?.orders);
-  console.log(
-    "custom field: ",
-    orderHistoryData?.activeCustomer?.orders?.items
-  );
 
   const renderItem = ({ item }) => {
     const date = item?.customFields?.date;
@@ -124,12 +89,11 @@ const AppointmentUpcoming = ({ navigation }) => {
                   });
                 })()}
                 <Text style={{ ...Fonts.grayColor13SemiBold }}>
-                  {"A 9/a Sector 16,Gautam Budh Nagar"}
+                  {item?.shippingAddress?.streetLine1},{item?.shippingAddress?.city},{item?.shippingAddress?.postalCode}
                 </Text>
                 <Text
                   style={{ lineHeight: 16.0, ...Fonts.grayColor13SemiBold }}
                 >
-                  {/* {item.appointmentDay} • {item.appointmentDate} • {item.appointmentTime} */}
                   {dayOfWeek} • {formattedDate} • {time || "Unknown Time"}
                 </Text>
                 <View
@@ -173,12 +137,6 @@ const AppointmentUpcoming = ({ navigation }) => {
                 />
               </CollapseHeader>
               <CollapseBody>
-                {/* <Text style={{ ...Fonts.blackColor14Bold }}>
-                        Specialists
-                    </Text>
-                    <Text style={{ ...Fonts.grayColor13SemiBold }}>
-                        {item.specialistName} • {item.speciality}
-                    </Text> */}
                 <Text style={{ ...Fonts.blackColor14Bold }}>Services</Text>
                 {item.lines.map((lines, index) => (
                   <View key={index}>
@@ -214,6 +172,7 @@ const AppointmentUpcoming = ({ navigation }) => {
                     {item.totalWithTax.toFixed(2)}
                   </Text>
                 </View>
+                {item.lines.map((lines, index) => (
                 <View
                   style={{
                     flexDirection: "row",
@@ -237,7 +196,10 @@ const AppointmentUpcoming = ({ navigation }) => {
                   </Text>
 
                   <Text
-                    onPress={() => navigation.push("ScheduleAppointment")}
+                    onPress={() => navigation.push('ScheduleAppointment', {
+                        selectedServices: lines.productVariant,
+                        product: lines.productVariant.product
+                    })}
                     style={{
                       ...Fonts.greenColor13Bold,
                       textAlign: "center",
@@ -250,6 +212,7 @@ const AppointmentUpcoming = ({ navigation }) => {
                     Reschedule
                   </Text>
                 </View>
+                ))}
               </CollapseBody>
             </Collapse>
           </View>
