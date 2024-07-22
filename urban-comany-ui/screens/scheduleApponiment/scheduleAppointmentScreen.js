@@ -209,7 +209,8 @@ const ScheduleAppointmentScreen = ({ navigation ,route }) => {
     }
 
     function availableSlotInfo() {
-
+        const currentTime = moment();
+    
         const renderItem = ({ item }) => (
             <TouchableOpacity
                 activeOpacity={0.9}
@@ -225,7 +226,20 @@ const ScheduleAppointmentScreen = ({ navigation ,route }) => {
                     {item}
                 </Text>
             </TouchableOpacity>
-        )
+        );
+    
+        const filterSlots = (slots) => {
+            if (!selectedDate) return slots;
+            
+            const selectedDateMoment = moment(selectedDate, 'YYYY-MM-DD');
+            if (selectedDateMoment.isSame(currentTime, 'day')) {
+                return slots.filter(slot => moment(slot, 'hh:mm a').isAfter(currentTime));
+            }
+            return slots;
+        };
+    
+        const filteredSlots = filterSlots(slotsList);
+    
         return (
             <View style={{ marginHorizontal: Sizes.fixPadding * 2.0, }}>
                 <Text style={{ marginVertical: Sizes.fixPadding + 5.0, ...Fonts.blackColor16Bold }}>
@@ -233,16 +247,17 @@ const ScheduleAppointmentScreen = ({ navigation ,route }) => {
                 </Text>
                 <FlatList
                     listKey="slots"
-                    data={slotsList}
-                    keyExtractor={(index) => `${index}`}
+                    data={filteredSlots}
+                    keyExtractor={(item, index) => `${index}`}
                     renderItem={renderItem}
                     numColumns={4}
                     showsVerticalScrollIndicator={false}
                     scrollEnabled={false}
                 />
             </View>
-        )
+        );
     }
+    
 
     function selectSpecialistInfo() {
 
@@ -373,6 +388,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: Sizes.fixPadding - 5.0,
         marginRight: Sizes.fixPadding - 3.0,
         marginBottom: Sizes.fixPadding - 3.0,
+        width: 80, // Fixed width
+        height: 45,
     },
     totalAmountInfoWrapStyle: {
         flexDirection: 'row',

@@ -291,13 +291,11 @@ const SigninScreen = ({ navigation }) => {
         return (
             <View style={{ marginTop: Sizes.fixPadding + 5.0, marginHorizontal: Sizes.fixPadding * 2.0, }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <FontAwesome name="user" size={17} color={Colors.grayColor} />
+                    <MaterialIcons name="email" size={19} color={Colors.grayColor} />
                     <TextInput
                         value={userName}
-                        onChangeText={handleUserNameChange
-
-                        }
-                        placeholder="User Name"
+                        onChangeText={handleUserNameChange}
+                        placeholder="Email"
                         placeholderTextColor={Colors.grayColor}
                         selectionColor={Colors.primaryColor}
                         style={{
