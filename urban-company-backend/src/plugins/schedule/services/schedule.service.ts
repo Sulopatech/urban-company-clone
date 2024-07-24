@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable,Inject } from '@nestjs/common';
 import {
     ID,
     Order,
@@ -9,25 +9,26 @@ import {
 } from '@vendure/core';
 import { Schedule } from '../entities/schedule.entity';
 import { PluginInitOptions } from '../types';
+import { SCHEDULE_PLUGIN_OPTIONS } from '../constants';
 
 
 @Injectable()
 export class ScheduleService {
-  private scheduleOptions: PluginInitOptions;
 
   constructor(
     private connection: TransactionalConnection,
     private orderService: OrderService,
     private customFieldRelationService:CustomFieldRelationService,
+    @Inject(SCHEDULE_PLUGIN_OPTIONS) private options:PluginInitOptions
   ) {}
 
-  init(options:PluginInitOptions) {
-    this.scheduleOptions = {
-      minRescheduleDays: options.minRescheduleDays || 1,
-      maxRescheduleFrequency: options.maxRescheduleFrequency || 3,
-      rescheduleWindowDays: options.rescheduleWindowDays || 30,
-    };
-  }
+//   init(options:PluginInitOptions) {
+//     this.scheduleOptions = {
+//       minRescheduleDays: options.minRescheduleDays || 1,
+//       maxRescheduleFrequency: options.maxRescheduleFrequency || 3,
+//       rescheduleWindowDays: options.rescheduleWindowDays || 30,
+//     };
+//   }
 
   async createOrUpdateSchedule(
     ctx: RequestContext,
@@ -125,6 +126,7 @@ export class ScheduleService {
     }
 
     // Update the current schedule
+    schedule.order=order
     schedule.currentStartDate = newStartDate;
     schedule.currentEndDate = newEndDate;
     schedule.currentStartTime = newStartTime;
@@ -137,7 +139,7 @@ export class ScheduleService {
     if (order.state !== 'PaymentSettled') {
       await this.updateOrderQuantities(ctx, orderId, newDurationInWeeks);
     }
-
+    
     return savedSchedule;
   }
 
@@ -146,19 +148,19 @@ export class ScheduleService {
     const daysDifference = Math.ceil((newStartDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
     // Check minimum days before rescheduling
-    if (daysDifference < this.scheduleOptions.minRescheduleDays) {
-      throw new Error(`Rescheduling must be done at least ${this.scheduleOptions.minRescheduleDays} days in advance`);
+    if (daysDifference < this.options.minRescheduleDays) {
+      throw new Error(`Rescheduling must be done at least ${this.options.minRescheduleDays} days in advance`);
     }
 
     // Check rescheduling window
-    if (daysDifference > this.scheduleOptions.rescheduleWindowDays) {
-      throw new Error(`Rescheduling can only be done within ${this.scheduleOptions.rescheduleWindowDays} days of the current date`);
+    if (daysDifference > this.options.rescheduleWindowDays) {
+      throw new Error(`Rescheduling can only be done within ${this.options.rescheduleWindowDays} days of the current date`);
     }
 
     // Check rescheduling frequency
     const rescheduleCount = schedule.rescheduleFrequency; // Simplified for this example
-    if (rescheduleCount >= this.scheduleOptions.maxRescheduleFrequency) {
-      throw new Error(`You can only reschedule up to ${this.scheduleOptions.maxRescheduleFrequency} times`);
+    if (rescheduleCount >= this.options.maxRescheduleFrequency) {
+      throw new Error(`You can only reschedule up to ${this.options.maxRescheduleFrequency} times`);
     }
   }
 
