@@ -61,7 +61,6 @@ const EditProfileScreen = ({ navigation }) => {
         }
 
         const result = await ImagePicker.launchCameraAsync();
-        console.log("result urii: ",result.assets[0].uri);
         if (!result.canceled) {
             try {
 

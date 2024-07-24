@@ -6,8 +6,6 @@ import MyStatusBar from "../../components/myStatusBar";
 import { UPDATE_BOOKING } from "../../services/Bookings";
 import { useMutation } from "@apollo/client";
 
-const servicesList = ['Hair wash herbal', 'Hair color', 'Simple hair cuting - hair wash']
-
 const AppointmentDetailsScreen = ({ navigation, route }) => {
 
     const { date, selectedSlot, selectedServices, product } = route.params;
@@ -15,12 +13,6 @@ const AppointmentDetailsScreen = ({ navigation, route }) => {
     const [serviceBookingUpdate, { loading, error }] = useMutation(UPDATE_BOOKING, {
         onCompleted: async (data) => {
             console.log("BOOKING successfully update:", data);
-            // navigation.push('PaymentMethod', {
-            //     date: date,
-            //     selectedSlot: selectedSlot,
-            //     selectedServices: selectedServices,
-            //     product: product,
-            // })
             navigation.push('ShippingDetail', {
                 date: date,
                 selectedSlot: selectedSlot,
@@ -33,7 +25,7 @@ const AppointmentDetailsScreen = ({ navigation, route }) => {
         },
     });
 
-    console.log("product: ", product);
+    console.log("product....: ", product);
     console.log("selected services: ", selectedServices);
 
     return (
@@ -60,12 +52,6 @@ const AppointmentDetailsScreen = ({ navigation, route }) => {
         return (
             <TouchableOpacity
                 activeOpacity={0.9}
-                // onPress={() => navigation.push('PaymentMethod', {
-                //     date: date,
-                //     selectedSlot: selectedSlot ,
-                //     selectedServices: selectedServices,
-                //     product: product,
-                // })}
                 onPress={() => handleBooking()}
                 style={styles.bookNowButtonStyle}
             >
@@ -117,19 +103,6 @@ const AppointmentDetailsScreen = ({ navigation, route }) => {
                 </Text>
                 <Text style={{ ...Fonts.grayColor13SemiBold }}>
                     {date} • {selectedSlot}
-                </Text>
-            </View>
-        )
-    }
-
-    function specialistsInfo() {
-        return (
-            <View style={{ marginHorizontal: Sizes.fixPadding * 2.0, }}>
-                <Text style={{ ...Fonts.blackColor15Bold }}>
-                    Selected Specialist
-                </Text>
-                <Text style={{ ...Fonts.grayColor13SemiBold }}>
-                    Joya Patel • Hair stylist
                 </Text>
             </View>
         )

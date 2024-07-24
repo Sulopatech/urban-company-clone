@@ -572,16 +572,17 @@ const SalonDetailScreen = ({ navigation, route }) => {
     }
 
     function aboutInfo() {
+        const cleanDescription = product.description.replace(/^<p>/, '').replace(/<\/p>$/, '');
         return (
             <View style={{ marginHorizontal: Sizes.fixPadding * 2.0, }}>
                 <Text style={{ marginBottom: Sizes.fixPadding - 5.0, ...Fonts.blackColor16Bold }}>
                     About
                 </Text>
                 <Text style={{ marginBottom: Sizes.fixPadding - 5.0 , ...Fonts.grayColor13Bold }}>
-                    {product.description}
+                    {cleanDescription}
                 </Text>
                
-            </View >
+            </View>
         )
     }
 

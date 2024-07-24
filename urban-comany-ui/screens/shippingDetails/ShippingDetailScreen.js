@@ -6,6 +6,7 @@ import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import DropDownPicker from "react-native-dropdown-picker";
 import { ADD_ADDRESS, ADD_BILLING_ADDRESS, ADD_SHIPPING_METHOD, COUNTRIES, SHIPPING_METHOD } from "../../services/Bookings";
 import { useMutation, useQuery } from "@apollo/client";
+import { GET_ACTIVE_CUSTOMER } from "../../services/Editprofile";
 
 const ShippingDetailScreen = ({ navigation, route }) => {
 
@@ -43,6 +44,9 @@ const ShippingDetailScreen = ({ navigation, route }) => {
 
     const { data: countriesData } = useQuery(COUNTRIES);
     const { data: shippingMethodsData } = useQuery(SHIPPING_METHOD);
+    const { data: userData } = useQuery(GET_ACTIVE_CUSTOMER);
+
+    console.log("customer data: ",userData);
 
     const [addAddress] = useMutation(ADD_ADDRESS);
     const [addShippingMethod] = useMutation(ADD_SHIPPING_METHOD);
@@ -342,6 +346,16 @@ const ShippingDetailScreen = ({ navigation, route }) => {
             setShippingMethodItems(items);
         }
     }, [shippingMethodsData]);
+
+    useEffect(() => {
+        if (userData?.activeCustomer) {
+            const {phoneNumber} = userData.activeCustomer;
+            setAddressingDetail((prevState) => ({
+                ...prevState,
+                phoneNumber,
+            }))
+        }
+    }, [userData])
 
     const updateAddressingDetail = (target, value) => {
         const copyDetail = { ...addressingDetail };

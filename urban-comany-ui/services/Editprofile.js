@@ -18,6 +18,7 @@ export const UPDATE_USER = gql`
       firstName
       lastName
       phoneNumber
+      emailAddress
     }
   }
 `;
