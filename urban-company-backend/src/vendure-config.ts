@@ -119,7 +119,7 @@ export const config: VendureConfig = {
         }),
         SchedulePlugin.init({
             minRescheduleDays: 1,
-            maxRescheduleFrequency: 2,
+            maxRescheduleFrequency: 3,
             rescheduleWindowDays: 30,
         }),
     ],

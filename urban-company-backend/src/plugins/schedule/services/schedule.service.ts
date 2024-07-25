@@ -115,7 +115,7 @@ export class ScheduleService {
     }
 
     // Check rescheduling rules
-    this.checkRescheduleRules(schedule, newStartDate);
+    this.checkRescheduleRules(schedule, newStartDate,ctx);
 
     // Preserve the original duration
     const originalDurationInWeeks = this.calculateDurationInWeeks(schedule.currentStartDate, schedule.currentEndDate);
@@ -143,7 +143,7 @@ export class ScheduleService {
     return savedSchedule;
   }
 
-  private checkRescheduleRules(schedule: Schedule, newStartDate: Date): void {
+  private checkRescheduleRules(schedule: Schedule, newStartDate: Date, ctx: RequestContext,): void {
     const now = new Date();
     const daysDifference = Math.ceil((newStartDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
@@ -161,6 +161,11 @@ export class ScheduleService {
     const rescheduleCount = schedule.rescheduleFrequency; // Simplified for this example
     if (rescheduleCount >= this.options.maxRescheduleFrequency) {
       throw new Error(`You can only reschedule up to ${this.options.maxRescheduleFrequency} times`);
+    }
+    else{
+      const savedSchedule = this.connection.getRepository(ctx, Schedule).update(schedule.id,{
+        rescheduleFrequency: schedule.rescheduleFrequency+1
+      });
     }
   }
 
