@@ -30,7 +30,7 @@ type Schedule {
   currentEndDate: DateTime!
   currentStartTime: String!
   currentEndTime: String!
-  rescheduleFrequency: Int!
+  rescheduleFrequency: Int
   lastRescheduledDate: DateTime
 }
 
