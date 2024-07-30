@@ -1,20 +1,34 @@
-import React, { useState, } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Dimensions, ScrollView, StyleSheet, TouchableOpacity, Text, Image, Modal } from "react-native";
 import { Colors, Fonts, Sizes, } from "../../constants/styles";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useApolloClient, useQuery } from '@apollo/client';
 import { GET_ACTIVE_CUSTOMER } from "../../services/Profile";
+import { ActivityIndicator } from 'react-native';
+
 const { width } = Dimensions.get('window');
 
 const ProfileScreen = ({ navigation }) => {
     const client = useApolloClient();
 
     const [showLogoutDialog, setshowLogoutDialog] = useState(false);
-    const { loading, error, data } = useQuery(GET_ACTIVE_CUSTOMER);
-    if (loading) return <Text>Loading...</Text>;
-    if (error) return <Text>Error: {error.message}</Text>;
+    const [isImageModalVisible, setIsImageModalVisible] = useState(false);
 
-    const { firstName, lastName } = data.activeCustomer;
+    const { loading, error, data } = useQuery(GET_ACTIVE_CUSTOMER);
+    // if (loading) return <Text>Loading...</Text>;
+    // if (error) return <Text>Error: {error.message}</Text>;
+
+    // const { firstName, lastName } = data?.activeCustomer;
+    const [profilePic, setProfilePic] = useState(null);
+    const [loadingProfilePic, setLoadingProfilePic] = useState(true);
+
+    useEffect(() => {
+        if (data) {
+            setProfilePic(data?.activeCustomer?.customFields?.profilePic?.source);
+            setLoadingProfilePic(false); // Update loading state
+        }
+    }, [data]);
+
 
     const handleLogout = async () => {
         try {
@@ -33,7 +47,7 @@ const ProfileScreen = ({ navigation }) => {
                 <ScrollView showsVerticalScrollIndicator={false}>
                     {profileInfo()}
                     {divider()}
-                    <TouchableOpacity
+                    {/* <TouchableOpacity
                         activeOpacity={0.6}
                         onPress={() => navigation.push('Favorites')}
                     >
@@ -109,7 +123,7 @@ const ProfileScreen = ({ navigation }) => {
                                 option: 'Setting'
                             }
                         )}
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                     {signOutInfo()}
                 </ScrollView>
                 {logoutDialog()}
@@ -238,16 +252,43 @@ const ProfileScreen = ({ navigation }) => {
         return (
             <View style={styles.profileInfoWrapStyle}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Image
-                        source={require('../../assets/images/users/user3.png')}
-                        style={{ width: 70.0, height: 70.0, borderRadius: 35.0, }}
-                    />
+                    {loadingProfilePic ? (
+                        <ActivityIndicator
+                            size="large"
+                            color={Colors.primaryColor}
+                            style={{ width: 70.0, height: 70.0 }}
+                        />
+                    ) : (
+                        <TouchableOpacity onPress={() => setIsImageModalVisible(true)}>
+                            <Image
+                                source={profilePic ? { uri: profilePic } : require('../../assets/images/users/user3.png')}
+                                style={{ width: 70.0, height: 70.0, borderRadius: 35.0 }}
+                            />
+                        </TouchableOpacity>
+                    )}
+                    {isImageModalVisible && (
+                        <Modal
+                            transparent={true}
+                            visible={isImageModalVisible}
+                            onRequestClose={() => setIsImageModalVisible(false)}
+                        >
+                            <TouchableOpacity
+                                style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center' }}
+                                onPress={() => setIsImageModalVisible(false)}
+                            >
+                                <Image
+                                    source={profilePic ? { uri: profilePic } : require('../../assets/images/users/user3.png')}
+                                    style={{ width: width - 40, height: width - 40, resizeMode: 'cover' }}
+                                />
+                            </TouchableOpacity>
+                        </Modal>
+                    )}
                     <View style={{ marginLeft: Sizes.fixPadding, }}>
                         <Text style={{ ...Fonts.grayColor13SemiBold }}>
-                        Hello,
+                            Hello,
                         </Text>
                         <Text style={{ maxWidth: width - 190, lineHeight: 17.0, ...Fonts.blackColor15Bold }}>
-                        {firstName ? `${firstName} ${lastName}` : "Guest"}
+                            {data?.activeCustomer?.firstName ? `${data?.activeCustomer?.firstName} ${data?.activeCustomer?.lastName}` : "Guest"}
                         </Text>
                     </View>
                 </View>
@@ -264,6 +305,7 @@ const ProfileScreen = ({ navigation }) => {
             </View >
         )
     }
+
 
     function header() {
         return (

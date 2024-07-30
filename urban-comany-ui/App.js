@@ -28,12 +28,17 @@ import SigninScreen from './screens/auth/signinScreen';
 import VerificationScreen from "./screens/auth/verificationScreen";
 import SplashScreen from "./screens/splashScreen";
 import ServiceDetailScreen from "./screens/serviceDetail/serviceDetailScreen";
+import RescheduleAppointment from "./screens/RescheduleAppointment/RescheduleAppointment";
 import * as ExpoSplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
 import { ApolloClient, ApolloProvider, HttpLink, InMemoryCache } from '@apollo/client';
 import API_URL from './services/Environment';
 import NearByScreen from './screens/nearBy/nearByScreen';
 import AppointmentUpcoming from './screens/appointmentUpcoming/appointmentUpcomingScreen';
+// import { createUploadLink } from 'apollo-upload-client'
+import createUploadLink from "apollo-upload-client/createUploadLink.mjs";
+import { isReactNativeFile } from './ReactNativeFile';
+import AppointmentScreen from './screens/appointment/appointmentScreen';
 
 ExpoSplashScreen.preventAutoHideAsync();
 
@@ -41,9 +46,14 @@ LogBox.ignoreAllLogs();
 
 const Stack = createStackNavigator(); // Define Stack navigator
 
-const httpLink = new HttpLink({
+const httpLink = createUploadLink({
   uri: API_URL,
+  isExtractableFile: isReactNativeFile
 });
+
+// const httpLink = new HttpLink({
+//   uri: API_URL,
+// });
 const client = new ApolloClient({
   link: httpLink,
   cache: new InMemoryCache(),
@@ -89,6 +99,7 @@ const App = () => {
             <Stack.Screen name="SalonDetail" component={SalonDetailScreen} />
             <Stack.Screen name="ScheduleAppointment" component={ScheduleAppointmentScreen} />
             <Stack.Screen name="AppointmentDetail" component={AppointmentDetailsScreen} />
+            <Stack.Screen name="AppointmentScreen" component={AppointmentScreen} />
             <Stack.Screen name="PaymentMethod" component={PaymentmethodScreen} />
             <Stack.Screen name="AppointmentUpcoming" component={AppointmentUpcoming} />
             <Stack.Screen name="ShippingDetail" component={ShippingDetailScreen} />
@@ -105,6 +116,7 @@ const App = () => {
             <Stack.Screen name="Setting" component={SettingScreen} />
             <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
             <Stack.Screen name="Nearby" component={NearByScreen} />
+            <Stack.Screen name="RescheduleAppointment" component={RescheduleAppointment} />
           </Stack.Navigator>
         </NavigationContainer>
       </ApolloProvider>

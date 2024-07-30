@@ -167,6 +167,19 @@ mutation removeOrderLine($orderLineId: ID!) {
   }
 `;
 
+export const REMOVE_ALL_BOOKING = gql`
+mutation removeallOrderline{
+  removeAllOrderLines{
+    ...on Order{
+      id
+      lines{
+        id
+      }
+    }
+  }
+}
+`;
+
 export const COUNTRIES = gql`
 query countries{
   availableCountries {
@@ -397,3 +410,26 @@ mutation addingBillingAddress{
   }
   }
 `
+
+export const ADD_SCHEDULE = gql`
+    mutation addSchedule(
+        $orderId: ID!,
+        $startDate: DateTime!,
+        $endDate: DateTime!,
+        $startTime: String!,
+        $endTime: String!
+    ) {
+        createOrUpdateOrderSchedule(
+            orderId: $orderId,
+            startDate: $startDate,
+            endDate: $endDate,
+            startTime: $startTime,
+            endTime: $endTime
+        ) {
+            id
+            order {
+                id
+            }
+        }
+    }
+`;

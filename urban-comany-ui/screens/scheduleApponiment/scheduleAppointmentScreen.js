@@ -1,85 +1,31 @@
 import React, { useEffect, useState } from "react";
-import { View, Image, FlatList, TouchableOpacity, StyleSheet, Text } from "react-native";
-import { Colors, Fonts, Sizes, } from "../../constants/styles";
+import { View, FlatList, TouchableOpacity, StyleSheet, Text } from "react-native";
+import { Colors, Fonts, Sizes } from "../../constants/styles";
 import { MaterialIcons } from '@expo/vector-icons';
 import CalendarStrip from 'react-native-calendar-strip';
 import MyStatusBar from "../../components/myStatusBar";
 import moment from "moment";
+import { useMutation, useQuery } from "@apollo/client";
+import { ACTIVE_ORDER, ADD_SCHEDULE } from "../../services/Bookings";
 
 const slotsList = [
     '09:30 am', '10:00 am', '10:30 am', '11:00 am', '11:30 am', '12:00 am', '01:30 pm', '02:00 pm', '02:30 pm', '03:00 pm', '03:30 pm', '04:00 pm', '04:30 pm', '05:00 pm',
     '06:00 pm', '06:30 pm', '07:00 pm', '08:00 pm', '08:30 pm'
 ];
 
-const specialistsData = [
-    {
-        id: '1',
-        specialistImage: require('../../assets/images/specialists/specialist2.png'),
-        specialistName: 'Joya',
-        speciality: 'Hair stylist',
-    },
-    {
-        id: '2',
-        specialistImage: require('../../assets/images/salon/salon4.png'),
-        specialistName: 'Doe',
-        speciality: 'St.Barber',
-    },
-    {
-        id: '3',
-        specialistImage: require('../../assets/images/specialists/specialist3.png'),
-        specialistName: 'Helina',
-        speciality: 'M.Artist',
-    },
-    {
-        id: '4',
-        specialistImage: require('../../assets/images/specialists/specialist4.png'),
-        specialistName: 'Robat',
-        speciality: 'Hair Stylist',
-    },
-    {
-        id: '5',
-        specialistImage: require('../../assets/images/specialists/specialist5.png'),
-        specialistName: 'Jiya',
-        speciality: 'M.Artist',
-    },
-    {
-        id: '6',
-        specialistImage: require('../../assets/images/specialists/specialist4.png'),
-        specialistName: 'Robat',
-        speciality: 'Hair Stylist',
-    }
-];
-
-const selectedServicesList = [
-    {
-        id: '1',
-        serviceName: 'Hair wash herbal',
-        amount: 35.00,
-    },
-    {
-        id: '2',
-        serviceName: 'Hair color',
-        amount: 149.00,
-    },
-    {
-        id: '3',
-        serviceName: 'Simple hair cutting - hair wash',
-        amount: 25.00,
-    },
-];
-
-const ScheduleAppointmentScreen = ({ navigation ,route }) => {
+const ScheduleAppointmentScreen = ({ navigation, route }) => {
 
     const [state, setState] = useState({
-        specialists: specialistsData,
-        selectedSpecialistId: specialistsData[0].id,
-        selectedSlot: '',
-    })
+        selectedStartTime: '',
+        selectedEndTime: '',
+    });
 
     const [selectedDate, setSelectedDate] = useState(null);
     const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+    const [dateRangeOption, setDateRangeOption] = useState(null); // 'weekly' or 'monthly'
 
-    const today = moment();
+    const { data } = useQuery(ACTIVE_ORDER)
+    const [addSchedule, { loading }] = useMutation(ADD_SCHEDULE);
 
     useEffect(() => {
         if (selectedDate && state.selectedSlot) {
@@ -90,27 +36,24 @@ const ScheduleAppointmentScreen = ({ navigation ,route }) => {
     }, [selectedDate, state.selectedSlot]);
 
     const handleDateSelected = (date) => {
-        const FormatedDate = formatDate(date); 
-      setSelectedDate(FormatedDate);  // Update state with the selected date
-        
+        const formattedDate = formatDate(date);
+        setSelectedDate(formattedDate);
     };
+
     const formatDate = (date) => {
         if (!date) return '';
-        const isoString = date.toISOString();  // Get ISO 8601 string
-        return isoString.split('T')[0];  // Split by 'T' and take the date part
+        const isoString = date.toISOString();
+        return isoString.split('T')[0];
     };
 
-    const updateState = (data) => setState((state) => ({ ...state, ...data }))
+    const updateState = (data) => setState((state) => ({ ...state, ...data }));
 
-    const { selectedServices, product } = route.params;
+    const { selectedServices, product, id } = route.params;
 
-    console.log("product: ", product);
-
-    const {
-        specialists,
-        selectedSpecialistId,
-        selectedSlot,
-    } = state;
+    const calculateEndDate = (startDate, option) => {
+        const start = moment(startDate, 'YYYY-MM-DD');
+        return option === 'weekly' ? start.add(7, 'days').format('YYYY-MM-DD') : start.add(30, 'days').format('YYYY-MM-DD');
+    };
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
@@ -121,10 +64,8 @@ const ScheduleAppointmentScreen = ({ navigation ,route }) => {
                     ListHeaderComponent={
                         <>
                             {selectDateInfo()}
-                            {/* {selectSpecialistInfo()} */}
+                            {dateRangeOptions()}
                             {availableSlotInfo()}
-                            {selectedServicesInfo()}
-                            {totalAmountInfo()}
                         </>
                     }
                     showsVerticalScrollIndicator={false}
@@ -133,113 +74,107 @@ const ScheduleAppointmentScreen = ({ navigation ,route }) => {
             </View>
             {continueButton()}
         </View>
-    )
-
-    
+    );
 
     function continueButton() {
-        
+        const handleContinuePress = async () => {
+            const endDate = dateRangeOption
+                ? calculateEndDate(selectedDate, dateRangeOption)
+                : selectedDate; // Use the same date if no dateRangeOption is selected
+
+            const startTime = state.selectedStartTime;
+            const endTime = state.selectedEndTime || startTime; // If end time is not selected, use start time
+
+            const selectedServicesArray = Array.isArray(selectedServices) ? selectedServices : [selectedServices];
+
+            const appointmentDetails = {
+                selectedServices: selectedServicesArray,
+                date: selectedDate,
+                endDate: endDate,
+                startTime: startTime,
+                endTime: endTime,
+                product: product,
+            };
+
+            console.log('Appointment Details:', `${selectedDate}T00:00:00Z`, `${endDate}T23:59:59Z`, startTime, endTime, data?.activeOrder?.id, id?.id);
+
+            try {
+                const response = await addSchedule({
+                    variables: {
+                        orderId: data?.activeOrder?.id,
+                        startDate: `${selectedDate}T00:00:00Z`,
+                        endDate: `${endDate}T23:59:59Z`,
+                        startTime: startTime,
+                        endTime: endTime,
+                    },
+                });
+
+                console.log('Mutation Response:', response.data);
+
+                navigation.push('AppointmentDetail', appointmentDetails);
+            } catch (error) {
+                console.error('Error scheduling appointment:', error);
+            }
+        };
+
+
+        const isDisabled = !selectedDate || !state.selectedStartTime;
+
         return (
             <TouchableOpacity
                 activeOpacity={0.9}
-                onPress={() => navigation.push('AppointmentDetail',{
-                    selectedServices: Array.isArray(selectedServices) ? selectedServices : [selectedServices],
-                    date: selectedDate,
-                    selectedSlot: state.selectedSlot,
-                    product: product,
-                })}
+                onPress={handleContinuePress}
                 style={[
                     styles.continueButtonStyle,
-                    { backgroundColor: isButtonDisabled ? Colors.grayColor : Colors.primaryColor },
+                    { backgroundColor: isDisabled ? Colors.grayColor : Colors.primaryColor },
                 ]}
-                disabled={isButtonDisabled}
+                disabled={isDisabled}
             >
                 <Text style={{ ...Fonts.whiteColor18SemiBold }}>
-                    Continue
+                    {loading ? "Continue..." : "Continue"}
                 </Text>
             </TouchableOpacity>
-        )
-    }
-
-    function totalAmountInfo() {
-        const servicesArray = Array.isArray(selectedServices) ? selectedServices : [selectedServices];
-        return (
-            <View style={styles.totalAmountInfoWrapStyle}>
-                <Text style={{ ...Fonts.blackColor16Bold }}>
-                    Total Amount
-                </Text>
-                <Text style={{ ...Fonts.blackColor13Bold }}>
-                    {`$`}{servicesArray.reduce((total, item) => total = total + item.priceWithTax, 0).toFixed(2)}
-                </Text>
-            </View>
-        )
-    }
-
-    function selectedServicesInfo() {
-        const renderItem = ({ item }) => (
-            <View style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between'
-            }}>
-                <Text style={{ ...Fonts.grayColor14Bold, width: "80%"}}>
-                    {item.name}
-                </Text>
-                <Text style={{ ...Fonts.grayColor13Bold, width: "20%" }}>
-                    {`$`}{item.priceWithTax.toFixed(2)}
-                </Text>
-            </View>
-        )
-        const servicesArray = Array.isArray(selectedServices) ? selectedServices : [selectedServices];
-        return (
-            <View style={{ marginHorizontal: Sizes.fixPadding * 2.0, }}>
-                <Text style={{ marginBottom: Sizes.fixPadding, marginTop: Sizes.fixPadding - 2.0, ...Fonts.blackColor16Bold }}>
-                    Selected Services
-                </Text>
-                <FlatList
-                    listKey="services"
-                    data={servicesArray}
-                    keyExtractor={(item) => `${item.id}`}
-                    renderItem={renderItem}
-                    scrollEnabled={false}
-                    showsVerticalScrollIndicator={false}
-                />
-            </View>
-        )
+        );
     }
 
     function availableSlotInfo() {
         const currentTime = moment();
-    
+
         const renderItem = ({ item }) => (
             <TouchableOpacity
                 activeOpacity={0.9}
-                onPress={() => updateState({ selectedSlot: item })}
+                onPress={() => {
+                    if (!state.selectedStartTime || (state.selectedStartTime && state.selectedEndTime)) {
+                        updateState({ selectedStartTime: item, selectedEndTime: '' });
+                    } else {
+                        updateState({ selectedEndTime: item });
+                    }
+                }}
                 style={{
-                    backgroundColor: selectedSlot == item ? Colors.primaryColor : Colors.whiteColor,
-                    borderColor: selectedSlot == item ? Colors.primaryColor : Colors.grayColor,
+                    backgroundColor: state.selectedStartTime == item || state.selectedEndTime == item ? Colors.primaryColor : Colors.whiteColor,
+                    borderColor: state.selectedStartTime == item || state.selectedEndTime == item ? Colors.primaryColor : Colors.grayColor,
                     ...styles.availableSlotWrapStyle,
                     flex: 1,
                 }}
             >
-                <Text style={selectedSlot == item ? { ...Fonts.whiteColor13Bold } : { ...Fonts.grayColor13Bold }}>
+                <Text style={state.selectedStartTime == item || state.selectedEndTime == item ? { ...Fonts.whiteColor13Bold } : { ...Fonts.grayColor13Bold }}>
                     {item}
                 </Text>
             </TouchableOpacity>
         );
-    
+
         const filterSlots = (slots) => {
             if (!selectedDate) return slots;
-            
+
             const selectedDateMoment = moment(selectedDate, 'YYYY-MM-DD');
             if (selectedDateMoment.isSame(currentTime, 'day')) {
                 return slots.filter(slot => moment(slot, 'hh:mm a').isAfter(currentTime));
             }
             return slots;
         };
-    
+
         const filteredSlots = filterSlots(slotsList);
-    
+
         return (
             <View style={{ marginHorizontal: Sizes.fixPadding * 2.0, }}>
                 <Text style={{ marginVertical: Sizes.fixPadding + 5.0, ...Fonts.blackColor16Bold }}>
@@ -257,93 +192,103 @@ const ScheduleAppointmentScreen = ({ navigation ,route }) => {
             </View>
         );
     }
-    
-
-    function selectSpecialistInfo() {
-
-        const renderItem = ({ item }) => (
-            <TouchableOpacity
-                activeOpacity={0.9}
-                onPress={() => updateState({ selectedSpecialistId: item.id })}
-                style={{
-                    alignItems: 'center',
-                    marginRight: Sizes.fixPadding + 5.0,
-                }}
-            >
-                <Image
-                    source={item.specialistImage}
-                    style={{
-                        borderColor: selectedSpecialistId == item.id ? Colors.primaryColor : 'transparent',
-                        ...styles.specialistImageStyle,
-                    }}
-                />
-                <Text style={selectedSpecialistId == item.id ? { ...Fonts.primaryColor12Bold } : { ...Fonts.blackColor12Bold }}>
-                    {item.specialistName}
-                </Text>
-                <Text style={{
-                    lineHeight: 11.0,
-                    ...selectedSpecialistId == item.id ? { ...Fonts.primaryColor11SemiBold } : { ...Fonts.grayColor11SemiBold }
-                }}>
-                    {item.speciality}
-                </Text>
-            </TouchableOpacity>
-        )
-        return (
-            <View>
-                <Text style={{ marginVertical: Sizes.fixPadding + 5.0, marginHorizontal: Sizes.fixPadding * 2.0, ...Fonts.blackColor16Bold }}>
-                    Select Specialists
-                </Text>
-                <FlatList
-                    data={specialists}
-                    keyExtractor={(item) => `${item.id}`}
-                    renderItem={renderItem}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{
-                        paddingLeft: Sizes.fixPadding * 2.0,
-                    }}
-                />
-            </View>
-        )
-    }
 
     function selectDateInfo() {
+        const today = moment().startOf('day');
+        const handleDateSelected = (date) => {
+            if (date.isBefore(today)) {
+                return; // Prevent selection of past dates
+            }
+            setSelectedDate(formatDate(date));
+        };
+
         return (
-            <View>
-                <Text style={{
-                    marginBottom: Sizes.fixPadding - 5.0,
-                    marginHorizontal: Sizes.fixPadding * 2.0, ...Fonts.blackColor16Bold
-                }}>
+            <View style={{ marginHorizontal: Sizes.fixPadding * 2.0 }}>
+                <Text style={{ ...Fonts.blackColor16Bold }}>
                     Select Date
                 </Text>
-                <View style={{ marginBottom: Sizes.fixPadding - 40.0 }}>
-                    <CalendarStrip
-                        style={{
-                            height: 100,
-                            paddingTop: Sizes.fixPadding * 2.0,
-                            paddingBottom: Sizes.fixPadding,
-                        }}
-                        highlightDateContainerStyle={{
-                            backgroundColor: Colors.primaryColor,
-                            borderRadius: Sizes.fixPadding - 11.0,
-                        }}
-                        iconStyle={{ width: 0.0, height: 0.0, marginHorizontal: Sizes.fixPadding - 5.0 }}
-                        dateNumberStyle={{ fontSize: 14, color: Colors.blackColor }}
-                        dateNameStyle={{ fontSize: 10, color: Colors.blackColor }}
-                        highlightDateNameStyle={{ fontSize: 10, color: Colors.whiteColor }}
-                        highlightDateNumberStyle={{ fontSize: 14, color: Colors.whiteColor }}
-                        onDateSelected={handleDateSelected}
-                        minDate={today}
-                        useIsoWeekday={false}
-                        scrollable={true}
-                        upperCaseDays={true}
-                        styleWeekend={true}
-                        calendarHeaderStyle={{ position: 'absolute', top: -20.0, }}
-                    />
-                </View>
+                <CalendarStrip
+                    scrollable
+                    style={{ height: 100.0, marginTop: Sizes.fixPadding * 1.0 }}
+                    highlightDateNumberStyle={{
+                        color: Colors.whiteColor,
+                        ...Fonts.blackColor14Regular
+                    }}
+                    highlightDateNameStyle={{
+                        color: Colors.whiteColor,
+                        ...Fonts.blackColor14Regular
+                    }}
+                    dateNumberStyle={{
+                        color: Colors.blackColor,
+                        ...Fonts.blackColor14Regular
+                    }}
+                    dateNameStyle={{
+                        color: Colors.blackColor,
+                        ...Fonts.blackColor14Regular
+                    }}
+                    highlightDateContainerStyle={{
+                        backgroundColor: Colors.primaryColor,
+                    }}
+                    iconContainer={{ flex: 0.1 }}
+                    selectedDate={selectedDate ? moment(selectedDate) : today}
+                    onDateSelected={handleDateSelected}
+                    datesWhitelist={[{ start: today, end: moment().add(1, 'year') }]} // Set the date range for future dates
+                    customDatesStyles={(date) => {
+                        if (date.isBefore(today)) {
+                            return {
+                                dateNameStyle: { color: 'gray' },
+                                dateNumberStyle: { color: 'gray' },
+                                highlightDateNameStyle: { color: 'gray' },
+                                highlightDateNumberStyle: { color: 'gray' },
+                                highlightDateContainerStyle: { backgroundColor: 'lightgray' },
+                            };
+                        }
+                    }}
+                />
             </View>
-        )
+        );
     }
+
+    function dateRangeOptions() {
+        const handleDateRangePress = (option) => {
+            // Toggle the date range option
+            setDateRangeOption(prevOption => prevOption === option ? '' : option);
+        };
+
+        return (
+            <View style={styles.dateRangeOptionsContainer}>
+                <TouchableOpacity
+                    style={[
+                        styles.dateRangeOption,
+                        dateRangeOption === 'weekly' && styles.selectedDateRangeOption
+                    ]}
+                    onPress={() => handleDateRangePress('weekly')}
+                >
+                    <Text style={[
+                        styles.dateRangeOptionText,
+                        dateRangeOption === 'weekly' && styles.selectedDateRangeOptionText
+                    ]}>
+                        Weekly
+                    </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[
+                        styles.dateRangeOption,
+                        dateRangeOption === 'monthly' && styles.selectedDateRangeOption
+                    ]}
+                    onPress={() => handleDateRangePress('monthly')}
+                >
+                    <Text style={[
+                        styles.dateRangeOptionText,
+                        dateRangeOption === 'monthly' && styles.selectedDateRangeOptionText
+                    ]}>
+                        Monthly
+                    </Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
+
 
     function header() {
         return (
@@ -404,7 +349,29 @@ const styles = StyleSheet.create({
         borderWidth: 1.5,
         borderRadius: Sizes.fixPadding - 5.0,
         marginBottom: Sizes.fixPadding - 7.0
-    }
+    },
+    dateRangeOptionsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        // marginVertical: Sizes.fixPadding,
+    },
+    dateRangeOption: {
+        paddingHorizontal: Sizes.fixPadding * 2.0,
+        paddingVertical: Sizes.fixPadding * 0.5,
+        borderRadius: Sizes.fixPadding * 0.5,
+        marginHorizontal: Sizes.fixPadding,
+        borderWidth: 1,
+        borderColor: Colors.primaryColor,
+    },
+    selectedDateRangeOption: {
+        backgroundColor: Colors.primaryColor,
+    },
+    dateRangeOptionText: {
+        ...Fonts.blackColor14Regular,
+    },
+    selectedDateRangeOptionText: {
+        color: Colors.whiteColor,
+    },
 });
 
 export default ScheduleAppointmentScreen;

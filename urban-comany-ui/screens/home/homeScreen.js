@@ -10,6 +10,8 @@ import {
   ImageBackground,
   TouchableOpacity,
   Animated,
+  Dimensions,
+  ScrollView
 } from "react-native";
 import { Colors, Fonts, Sizes } from "../../constants/styles";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -136,6 +138,30 @@ const HomeScreen = ({ navigation }) => {
   }, []);
 
   const scrollY = useRef(new Animated.Value(0)).current;
+  const scrollX = useRef(new Animated.Value(0)).current;
+
+  const salonImages = [
+    require("../../assets/images/urbanBg.jpg"),
+    require("../../assets/images/urban_bg.jpg"),
+    require("../../assets/images/Electician.png"),
+  ];
+
+  const screenWidth = Dimensions.get('window').width;
+  const [currentPage, setCurrentPage] = useState(0);
+
+  const onScroll = Animated.event(
+    [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+    {
+      useNativeDriver: false,
+      listener: (event) => {
+        const contentOffsetX = event.nativeEvent.contentOffset.x;
+        const newPage = Math.floor(contentOffsetX / screenWidth + 0.5);
+        if (newPage !== currentPage) {
+          setCurrentPage(newPage);
+        }
+      },
+    }
+  );
 
   const searchField = () => (
     <View style={styles.searchFieldWrapStyle}>
@@ -166,7 +192,7 @@ const HomeScreen = ({ navigation }) => {
             <View style={{ flex: 1 }}>
               {popularCategoryInfo()}
               {bestSalonInfo()}
-              {offersInfo()}
+              {/* {offersInfo()} */}
             </View>
           )}
           renderNavBar={() => <></>}
@@ -194,27 +220,40 @@ const HomeScreen = ({ navigation }) => {
 
   function salonImage() {
     return (
-      <ImageBackground
-        source={require("../../assets/images/salon/salon1.png")}
-        style={{
-          width: "100%",
-          height: 250,
-          justifyContent: "flex-end",
-        }}
-        borderBottomLeftRadius={10}
-        borderBottomRightRadius={10}
-        resizeMode="cover"
-      >
-        <View style={{ margin: Sizes.fixPadding * 2.0 }}>
+      <View style={styles.carouselContainer}>
+        <ScrollView
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={onScroll}
+          scrollEventThrottle={16} // Adjust throttle to control scroll event frequency
+        >
+          {salonImages.map((image, index) => (
+            <Image
+              key={index}
+              source={image}
+              style={styles.carouselImage}
+            />
+          ))}
+        </ScrollView>
+        <View style={styles.userInfoContainer}>
           {userInfo()}
-          {/* <Text style={{ ...Fonts.whiteColor18SemiBold }}>
-                        Find and book best services
-                    </Text> */}
-          {/* {searchField()} */}
         </View>
-      </ImageBackground>
+        <View style={styles.paginationContainer}>
+          {salonImages.map((_, index) => (
+            <View
+              key={index}
+              style={[
+                styles.paginationDot,
+                { backgroundColor: index === currentPage ? '#fff' : 'rgba(255, 255, 255, 0.5)' }
+              ]}
+            />
+          ))}
+        </View>
+      </View>
     );
   }
+
 
   function offersInfo() {
     const renderItem = ({ item }) => (
@@ -410,54 +449,54 @@ const HomeScreen = ({ navigation }) => {
           item.name === "Computers" ||
           item.name === "Camera & Photo"
         ) && (
-          <TouchableOpacity
-            activeOpacity={0.6}
-            onPress={() =>
-              navigation.push("CategoryDetail", { productSlug: item.slug })
-            }
-            style={{
-              backgroundColor: "#f0f0f0",
-              ...styles.popularCategoryWrapStyle,
-            }}
-          >
-            <View
+            <TouchableOpacity
+              activeOpacity={0.6}
+              onPress={() =>
+                navigation.push("CategoryDetail", { productSlug: item.slug })
+              }
               style={{
-                width: 40,
-                height: 40,
-                alignItems: "center",
-                justifyContent: "center",
+                backgroundColor: "#f0f0f0",
+                ...styles.popularCategoryWrapStyle,
               }}
             >
-              <Image
-                source={{
-                  uri: item.featuredAsset
-                    ? item.featuredAsset.preview
-                    : "https://via.placeholder.com/40",
+              <View
+                style={{
+                  width: 40,
+                  height: 40,
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
-                style={{ width: 50, height: 50 }}
-                resizeMode="cover"
-              />
-            </View>
-          </TouchableOpacity>
-        )}
+              >
+                <Image
+                  source={{
+                    uri: item.featuredAsset
+                      ? item.featuredAsset.preview
+                      : "https://via.placeholder.com/40",
+                  }}
+                  style={{ width: 50, height: 50 }}
+                  resizeMode="cover"
+                />
+              </View>
+            </TouchableOpacity>
+          )}
         {!(
           item.name === "Electronics" ||
           item.name === "Computers" ||
           item.name === "Camera & Photo"
         ) && (
-          <Text
-            numberOfLines={1}
-            style={{
-              marginTop: Sizes.fixPadding - 8.0,
-              ...Fonts.blackColor12Medium,
-              textAlign: "center",
-              flexWrap: "wrap",
-              width: 100,
-            }}
-          >
-            {item.name}
-          </Text>
-        )}
+            <Text
+              numberOfLines={1}
+              style={{
+                marginTop: Sizes.fixPadding - 8.0,
+                ...Fonts.blackColor12Medium,
+                textAlign: "center",
+                flexWrap: "wrap",
+                width: 100,
+              }}
+            >
+              {item.name}
+            </Text>
+          )}
       </View>
     );
 
@@ -610,12 +649,50 @@ const styles = StyleSheet.create({
     borderRadius: Sizes.fixPadding,
   },
   bestSalonDetailWrapStyle: {
-    backgroundColor: "rgba(214, 105, 134, 0.85)",
+    backgroundColor: "rgba(28, 41, 77, 0.85)",
     borderRadius: Sizes.fixPadding - 5.0,
     width: 185.0,
     marginTop: -40.0,
     paddingHorizontal: Sizes.fixPadding - 5.0,
     paddingBottom: Sizes.fixPadding - 5.0,
+  },
+  carouselContainer: {
+    width: '100%',
+    height: 250,
+    position: 'relative',
+  },
+  carouselImage: {
+    width: Dimensions.get('window').width,
+    height: 250,
+  },
+  userInfoContainer: {
+    position: 'absolute',
+    bottom: 30,
+    left: 10,
+    right: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+    borderRadius: 10,
+    padding: 10,
+  },
+  userInfoWrapStyle: {
+    flexDirection: "row",
+    alignItems: "center",
+    // Add more styles if needed
+  },
+  paginationContainer: {
+    flexDirection: 'row',
+    position: 'absolute',
+    bottom: 5,
+    alignSelf: 'center',
+  },
+  paginationDot: {
+    height: 10,
+    width: 10,
+    borderRadius: 5,
+    backgroundColor: '#fff',
+    margin: 8,
   },
 });
 

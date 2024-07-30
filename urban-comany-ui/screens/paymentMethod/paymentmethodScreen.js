@@ -196,38 +196,34 @@ const PaymentMethodScreen = ({ navigation, route }) => {
     
 
     function paymentMethod() {
-
         return (
             <View style={styles.paymentMethodContainer}>
-                <Text style={{ ...Fonts.blackColor14Bold, marginBottom: Sizes.fixPadding }}>
-                    Select Payment Type
-                </Text>
-                <DropDownPicker
-                    open={open}
-                    value={paymentMethodData}
-                    items={paymentMethodDatas}
-                    setOpen={setOpen}
-                    setValue={(value) => {
-                        setPaymentMethodData(value);
-                        setErrorMessage(''); // Clear error message on selection
-                    }}
-                    containerStyle={{ height: 40 }}
-                    style={styles.dropdown}
-                    itemStyle={{
-                        justifyContent: 'flex-start'
-                    }}
-                    dropDownStyle={styles.dropDownContainer}
-                    onChangeItem={(item) =>
-                        updateState({ selectedPaymentType: item.value })
-                    }
-                    placeholder="Select Payment Type"
-                />
+                {
+                    paymentMethodDatas.map((item, index) => (
+                        <TouchableOpacity
+                            key={index}
+                            style={styles.radioButtonWrap}
+                            onPress={() => {
+                                setPaymentMethodData(item.value);
+                                setErrorMessage('');
+                            }}
+                        >
+                            <View style={styles.radioCircle}>
+                                {paymentMethodData === item.value && <View style={styles.selectedRb} />}
+                            </View>
+                            <Text style={{ ...Fonts.blackColor14Medium }}>
+                                {item.label}
+                            </Text>
+                        </TouchableOpacity>
+                    ))
+                }
                 {errorMessage ? (
-                        <Text style={styles.errorText}>{errorMessage}</Text>
-                    ) : null}
+                    <Text style={styles.errorText}>{errorMessage}</Text>
+                ) : null}
             </View>
         );
-    }    
+    }
+      
 
     function cards() {
         return (
@@ -451,6 +447,31 @@ const styles = StyleSheet.create({
     },
     priceValue: {
         ...Fonts.blackColor14Medium,
+    },
+    errorText: {
+        marginTop: 5,
+        ...Fonts.redColor11SemiBold,
+    },
+    radioButtonWrap: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: Sizes.fixPadding,
+    },
+    radioCircle: {
+        height: 20,
+        width: 20,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: Colors.primaryColor,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: Sizes.fixPadding,
+    },
+    selectedRb: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: Colors.primaryColor,
     },
     errorText: {
         marginTop: 5,

@@ -10,21 +10,21 @@ const { width, height } = Dimensions.get('window');
 const onboardingScreenList = [
     {
         id: '1',
-        onboardingImage: require('../../assets/images/image1.png'),
+        onboardingImage: require('../../assets/images/Cleaning.jpeg'),
         title: 'Find and Book Services',
-        description: `Lorem ipsum dolor sit amet,\nconsectetur adipiscing elit, sed do\neiusmod tempor incididunt ut labore\net dolore magna aliqua.`,
+        description: `These platforms often offer search filters, customer reviews, price comparisons, and secure payment options to streamline the booking process and ensure a convenient and reliable experience for users.`,
     },
     {
         id: '2',
-        onboardingImage: require('../../assets/images/image2.png'),
+        onboardingImage: require('../../assets/images/Electician.png'),
         title: 'Style that fit our Lifestyle',
-        description: `Lorem ipsum dolor sit amet,\nconsectetur adipiscing elit, sed do\neiusmod tempor incididunt ut labore\net dolore magna aliqua.`,
+        description: `This concept emphasizes customization and personalization, ensuring that the products and services selected enhance and complement one's way of living.`,
     },
     {
         id: '3',
-        onboardingImage: require('../../assets/images/image3.png'),
+        onboardingImage: require('../../assets/images/Painting.jpeg'),
         title: 'The Professional Specialists',
-        description: `Lorem ipsum dolor sit amet,\nconsectetur adipiscing elit, sed do\neiusmod tempor incididunt ut labore\net dolore magna aliqua.`,
+        description: `These specialists offer advanced expertise, tailored solutions, and professional services to meet complex or specialized needs.`,
     },
 ];
 

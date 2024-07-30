@@ -1,7 +1,7 @@
 import { gql } from "@apollo/client";
 
 export const ORDER_HISTORY = gql`
-  query {
+ query activeCustomer {
     activeCustomer {
       firstName
       lastName
@@ -23,7 +23,6 @@ export const ORDER_HISTORY = gql`
             productVariant {
               id
               name
-              productId
               priceWithTax
               product {
                 name
@@ -40,7 +39,13 @@ export const ORDER_HISTORY = gql`
             }
           }
           customFields{
-            date
+            Schedule{
+              currentStartDate
+              currentEndDate
+              currentStartTime
+              currentEndTime
+              rescheduleFrequency
+            }
             time
           }
         }

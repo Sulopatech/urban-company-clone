@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { View, Dimensions, FlatList, TouchableOpacity, TextInput, ScrollView, ImageBackground, StyleSheet, Image, Text, Platform } from "react-native";
+import React, { useState, useCallback, useEffect } from "react";
+import { View, Dimensions, BackHandler, FlatList, TouchableOpacity, TextInput, ScrollView, ImageBackground, StyleSheet, Image, Text, Platform } from "react-native";
+import { useFocusEffect } from '@react-navigation/native';
 import { Colors, Fonts, Sizes, CommonStyles } from "../../constants/styles";
 import { MaterialIcons, AntDesign, FontAwesome } from '@expo/vector-icons';
 import MapView from 'react-native-maps';
@@ -8,7 +9,7 @@ import MyStatusBar from "../../components/myStatusBar";
 import CollapsibleToolbar from 'react-native-collapsible-toolbar';
 import { GET_PRODUCT_DETAIL } from "../../services/salonDetails";
 import { useMutation, useQuery } from "@apollo/client";
-import { REMOVE_BOOKING, SERVICE_BOOKING } from "../../services/Bookings";
+import { REMOVE_BOOKING, SERVICE_BOOKING, REMOVE_ALL_BOOKING } from "../../services/Bookings";
 
 const { width } = Dimensions.get('window');
 
@@ -71,7 +72,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
         isFavorite,
         showSnackBar,
     } = state;
-    
+
     const [selectedServices, setSelectedServices] = useState([]);
     const [loadingServiceId, setLoadingServiceId] = useState(null);
     const [adding, setAdding] = useState(false);
@@ -81,7 +82,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
 
     const { loading, error, data } = useQuery(GET_PRODUCT_DETAIL, {
         variables: { slug: variantSlug },
-        skip: !variantSlug,  
+        skip: !variantSlug,
     });
 
     const [serviceBooking, { loading: serviceBookingLoading, error: serviceBookingError }] = useMutation(SERVICE_BOOKING, {
@@ -112,14 +113,39 @@ const SalonDetailScreen = ({ navigation, route }) => {
     });
 
     const [removeServiceMutation, { loading: removeServiceLoading, error: removeServiceError }] = useMutation(REMOVE_BOOKING);
-    
+    const [removeAllBooking, { loading: removeAllLoading, error: removeAllError }] = useMutation(REMOVE_ALL_BOOKING);
+
+    useFocusEffect(
+        useCallback(() => {
+            const onBackPress = () => {
+                handleBackPress();
+                return true;
+            };
+
+            BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+            return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+        }, [navigation, removeAllBooking])
+    );
+
+    const handleBackPress = async () => {
+        try {
+            await removeAllBooking();
+            console.log('All bookings removed successfully');
+            navigation.pop();
+        } catch (error) {
+            console.error('Error removing all bookings:', error);
+            navigation.pop();  // Navigate back even if there's an error
+        }
+    };
+
     if (loading) return <Text style={{ marginLeft: Sizes.fixPadding, ...Fonts.blackColor18Bold }}>Loading...</Text>;
     if (error) return <Text>Error: {error.message}</Text>;
-    
+
     const { product } = data;
-    console.log("data",data)
-    const servicesListData = product?.variants || [] ;
-    console.log("servicelistdata: ",servicesListData);
+    console.log("data", data)
+    const servicesListData = product?.variants || [];
+    console.log("servicelistdata: ", servicesListData);
 
     const addService = async (service) => {
         setLoadingServiceId(service.id);
@@ -164,7 +190,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
         return selectedServices.some((item) => item.id === service.id);
     };
 
-    console.log("selected sevices : ",selectedServices);
+    console.log("selected sevices : ", selectedServices);
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
@@ -187,11 +213,11 @@ const SalonDetailScreen = ({ navigation, route }) => {
                                         salonServicesInfo()
                                         :
                                         reviewInfo()
-                                        // currentSelectedIndex == 3
-                                        //     ?
-                                        //     galleryInfo()
-                                        //     :
-                                          
+                                // currentSelectedIndex == 3
+                                //     ?
+                                //     galleryInfo()
+                                //     :
+
                             }
                         </View>
                     )}
@@ -228,7 +254,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
                     name="arrow-back-ios"
                     color={Colors.whiteColor}
                     size={24}
-                    onPress={() => navigation.pop()}
+                    onPress={() => handleBackPress()}
                 />
                 <MaterialIcons
                     name={isFavorite ? "favorite" : "favorite-border"}
@@ -243,7 +269,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
     function salonImage() {
         return (
             <ImageBackground
-                source={{uri: product.featuredAsset.preview}}
+                source={{ uri: product.featuredAsset.preview }}
                 style={{
                     width: '100%',
                     height: 230,
@@ -280,13 +306,13 @@ const SalonDetailScreen = ({ navigation, route }) => {
                                 {product.address ? product.address : "A 9/a Sector 16,Gautam Budh Nagar"}
                             </Text>
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <AntDesign
-                                name="star"
-                                color={Colors.yellowColor}
-                                size={13}
-                            />
+                                <AntDesign
+                                    name="star"
+                                    color={Colors.yellowColor}
+                                    size={13}
+                                />
                                 <Text style={{ ...Fonts.whiteColor12Medium }}>
-                                {product.ratings ? product.ratings : " 4.6 (100 Reviews)"}
+                                    {product.ratings ? product.ratings : " 4.6 (100 Reviews)"}
                                 </Text>
                             </View>
                         </View>
@@ -401,13 +427,13 @@ const SalonDetailScreen = ({ navigation, route }) => {
                                         backgroundColor: item.bgColor,
                                     }}>
                                         <Image
-                                            source={{ uri : item.featuredAsset ? item.featuredAsset.preview : "" }}
-                                            style={{ width: "100%", height: "100%" , borderRadius: Sizes.fixPadding, }}
+                                            source={{ uri: item.featuredAsset ? item.featuredAsset.preview : "" }}
+                                            style={{ width: "100%", height: "100%", borderRadius: Sizes.fixPadding, }}
                                             resizeMode="cover"
                                         />
                                     </View>
                                     <View style={{ marginLeft: Sizes.fixPadding, }}>
-                                        <Text 
+                                        <Text
                                             style={{ marginTop: Sizes.fixPadding - 5.0, lineHeight: 15.0, ...Fonts.blackColor13Bold }}
                                             numberOfLines={2}
                                             ellipsizeMode="tail"
@@ -423,28 +449,28 @@ const SalonDetailScreen = ({ navigation, route }) => {
                                     </View>
                                 </View>
                                 <View>
-                                {isServiceSelected(item) ? (
-                                    <TouchableOpacity onPress={() => removeService(item)} style={styles.addButton}>
-                                        <Text style={{ marginHorizontal: Sizes.fixPadding, ...Fonts.primaryColor14Bold }}>
-                                        {loadingServiceId === item.id && removing ? 'Removing..' : 'Remove'}
-                                        </Text>
-                                    </TouchableOpacity>
-                                ) : (
-                                    <TouchableOpacity onPress={() => {
-                                        addService(item)
-                                        // handleServiceBooking(item)
+                                    {isServiceSelected(item) ? (
+                                        <TouchableOpacity onPress={() => removeService(item)} style={styles.addButton}>
+                                            <Text style={{ marginHorizontal: Sizes.fixPadding, ...Fonts.primaryColor14Bold }}>
+                                                {loadingServiceId === item.id && removing ? 'Removing..' : 'Remove'}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ) : (
+                                        <TouchableOpacity onPress={() => {
+                                            addService(item)
+                                            // handleServiceBooking(item)
                                         }}
-                                        style={styles.addButton}>
-                                        <Text style={{ marginHorizontal: Sizes.fixPadding, ...Fonts.primaryColor14Bold }}>
-                                        {loadingServiceId === item.id && adding ? 'Adding..' : 'Add'}
-                                        </Text>
-                                    </TouchableOpacity>
-                                )}
+                                            style={styles.addButton}>
+                                            <Text style={{ marginHorizontal: Sizes.fixPadding, ...Fonts.primaryColor14Bold }}>
+                                                {loadingServiceId === item.id && adding ? 'Adding..' : 'Add'}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    )}
                                 </View>
                             </View>
                         </View>
                     ))
-                } 
+                }
             </View>
         )
     }
@@ -465,7 +491,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
 
     function bookAppointmentButton() {
         const isDisabled = selectedServices.length === 0;
-    
+
         return (
             <View>
                 <TouchableOpacity
@@ -498,7 +524,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
                     packageAndOffersList.map((item) => (
                         <View key={`${item.id}`}>
                             <ImageBackground
-                                source={{uri: ""}}
+                                source={{ uri: "" }}
                                 style={styles.packageAndOffersImageStyle}
                                 borderRadius={Sizes.fixPadding}
                             >
@@ -578,10 +604,10 @@ const SalonDetailScreen = ({ navigation, route }) => {
                 <Text style={{ marginBottom: Sizes.fixPadding - 5.0, ...Fonts.blackColor16Bold }}>
                     About
                 </Text>
-                <Text style={{ marginBottom: Sizes.fixPadding - 5.0 , ...Fonts.grayColor13Bold }}>
+                <Text style={{ marginBottom: Sizes.fixPadding - 5.0, ...Fonts.grayColor13Bold }}>
                     {cleanDescription}
                 </Text>
-               
+
             </View>
         )
     }
@@ -895,7 +921,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 4,
         borderRadius: 16,
         borderWidth: 1,
-        borderColor: "#D66986",
+        borderColor: "#1c294d",
         marginRight: 4,
     },
 });

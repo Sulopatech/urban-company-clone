@@ -19,6 +19,11 @@ export const UPDATE_USER = gql`
       lastName
       phoneNumber
       emailAddress
+      customFields {
+        profilePic {
+          source
+        }
+      }
     }
   }
 `;

@@ -5,6 +5,11 @@ export const GET_ACTIVE_CUSTOMER = gql`
     activeCustomer {
       firstName
       lastName
+      customFields {
+        profilePic {
+          source
+        }
+      }
     }
   }
 `;
@@ -15,6 +20,10 @@ export const SET_CUSTOMER_PROFILE_PIC = gql`
       id
       name
       type
+      width
+            height
+            source
+            preview
     }
   }
 `;

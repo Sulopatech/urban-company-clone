@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, Image, FlatList, StyleSheet } from "react-native";
 import { Colors, Fonts, Sizes, CommonStyles } from "../../constants/styles";
-import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import {
   Collapse,
   CollapseHeader,
@@ -9,15 +9,12 @@ import {
 } from "accordion-collapse-react-native";
 import { ORDER_HISTORY } from "../../services/OrderHistory";
 import { useQuery } from "@apollo/client";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, isAfter, isEqual, startOfDay } from "date-fns";
 import { useFocusEffect } from "@react-navigation/native";
 
 const AppointmentUpcoming = ({ navigation }) => {
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
-
   const {
-    loading,
-    error,
     data: orderHistoryData,
     refetch,
   } = useQuery(ORDER_HISTORY);
@@ -30,32 +27,58 @@ const AppointmentUpcoming = ({ navigation }) => {
 
   useEffect(() => {
     if (orderHistoryData?.activeCustomer?.orders?.items) {
-      setUpcomingAppointments(orderHistoryData.activeCustomer.orders.items);
+      setUpcomingAppointments(orderHistoryData?.activeCustomer?.orders?.items);
     }
   }, [orderHistoryData]);
 
+  const today = startOfDay(new Date());
+
   const renderItem = ({ item }) => {
-    const date = item?.customFields?.date;
-    const time = item?.customFields?.time;
-    const formattedDate = date
-      ? format(parseISO(date), "dd MMMM yyyy")
+    const startTime = item?.customFields?.Schedule?.currentStartTime;
+    const startDate = item?.customFields?.Schedule?.currentStartDate
+      ? parseISO(item?.customFields?.Schedule?.currentStartDate)
+      : null;
+
+    if (!startDate || (!isEqual(startDate, today) && !isAfter(startDate, today))) {
+      return null;
+    }
+
+    const formattedStartDate = startDate
+      ? format(startDate, "dd MMMM yyyy")
       : "Unknown Date";
-    const dayOfWeek = date ? format(parseISO(date), "EEEE") : "Unknown Day";
+    const endDate = item?.customFields?.Schedule?.currentEndDate
+      ? format(parseISO(item?.customFields?.Schedule?.currentEndDate), "dd MMMM yyyy")
+      : "Unknown Date";
+    const endTime = item?.customFields?.Schedule?.currentEndTime;
+
+    const handleReschedule = () => {
+      navigation.push('RescheduleAppointment', {
+        selectedServices: item.lines.map(line => line.productVariant),
+        product: item.lines.map(line => line.productVariant?.product),
+        id: item,
+        orderId: item.id,
+        newStartDate: item?.customFields?.Schedule?.currentStartDate,
+        newEndDate: item?.customFields?.Schedule?.currentEndDate,
+        newStartTime: item?.customFields?.Schedule?.currentStartTime,
+        newEndTime: item?.customFields?.Schedule?.currentEndTime,
+        rescheduleFrequency: item?.customFields?.Schedule?.rescheduleFrequency,
+      });
+    };
 
     return (
       <View>
-        {item.state === "PaymentAuthorized" && (
+        {item?.state === "PaymentAuthorized" && (
           <View style={styles.appointmentInfoWrapStyle}>
             <Collapse
               touchableOpacityProps={{ activeOpacity: 0.9 }}
               onToggle={(isExpanded) =>
-                handleUpcomingBookingsUpdate({ id: item.id, isExpanded })
+                handleUpcomingBookingsUpdate({ id: item?.id, isExpanded })
               }
             >
               <CollapseHeader>
                 {(() => {
                   const displayedNames = new Set();
-                  return item.lines.map((lines) => {
+                  return item?.lines?.map((lines) => {
                     const productName =
                       lines?.productVariant?.product?.name || "Unknown Service";
                     if (displayedNames.has(productName)) {
@@ -71,7 +94,6 @@ const AppointmentUpcoming = ({ navigation }) => {
                           justifyContent: "space-between",
                         }}
                       >
-                        {console.log("orderlines: ", lines)}
                         <Text style={{ ...Fonts.blackColor14Bold }}>
                           {productName}
                         </Text>
@@ -94,37 +116,8 @@ const AppointmentUpcoming = ({ navigation }) => {
                 <Text
                   style={{ lineHeight: 16.0, ...Fonts.grayColor13SemiBold }}
                 >
-                  {dayOfWeek} • {formattedDate} • {time || "Unknown Time"}
+                  {formattedStartDate || "Unknown Date"} to {endDate || "Unknown Date"} • {startTime || "Unknown Time"} to {endTime || "Unknown Time"}
                 </Text>
-                <View
-                  style={{
-                    marginTop: Sizes.fixPadding - 5.0,
-                    flexDirection: "row",
-                    alignItems: "center",
-                  }}
-                >
-                  <Image
-                    source={require("../../assets/images/icons/calling.png")}
-                    style={{ width: 12.0, height: 12.0 }}
-                    resizeMode="contain"
-                    tintColor={Colors.primaryColor}
-                  />
-                  <Image
-                    source={require("../../assets/images/icons/chat.png")}
-                    style={{
-                      width: 12.0,
-                      height: 12.0,
-                      marginHorizontal: Sizes.fixPadding + 2.0,
-                    }}
-                    resizeMode="contain"
-                    tintColor={Colors.primaryColor}
-                  />
-                  <FontAwesome
-                    name="location-arrow"
-                    size={12}
-                    color={Colors.primaryColor}
-                  />
-                </View>
                 <View
                   style={{
                     backgroundColor: Colors.grayColor,
@@ -172,7 +165,6 @@ const AppointmentUpcoming = ({ navigation }) => {
                     {item.totalWithTax.toFixed(2)}
                   </Text>
                 </View>
-                {item.lines.map((lines, index) => (
                 <View
                   style={{
                     flexDirection: "row",
@@ -196,10 +188,7 @@ const AppointmentUpcoming = ({ navigation }) => {
                   </Text>
 
                   <Text
-                    onPress={() => navigation.push('ScheduleAppointment', {
-                        selectedServices: lines.productVariant,
-                        product: lines.productVariant.product
-                    })}
+                    onPress={handleReschedule}
                     style={{
                       ...Fonts.greenColor13Bold,
                       textAlign: "center",
@@ -211,8 +200,8 @@ const AppointmentUpcoming = ({ navigation }) => {
                   >
                     Reschedule
                   </Text>
+
                 </View>
-                ))}
               </CollapseBody>
             </Collapse>
           </View>
@@ -222,13 +211,13 @@ const AppointmentUpcoming = ({ navigation }) => {
   };
 
   function cancelAppointment({ id }) {
-    const newList = upcomingAppointments.filter((item) => item.id != id);
+    const newList = upcomingAppointments?.filter((item) => item.id != id);
     setUpcomingAppointments(newList);
   }
 
   function handleUpcomingBookingsUpdate({ id, isExpanded }) {
-    const newList = upcomingAppointments.map((appointment) => {
-      if (appointment.id === id) {
+    const newList = upcomingAppointments?.map((appointment) => {
+      if (appointment?.id === id) {
         const updatedItem = { ...appointment, isExpandable: isExpanded };
         return updatedItem;
       }
@@ -239,7 +228,7 @@ const AppointmentUpcoming = ({ navigation }) => {
 
   return (
     <View style={{ flex: 1 }}>
-      {upcomingAppointments.length === 0 ? (
+      {upcomingAppointments?.length === 0 ? (
         <View
           style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
         >
@@ -262,7 +251,7 @@ const AppointmentUpcoming = ({ navigation }) => {
       ) : (
         <FlatList
           data={upcomingAppointments}
-          keyExtractor={(item) => `${item.id}`}
+          keyExtractor={(item) => `${item?.id}`}
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingTop: Sizes.fixPadding * 2.0 }}
