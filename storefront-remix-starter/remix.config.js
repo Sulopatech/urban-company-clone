@@ -56,6 +56,7 @@ const buildConfig = {
   assetsBuildDirectory: 'public/build',
   publicPath: '/build/',
   serverBuildDirectory: 'build',
+  serverBuildPath: "build/index.js",
   sourcemap: true, 
   devServerPort: process.env.PORT || 5500,
   ignoredRouteFiles: ['.*'],
@@ -66,12 +67,8 @@ function selectConfig() {
   console.log("Here is the selection of build version",process.env.NODE_ENV)
   if (!['development', 'production'].includes(process.env.NODE_ENV))
     throw new Error(`Unknown NODE_ENV: ${process.env.NODE_ENV}`);
-  if (process.env.CF_PAGES) return cloudflarePagesConfig;
-  if (process.env.NETLIFY) return netlifyConfig;
   if (process.env.NODE_ENV === 'development') return devConfig;
   if (process.env.NODE_ENV === 'production') return buildConfig;
-  if (!process.env.CF_PAGES && !process.env.NETLIFY) return buildConfig;
-  throw new Error(`Cannot select config`);
 }
 
 export default selectConfig();

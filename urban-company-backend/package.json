@@ -7,8 +7,8 @@
     "dev:worker": "ts-node ./src/index-worker.ts",
     "dev": "concurrently npm:dev:*",
     "build": "tsc",
-    "start:server": "node ./dist/index.js",
-    "start:worker": "node ./dist/index-worker.js",
+    "start:server": "node ./dist/src/index.js",
+    "start:worker": "node ./dist/src/index-worker.js",
     "start": "concurrently npm:start:*",
     "codegen": "graphql-codegen --config codegen.ts"
   },
@@ -23,7 +23,7 @@
   "devDependencies": {
     "@graphql-codegen/cli": "5.0.2",
     "@graphql-codegen/typescript": "4.0.7",
-    "@vendure/cli": "2.2.6",
+    "@vendure/cli": "2.2.7",
     "concurrently": "8.2.2",
     "typescript": "5.3.3"
   }
