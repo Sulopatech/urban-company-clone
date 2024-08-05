@@ -56,7 +56,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
     const item = route.params.item;
 
     const [state, setState] = useState({
-        currentSelectedIndex: 1,
+        currentSelectedIndex: 2,
         readMore: false,
         review: null,
         isFavorite: false,
@@ -199,8 +199,8 @@ const SalonDetailScreen = ({ navigation, route }) => {
                 <CollapsibleToolbar
                     renderContent={() => (
                         <View style={{ flex: 1 }}>
-                            {options()}
-                            {divider()}
+                            {/* {options()} */}
+                            {/* {divider()} */}
                             {/* {salonSpecialists()} */}
                             {tabBarOptions()}
                             {
@@ -316,11 +316,11 @@ const SalonDetailScreen = ({ navigation, route }) => {
                                 </Text>
                             </View>
                         </View>
-                        <View style={styles.openButtonWrapStyle}>
+                        {/* <View style={styles.openButtonWrapStyle}>
                             <Text style={{ ...Fonts.whiteColor11Bold }}>
                                 Open
                             </Text>
-                        </View>
+                        </View> */}
                     </View>
                 </View>
             </ImageBackground>
@@ -440,10 +440,10 @@ const SalonDetailScreen = ({ navigation, route }) => {
                                         >
                                             {item.name}
                                         </Text>
-                                        <Text style={{ ...Fonts.grayColor11SemiBold }}>
+                                        <Text style={{ ...Fonts.grayColor12SemiBold }}>
                                             ₹: {item.price} + tax : {item.priceWithTax - item.price} Rs
                                         </Text>
-                                        <Text style={{ ...Fonts.grayColor11SemiBold }}>
+                                        <Text style={{ ...Fonts.grayColor12SemiBold }}>
                                             Total ₹: {item.priceWithTax} Rs
                                         </Text>
                                     </View>
@@ -577,7 +577,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
                 </Text>
                 <View style={styles.openingHoursWrapStyle}>
                     <View style={{ alignItems: 'center' }}>
-                        <Text style={{ ...Fonts.grayColor13Bold }}>
+                        <Text style={{ ...Fonts.grayColor12SemiBold }}>
                             Monday-Friday
                         </Text>
                         <Text style={{ lineHeight: 17.0, ...Fonts.primaryColor14Bold }}>
@@ -585,7 +585,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
                         </Text>
                     </View>
                     <View style={{ alignItems: 'center' }}>
-                        <Text style={{ ...Fonts.grayColor13Bold }}>
+                        <Text style={{ ...Fonts.grayColor12SemiBold }}>
                             Monday-Friday
                         </Text>
                         <Text style={{ lineHeight: 17.0, ...Fonts.primaryColor14Bold }}>
@@ -604,7 +604,7 @@ const SalonDetailScreen = ({ navigation, route }) => {
                 <Text style={{ marginBottom: Sizes.fixPadding - 5.0, ...Fonts.blackColor16Bold }}>
                     About
                 </Text>
-                <Text style={{ marginBottom: Sizes.fixPadding - 5.0, ...Fonts.grayColor13Bold }}>
+                <Text style={{ marginBottom: Sizes.fixPadding - 5.0, ...Fonts.grayColor12SemiBold }}>
                     {cleanDescription}
                 </Text>
 

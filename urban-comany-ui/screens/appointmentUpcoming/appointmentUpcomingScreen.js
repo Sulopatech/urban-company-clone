@@ -110,14 +110,16 @@ const AppointmentUpcoming = ({ navigation }) => {
                     );
                   });
                 })()}
-                <Text style={{ ...Fonts.grayColor13SemiBold }}>
+                <Text style={{ ...Fonts.grayColor12SemiBold }}>
                   {item?.shippingAddress?.streetLine1},{item?.shippingAddress?.city},{item?.shippingAddress?.postalCode}
                 </Text>
                 <Text
-                  style={{ lineHeight: 16.0, ...Fonts.grayColor13SemiBold }}
+                  style={{ lineHeight: 16.0, ...Fonts.grayColor12SemiBold }}
                 >
                   {formattedStartDate || "Unknown Date"} to {endDate || "Unknown Date"} • {startTime || "Unknown Time"} to {endTime || "Unknown Time"}
                 </Text>
+              </CollapseHeader>
+              <CollapseBody>
                 <View
                   style={{
                     backgroundColor: Colors.grayColor,
@@ -128,8 +130,6 @@ const AppointmentUpcoming = ({ navigation }) => {
                       : Sizes.fixPadding + 5.0,
                   }}
                 />
-              </CollapseHeader>
-              <CollapseBody>
                 <Text style={{ ...Fonts.blackColor14Bold }}>Services</Text>
                 {item.lines.map((lines, index) => (
                   <View key={index}>
@@ -140,10 +140,10 @@ const AppointmentUpcoming = ({ navigation }) => {
                         justifyContent: "space-between",
                       }}
                     >
-                      <Text style={{ ...Fonts.grayColor13SemiBold }}>
+                      <Text style={{ ...Fonts.grayColor12SemiBold }}>
                         {lines.productVariant.name}
                       </Text>
-                      <Text style={{ ...Fonts.grayColor13SemiBold }}>
+                      <Text style={{ ...Fonts.grayColor12SemiBold }}>
                         {`₹`}
                         {lines.productVariant.priceWithTax.toFixed(1)}
                       </Text>

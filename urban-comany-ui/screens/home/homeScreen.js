@@ -163,6 +163,31 @@ const HomeScreen = ({ navigation }) => {
     }
   );
 
+    const scrollViewRef = useRef(null);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentPage((prevPage) => {
+                const nextPage = prevPage + 1;
+                if (nextPage >= salonImages.length) {
+                    return 0;
+                }
+                return nextPage;
+            });
+        }, 3000); // 1 second interval
+
+        return () => clearInterval(interval);
+    }, [salonImages.length]);
+
+    useEffect(() => {
+        if (scrollViewRef.current) {
+            scrollViewRef.current.scrollTo({
+                x: currentPage * styles.carouselImage.width,
+                animated: true,
+            });
+        }
+    }, [currentPage]);
+
   const searchField = () => (
     <View style={styles.searchFieldWrapStyle}>
       <MaterialIcons name="search" color={Colors.whiteColor} size={15} />
@@ -220,37 +245,37 @@ const HomeScreen = ({ navigation }) => {
 
   function salonImage() {
     return (
-      <View style={styles.carouselContainer}>
-        <ScrollView
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onScroll={onScroll}
-          scrollEventThrottle={16} // Adjust throttle to control scroll event frequency
-        >
-          {salonImages.map((image, index) => (
-            <Image
-              key={index}
-              source={image}
-              style={styles.carouselImage}
-            />
-          ))}
-        </ScrollView>
-        <View style={styles.userInfoContainer}>
-          {userInfo()}
+       <View style={styles.carouselContainer}>
+            <ScrollView
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                ref={scrollViewRef}
+                scrollEventThrottle={16} // Adjust throttle to control scroll event frequency
+            >
+                {salonImages.map((image, index) => (
+                    <Image
+                        key={index}
+                        source={image}
+                        style={styles.carouselImage}
+                    />
+                ))}
+            </ScrollView>
+            <View style={styles.userInfoContainer}>
+                {userInfo()}
+            </View>
+            <View style={styles.paginationContainer}>
+                {salonImages.map((_, index) => (
+                    <View
+                        key={index}
+                        style={[
+                            styles.paginationDot,
+                            { backgroundColor: index === currentPage ? '#fff' : 'rgba(255, 255, 255, 0.5)' }
+                        ]}
+                    />
+                ))}
+            </View>
         </View>
-        <View style={styles.paginationContainer}>
-          {salonImages.map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.paginationDot,
-                { backgroundColor: index === currentPage ? '#fff' : 'rgba(255, 255, 255, 0.5)' }
-              ]}
-            />
-          ))}
-        </View>
-      </View>
     );
   }
 

@@ -443,7 +443,7 @@ const styles = StyleSheet.create({
         marginBottom: Sizes.fixPadding - 5.0,
     },
     priceLabel: {
-        ...Fonts.grayColor13SemiBold,
+        ...Fonts.grayColor12SemiBold,
     },
     priceValue: {
         ...Fonts.blackColor14Medium,

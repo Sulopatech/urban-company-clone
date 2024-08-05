@@ -75,10 +75,10 @@ const AppointmentDetailsScreen = ({ navigation, route }) => {
                 alignItems: 'center',
                 justifyContent: 'space-between'
             }}>
-                <Text style={{ ...Fonts.grayColor14Bold, width: "80%" }}>
+                <Text style={{ ...Fonts.grayColor12SemiBold, width: "80%" }}>
                     {item.name}
                 </Text>
-                <Text style={{ ...Fonts.grayColor13Bold, width: "20%" }}>
+                <Text style={{ ...Fonts.grayColor12SemiBold, width: "20%" }}>
                     {`₹ `}{item.priceWithTax.toFixed(2)}
                 </Text>
             </View>
@@ -110,10 +110,10 @@ const AppointmentDetailsScreen = ({ navigation, route }) => {
                 <Text style={{ ...Fonts.blackColor15Bold }}>
                     Appointment Date Time
                 </Text>
-                <Text style={{ ...Fonts.grayColor13SemiBold }}>
+                <Text style={{ ...Fonts.grayColor12SemiBold }}>
                     From {date} to {endDate}
                 </Text>
-                <Text style={{ ...Fonts.grayColor13SemiBold }}>
+                <Text style={{ ...Fonts.grayColor12SemiBold }}>
                     Slot: {startTime} to {endTime}
                 </Text>
             </View>
@@ -132,7 +132,7 @@ const AppointmentDetailsScreen = ({ navigation, route }) => {
                 <Text>
                     {selectedServices.map((item, index) => (
                         <Text key={`${index}`}
-                            style={{ ...Fonts.grayColor13SemiBold }}
+                            style={{ ...Fonts.grayColor12SemiBold }}
                         >
                             {item.name} {index == selectedServices.length - 1 ? '' : `• `}
                         </Text>

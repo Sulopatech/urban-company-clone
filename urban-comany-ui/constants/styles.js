@@ -13,7 +13,7 @@ export const Fonts = {
     },
 
     grayColor12SemiBold: {
-        color: '#C5C5C5',
+        color: '#000000',
         fontSize: 12,
         fontFamily: 'Fahkwang_SemiBold',
     },
