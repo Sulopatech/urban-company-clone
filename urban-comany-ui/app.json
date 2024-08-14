@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "RN SalonBooking",
-    "slug": "rn-SalonBooking",
+    "name": "HelpHub by Sulopa",
+    "slug": "help-hub-sulopa",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/appIcon.jpg",
@@ -13,13 +13,13 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "bundleIdentifier": "com.render.rnsalon",
+      "bundleIdentifier": "com.sulopa.helphub",
       "buildNumber": "1.0.0",
       "supportsTablet": true
     },
     "android": {
-      "package": "com.render.rnsalon",
-      "versionCode": 2,
+      "package": "com.sulopa.helphub",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/appIcon.jpg",
         "backgroundColor": "#FFFFFF"
@@ -58,9 +58,8 @@
         "origin": false
       },
       "eas": {
-        "projectId": "bc6e2780-a3a1-49da-9b3d-c18914f511e0"
+        "projectId": "a10fc5b2-c337-4971-9ca0-164a4fca33ef"
       }
-    },
-    "owner": "sumit7008"
+    }
   }
 }
