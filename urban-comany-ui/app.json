@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "RN SalonBooking",
-    "slug": "rn-SalonBooking",
+    "name": "Help Hub",
+    "slug": "help-hub",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/appIcon.jpg",
+    "icon": "./assets/images/app_icon_new.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/appIcon.jpg",
+      "image": "./assets/images/app_icon_new.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -21,7 +21,7 @@
       "package": "com.render.rnsalon",
       "versionCode": 2,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/appIcon.jpg",
+        "foregroundImage": "./assets/images/app_icon_new.png",
         "backgroundColor": "#FFFFFF"
       },
       "config": {

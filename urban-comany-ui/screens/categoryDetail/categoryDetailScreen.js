@@ -64,6 +64,14 @@ const CategoryDetailScreen = ({ navigation, route }) => {
     );
 
     function renderVariants(variants) {
+        if (variants.length === 0) {
+            return (
+                <View style={styles.noDataContainer}>
+                    <Text style={styles.noDataText}>No Data Found</Text>
+                </View>
+            );
+        }
+    
         return (
             <FlatList
                 data={variants}
@@ -73,7 +81,7 @@ const CategoryDetailScreen = ({ navigation, route }) => {
                 contentContainerStyle={{ paddingBottom: Sizes.fixPadding, paddingTop: Sizes.fixPadding - 5.0 }}
             />
         );
-    }
+    }    
 
     function renderVariantItem({ item }) {
         const imageSource = item.product.featuredAsset ? { uri: item.product.featuredAsset.preview } : require('../../assets/images/dummyimage.png');
@@ -199,7 +207,16 @@ const styles = StyleSheet.create({
         ...Fonts.blackColor14Bold,
         marginLeft: Sizes.fixPadding,
         flex: 1,
-    }
+    },
+    noDataContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    noDataText: {
+        ...Fonts.blackColor14Bold,
+        color: Colors.grayColor,
+    },
 });
 
 export default CategoryDetailScreen;

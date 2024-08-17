@@ -121,10 +121,12 @@ const SigninScreen = ({ navigation }) => {
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
             <View style={styles.logoContainer}>
-                <Image
+                {/* <Image
                     source={require('../../assets/images/sulopa.png')}
                     style={{ width: 170, height: 50 }}
-                />
+                /> */}
+                <Text style={{...Fonts.blackColor26Bold}}>HelpHub</Text>
+                <Text style={{ marginLeft: 60, marginBottom: 7, marginTop: -15, ...Fonts.blackColor10Bold}}>by Sulopa</Text>
             </View>
             <MyStatusBar />
             {/* <ImageBackground
