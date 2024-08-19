@@ -14,10 +14,7 @@ import { useFocusEffect } from "@react-navigation/native";
 
 const AppointmentUpcoming = ({ navigation }) => {
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
-  const {
-    data: orderHistoryData,
-    refetch,
-  } = useQuery(ORDER_HISTORY);
+  const { data: orderHistoryData, refetch } = useQuery(ORDER_HISTORY);
 
   useFocusEffect(
     useCallback(() => {
@@ -32,6 +29,13 @@ const AppointmentUpcoming = ({ navigation }) => {
   }, [orderHistoryData]);
 
   const today = startOfDay(new Date());
+
+  const filteredUpcomingAppointments = upcomingAppointments.filter((item) => {
+    const startDate = item?.customFields?.Schedule?.currentStartDate
+      ? parseISO(item?.customFields?.Schedule?.currentStartDate)
+      : null;
+    return startDate && (isEqual(startDate, today) || isAfter(startDate, today));
+  });
 
   const renderItem = ({ item }) => {
     const startTime = item?.customFields?.Schedule?.currentStartTime;
@@ -228,7 +232,7 @@ const AppointmentUpcoming = ({ navigation }) => {
 
   return (
     <View style={{ flex: 1 }}>
-      {upcomingAppointments?.length === 0 ? (
+      {filteredUpcomingAppointments.length === 0 ? (
         <View
           style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
         >
@@ -250,7 +254,7 @@ const AppointmentUpcoming = ({ navigation }) => {
         </View>
       ) : (
         <FlatList
-          data={upcomingAppointments}
+          data={filteredUpcomingAppointments}
           keyExtractor={(item) => `${item?.id}`}
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}

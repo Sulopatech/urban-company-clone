@@ -306,6 +306,7 @@ const SigninScreen = ({ navigation }) => {
                         placeholder="Email"
                         placeholderTextColor={Colors.grayColor}
                         selectionColor={Colors.primaryColor}
+                        autoCapitalize="none"
                         style={{
                             marginLeft: Sizes.fixPadding,
                             ...Fonts.blackColor15Bold, flex: 1

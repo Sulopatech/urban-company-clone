@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { View, Text, FlatList, StyleSheet } from "react-native";
+import { View, Text, FlatList, StyleSheet, Image } from "react-native";
 import { Colors, Fonts, Sizes, CommonStyles } from "../../constants/styles";
 import { MaterialIcons } from '@expo/vector-icons';
 import { Collapse, CollapseHeader, CollapseBody } from "accordion-collapse-react-native";
@@ -25,6 +25,14 @@ const AppointmentPast = () => {
             setPastAppointments(orderHistoryData?.activeCustomer?.orders?.items);
         }
     }, [orderHistoryData]);
+
+    // Filter past appointments that are before today
+    const filteredPastAppointments = pastAppointments.filter((item) => {
+        const startDate = item?.customFields?.Schedule?.currentStartDate
+            ? parseISO(item?.customFields?.Schedule?.currentStartDate)
+            : null;
+        return startDate && isBefore(startDate, today);
+    });
 
     const renderItem = ({ item }) => {
         const startTime = item?.customFields?.Schedule?.currentStartTime;
@@ -95,7 +103,7 @@ const AppointmentPast = () => {
                         </Text>
                     </CollapseHeader>
                     <CollapseBody>
-                    <View
+                        <View
                             style={{
                                 backgroundColor: Colors.grayColor,
                                 height: 1.5,
@@ -159,13 +167,35 @@ const AppointmentPast = () => {
 
     return (
         <View style={{ flex: 1 }}>
-            <FlatList
-                data={pastAppointments}
-                keyExtractor={(item) => `${item.id}`}
-                renderItem={renderItem}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingTop: Sizes.fixPadding * 2.0 }}
-            />
+            {filteredPastAppointments.length === 0 ? (
+                <View
+                    style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+                >
+                    <Image
+                        source={require("../../assets/images/icons/appointment.png")}
+                        style={{ width: 50.0, height: 50.0 }}
+                        resizeMode="contain"
+                        tintColor={Colors.grayColor}
+                    />
+                    <Text
+                        style={{
+                            marginTop: Sizes.fixPadding,
+                            textAlign: "center",
+                            ...Fonts.grayColor15Bold,
+                        }}
+                    >
+                        Past Appointment List Is Empty
+                    </Text>
+                </View>
+            ) : (
+                <FlatList
+                    data={filteredPastAppointments}
+                    keyExtractor={(item) => `${item.id}`}
+                    renderItem={renderItem}
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{ paddingTop: Sizes.fixPadding * 2.0 }}
+                />
+            )}
         </View>
     );
 };
