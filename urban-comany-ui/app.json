@@ -4,11 +4,11 @@
     "slug": "help-hub-sulopa",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/appIcon.jpg",
+    "icon": "./assets/images/app_icon_new.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/appIcon.jpg",
+      "image": "./assets/images/app_icon_new.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
