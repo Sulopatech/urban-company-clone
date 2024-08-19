@@ -261,7 +261,7 @@ const ProfileScreen = ({ navigation }) => {
                     ) : (
                         <TouchableOpacity onPress={() => setIsImageModalVisible(true)}>
                             <Image
-                                source={profilePic ? { uri: profilePic } : require('../../assets/images/users/user3.png')}
+                                source={profilePic ? { uri: profilePic } : require('../../assets/images/noProfile.png')}
                                 style={{ width: 70.0, height: 70.0, borderRadius: 35.0 }}
                             />
                         </TouchableOpacity>
@@ -277,7 +277,7 @@ const ProfileScreen = ({ navigation }) => {
                                 onPress={() => setIsImageModalVisible(false)}
                             >
                                 <Image
-                                    source={profilePic ? { uri: profilePic } : require('../../assets/images/users/user3.png')}
+                                    source={profilePic ? { uri: profilePic } : require('../../assets/images/noProfile.png')}
                                     style={{ width: width - 40, height: width - 40, resizeMode: 'cover' }}
                                 />
                             </TouchableOpacity>
