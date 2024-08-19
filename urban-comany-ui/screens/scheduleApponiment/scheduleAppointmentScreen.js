@@ -28,6 +28,11 @@ const ScheduleAppointmentScreen = ({ navigation, route }) => {
     const [addSchedule, { loading }] = useMutation(ADD_SCHEDULE);
 
     useEffect(() => {
+        // Auto-select current date on initial render
+        setSelectedDate(formatDate(moment()));
+    }, []);
+    
+    useEffect(() => {
         if (selectedDate && state.selectedSlot) {
             setIsButtonDisabled(false);
         } else {
