@@ -27,10 +27,11 @@ const SplashScreen = ({ navigation }) => {
             <MyStatusBar />
             <View style={styles.pageStyle}>
                 <Image
-                    source={require('../assets/images/Sulopa_Whitelogo.png')}
-                    style={{ height: 100.0, width: 230 }}
+                    source={require('../assets/images/app_icon_new.png')}
+                    style={{ height: 100.0, width: 100 }}
+                    resizeMode="contain"
                 />
-                <Text style={{color: 'white', fontSize: 20, fontWeight: '500'}}>Urban Services</Text>
+                <Text style={{color: 'white', fontSize: 20, fontWeight: '500', marginTop: 20}}>Help Hub</Text>
             </View>
         </View>
     )
