@@ -1,4 +1,4 @@
-{
+ {
   "expo": {
     "name": "HelpHub by Sulopa",
     "slug": "help-hub-sulopa",
@@ -21,7 +21,7 @@
       "package": "com.sulopa.helphub",
       "versionCode": 1,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/app_icon_new.png",
+        "foregroundImage": "./assets/images/appIcon.jpg",
         "backgroundColor": "#FFFFFF"
       },
       "config": {
