@@ -11,6 +11,8 @@ import 'dotenv/config';
 import path from 'path';
 import { CustomerProfilePicPlugin } from './plugins/customer-profile/customer-profile.plugin';
 import { SchedulePlugin } from './plugins/schedule/schedule.plugin';
+import {EmailNameValidationPlugin} from './plugins/email-name-validation/email-name-validation.plugin'
+import { ReviewPlugin } from './plugins/review/review.plugin';
 
 const IS_DEV = process.env.APP_ENV === 'dev';
 
@@ -122,5 +124,7 @@ export const config: VendureConfig = {
             maxRescheduleFrequency: 3,
             rescheduleWindowDays: 30,
         }),
+        EmailNameValidationPlugin.init({}),
+        ReviewPlugin.init({}),
     ],
 };
