@@ -26,7 +26,7 @@ import { adminApiExtensions } from './api/api-extensions';
         )
         return config;
     },
-    compatibility: '^2.0.0',
+    compatibility: '^3.0.0',
     entities: [Schedule],
     adminApiExtensions: {
         schema: adminApiExtensions,

@@ -14,6 +14,7 @@ const config: CodegenConfig = {
     generates: {
         './src/plugins/customer-profile/gql/generated.ts': { plugins: ['typescript'] },
         './src/plugins/schedule/gql/generated.ts': { plugins: ['typescript'] },
+        './src/plugins/email-name-validation/gql/generated.ts': { plugins: ['typescript'] },
     },
 };
 
