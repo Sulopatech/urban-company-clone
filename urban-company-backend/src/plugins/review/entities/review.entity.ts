@@ -25,7 +25,7 @@ export class ProductReview extends VendureEntity implements HasCustomFields {
     @ManyToOne(type => Product)
     product: Product;
 
-    @ManyToOne(type => ProductVariant)
+    @ManyToOne(type => ProductVariant, {eager:true})
     productVariant: ProductVariant | null;
 
     @Column()
@@ -37,14 +37,8 @@ export class ProductReview extends VendureEntity implements HasCustomFields {
     @Column()
     rating: number;
 
-    @ManyToOne(type => Customer)
+    @ManyToOne(type => Customer, {eager:true})
     author: Customer;
-
-    @Column()
-    authorName: string;
-
-    @Column({ nullable: true })
-    authorLocation: string;
 
     @Column({ default: 0 })
     upvotes: number;

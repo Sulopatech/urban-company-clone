@@ -3,11 +3,14 @@ import { LanguageCode, PluginCommonModule, Type, VendurePlugin } from '@vendure/
 import { REVIEW_PLUGIN_OPTIONS } from './constants';
 import { PluginInitOptions } from './types';
 import { ProductReview } from './entities/review.entity';
-import { ReviewService } from './services/review.service';
+import { ProductReviewService } from './services/product-review.service';
+import { ProductReviewAdminResolver } from './api/product-review-admin.resolver';
+import { shopApiExtensions } from './api/api-extensions';
+import { ProductEntityResolver } from './api/product-extention.resolver';
 
 @VendurePlugin({
     imports: [PluginCommonModule],
-    providers: [{ provide: REVIEW_PLUGIN_OPTIONS, useFactory: () => ReviewPlugin.options }, ReviewService],
+    providers: [{ provide: REVIEW_PLUGIN_OPTIONS, useFactory: () => ReviewPlugin.options }, ProductReviewService],
     configuration: config => {
         // Plugin-specific configuration
         // such as custom fields, custom permissions,
@@ -43,6 +46,14 @@ import { ReviewService } from './services/review.service';
     },
     compatibility: '^3.0.0',
     entities: [ProductReview],
+    shopApiExtensions: {
+        schema: shopApiExtensions,
+        resolvers: [ProductReviewAdminResolver, ProductEntityResolver]
+    },
+    adminApiExtensions: {
+        schema: shopApiExtensions,
+        resolvers: [ProductReviewAdminResolver, ProductEntityResolver]
+    },
 })
 export class ReviewPlugin {
     static options: PluginInitOptions;
