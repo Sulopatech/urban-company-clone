@@ -13,7 +13,8 @@ import { CustomerProfilePicPlugin } from './plugins/customer-profile/customer-pr
 import { SchedulePlugin } from './plugins/schedule/schedule.plugin';
 import {EmailNameValidationPlugin} from './plugins/email-name-validation/email-name-validation.plugin'
 import { ReviewPlugin } from './plugins/review/review.plugin';
-
+import { PaymentPlugin } from './plugins/payment/payment.plugin';
+import {razorpayPaymentMethodHandler} from './plugins/payment/my-payment-handler'
 const IS_DEV = process.env.APP_ENV === 'dev';
 
 export const config: VendureConfig = {
@@ -60,7 +61,7 @@ export const config: VendureConfig = {
         password: process.env.DB_PASSWORD,
     },
     paymentOptions: {
-        paymentMethodHandlers: [dummyPaymentHandler],
+        paymentMethodHandlers: [dummyPaymentHandler,razorpayPaymentMethodHandler],
     },
     // When adding or altering custom field definitions, the database will
     // need to be updated. See the "Migrations" section in README.md.
@@ -126,5 +127,6 @@ export const config: VendureConfig = {
         }),
         EmailNameValidationPlugin.init({}),
         ReviewPlugin.init({}),
+        PaymentPlugin.init({}),
     ],
 };
