@@ -15,6 +15,8 @@ import {EmailNameValidationPlugin} from './plugins/email-name-validation/email-n
 import { ReviewPlugin } from './plugins/review/review.plugin';
 import { PaymentPlugin } from './plugins/payment/payment.plugin';
 import {razorpayPaymentMethodHandler} from './plugins/payment/my-payment-handler'
+import { WishlistPlugin } from './plugins/wishlist/wishlist.plugin';
+
 const IS_DEV = process.env.APP_ENV === 'dev';
 
 export const config: VendureConfig = {
@@ -128,5 +130,6 @@ export const config: VendureConfig = {
         EmailNameValidationPlugin.init({}),
         ReviewPlugin.init({}),
         PaymentPlugin.init({}),
+        WishlistPlugin.init({}),
     ],
 };
