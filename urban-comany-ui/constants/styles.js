@@ -13,7 +13,7 @@ export const Fonts = {
     },
 
     grayColor12SemiBold: {
-        color: '#C5C5C5',
+        color: '#000000',
         fontSize: 12,
         fontFamily: 'Fahkwang_SemiBold',
     },
@@ -49,61 +49,61 @@ export const Fonts = {
     },
 
     primaryColor14Medium: {
-        color: '#D66986',
+        color: '#1c294d',
         fontSize: 14,
         fontFamily: 'Fahkwang_Medium',
     },
 
     primaryColor11SemiBold: {
-        color: '#D66986',
+        color: '#1c294d',
         fontSize: 11,
         fontFamily: 'Fahkwang_SemiBold',
     },
 
     primaryColor14SemiBold: {
-        color: '#D66986',
+        color: '#1c294d',
         fontSize: 14,
         fontFamily: 'Fahkwang_SemiBold',
     },
 
     primaryColor18SemiBold: {
-        color: '#D66986',
+        color: '#1c294d',
         fontSize: 18,
         fontFamily: 'Fahkwang_SemiBold',
     },
 
     primaryColor10Bold: {
-        color: '#D66986',
+        color: '#1c294d',
         fontSize: 10,
         fontFamily: 'Fahkwang_Bold',
     },
 
     primaryColor12Bold: {
-        color: '#D66986',
+        color: '#1c294d',
         fontSize: 12,
         fontFamily: 'Fahkwang_Bold',
     },
 
     primaryColor13Bold: {
-        color: '#D66986',
+        color: '#1c294d',
         fontSize: 13,
         fontFamily: 'Fahkwang_Bold',
     },
 
     primaryColor14Bold: {
-        color: '#D66986',
+        color: '#1c294d',
         fontSize: 14,
         fontFamily: 'Fahkwang_Bold',
     },
 
     primaryColor15Bold: {
-        color: '#D66986',
+        color: '#1c294d',
         fontSize: 15,
         fontFamily: 'Fahkwang_Bold',
     },
 
     primaryColor16Bold: {
-        color: '#D66986',
+        color: '#1c294d',
         fontSize: 16,
         fontFamily: 'Fahkwang_Bold',
     },
@@ -284,7 +284,7 @@ export const Fonts = {
 };
 
 export const Colors = {
-    primaryColor: '#D66986',
+    primaryColor: '#1c294d',
     whiteColor: '#ffffff',
     blackColor: '#000000',
     grayColor: '#C5C5C5',

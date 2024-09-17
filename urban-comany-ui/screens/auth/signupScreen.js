@@ -150,14 +150,14 @@ const SignupScreen = ({ navigation }) => {
   return (
     <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
       <MyStatusBar />
-      <ImageBackground
+      {/* <ImageBackground
         source={require('../../assets/images/bg.png')}
         style={{
           flex: 1,
           left: -width / 20.0,
         }}
-      >
-        <View style={{ flex: 1, right: -width / 20.0 }}>
+      > */}
+        <View style={{ flex: 1 }}>
           {header()}
           <ScrollView automaticallyAdjustKeyboardInsets={true} showsVerticalScrollIndicator={false}>
             {firstNameTextField()}
@@ -167,12 +167,12 @@ const SignupScreen = ({ navigation }) => {
             {passwordTextField()}
             {confirmPasswordTextField()}
             {signupButton()}
-            {orSigninWithDivider()}
-            {socialMediaOptions()}
+            {/* {orSigninWithDivider()} */}
+            {/* {socialMediaOptions()} */}
             {alreadyAccountInfo()}
           </ScrollView>
         </View>
-      </ImageBackground>
+      {/* </ImageBackground> */}
     </View>
   );
 
@@ -378,6 +378,7 @@ const SignupScreen = ({ navigation }) => {
             placeholder="Email"
             placeholderTextColor={Colors.grayColor}
             selectionColor={Colors.primaryColor}
+            autoCapitalize="none"
             style={{
               marginLeft: Sizes.fixPadding,
               ...Fonts.blackColor15Bold, flex: 1
@@ -458,7 +459,7 @@ const SignupScreen = ({ navigation }) => {
           onPress={() => navigation.pop()}
           style={{ marginHorizontal: Sizes.fixPadding * 2.0 }}
         />
-        <Text style={{ ...Fonts.blackColor22Bold, flex: 1, textAlign: 'center' }}>
+        <Text style={{ marginLeft: Sizes.fixPadding, ...Fonts.blackColor18Bold }}>
           Signup
         </Text>
       </View>

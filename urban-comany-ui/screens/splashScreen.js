@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { View, StyleSheet, Image, BackHandler } from "react-native";
+import { View, StyleSheet, Image, BackHandler, Text } from "react-native";
 import { Colors } from "../constants/styles";
 import { useFocusEffect } from "@react-navigation/native";
 import MyStatusBar from "../components/myStatusBar";
@@ -27,9 +27,11 @@ const SplashScreen = ({ navigation }) => {
             <MyStatusBar />
             <View style={styles.pageStyle}>
                 <Image
-                    source={require('../assets/images/logo.png')}
-                    style={{ height: 100.0, width: 230 }}
+                    source={require('../assets/images/app_icon_new.png')}
+                    style={{ height: 100.0, width: 100 }}
+                    resizeMode="contain"
                 />
+                <Text style={{color: 'white', fontSize: 20, fontWeight: '500', marginTop: 20}}>Help Hub</Text>
             </View>
         </View>
     )

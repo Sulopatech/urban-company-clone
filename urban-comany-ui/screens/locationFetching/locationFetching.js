@@ -5,21 +5,17 @@ import { Text } from 'react-native-paper';
 const LocationFetching = () => {
   return (
     <View style={styles.container}>
-
-    
         <Image
           source={require('../../assets/images/location1.png')}
           style={styles.image}
         />
         <Text style={styles.text}>Location Fetching ....</Text>
-    </View>
-    
+    </View>  
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    //flex:1,
     height:"100%",
     width:"100",
     backgroundColor: 'white',

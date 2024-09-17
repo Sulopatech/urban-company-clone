@@ -16,7 +16,7 @@ const SigninScreen = ({ navigation }) => {
     const [errorMessage, setErrorMessage] = useState('');
     const [loggingIn, setLoggingIn] = useState(false);
 
-   const [id, setId] = useState(null);
+    const [id, setId] = useState(null);
 
     const backAction = () => {
         if (Platform.OS === "ios") {
@@ -65,22 +65,22 @@ const SigninScreen = ({ navigation }) => {
 
     //add method -------------------------------------------------------------------------
 
-    const [login, { loading , error}] = useMutation(LOGIN, {
-        
-        onCompleted: async(data) => {
+    const [login, { loading, error }] = useMutation(LOGIN, {
+
+        onCompleted: async (data) => {
             if (data.login.__typename === "CurrentUser") {
                 setLoggingIn(false);
                 await AsyncStorage.setItem("id", JSON.stringify(data.login.channels[0].id));
                 await AsyncStorage.setItem(`token`, JSON.stringify(data.login.channels[0].token));
-                
+
                 navigation.push('BottomTabBar');
 
             } else {
-                if(errorMessage === '') {
+                if (errorMessage === '') {
                     setLoggingIn(false);
-                    Alert.alert("Error","invalid user name password");
+                    Alert.alert("Error", "invalid user name password");
                 }
-                
+
             }
         },
         onError: (error) => {
@@ -91,12 +91,12 @@ const SigninScreen = ({ navigation }) => {
 
     const handleSignin = () => {
         setLoggingIn(true);
-        if(userName !== null && password !== null) {
-            if (userName.includes('@') && userName.includes('.')) { 
-                login({ variables: { username: userName, password: password } }); 
-                
+        if (userName !== null && password !== null) {
+            if (userName.includes('@') && userName.includes('.')) {
+                login({ variables: { username: userName, password: password } });
+
             } else {
-           
+
                 if (!userName.includes('@')) {
                     setErrorMessage('Username must include @ symbol');
                 }
@@ -104,9 +104,9 @@ const SigninScreen = ({ navigation }) => {
                     setErrorMessage('Username must include . symbol');
                 }
             }
-        }else {
-            Alert.alert("Error","Please enter both username and password");
-        }  
+        } else {
+            Alert.alert("Error", "Please enter both username and password");
+        }
     };
 
     const handleUserNameChange = (text) => {
@@ -117,27 +117,35 @@ const SigninScreen = ({ navigation }) => {
 
     //end of the added method-------------------------------------------------
 
-    
+
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
+            <View style={styles.logoContainer}>
+                {/* <Image
+                    source={require('../../assets/images/sulopa.png')}
+                    style={{ width: 170, height: 50 }}
+                /> */}
+                <Text style={{...Fonts.blackColor26Bold}}>HelpHub</Text>
+                <Text style={{ marginLeft: 60, marginBottom: 7, marginTop: -15, ...Fonts.blackColor10Bold}}>by Sulopa</Text>
+            </View>
             <MyStatusBar />
-            <ImageBackground
+            {/* <ImageBackground
                 source={require('../../assets/images/bg.png')}
                 style={{ flex: 1, left: -width / 20.0, }}
-            >
-                <View style={{ flex: 1, right: -width / 20.0, }}>
-                    {header()}
-                    <ScrollView automaticallyAdjustKeyboardInsets={true} showsVerticalScrollIndicator={false}>
-                        {userNameTextField()}
-                        {passwordTextField()}
-                        {forgotPasswordText()}
-                        {signinButton()}
-                        {orSigninWithDivider()}
-                        {socialMediaOptions()}
-                        {dontAccountInfo()}
-                    </ScrollView>
-                </View>
-            </ImageBackground>
+            > */}
+            <View style={{ flex: 1, }}>
+                {header()}
+                <ScrollView automaticallyAdjustKeyboardInsets={true} showsVerticalScrollIndicator={false}>
+                    {userNameTextField()}
+                    {passwordTextField()}
+                    {forgotPasswordText()}
+                    {signinButton()}
+                    {/* {orSigninWithDivider()} */}
+                    {/* {socialMediaOptions()} */}
+                    {dontAccountInfo()}
+                </ScrollView>
+            </View>
+            {/* </ImageBackground> */}
             {
                 backClickCount == 1
                     ?
@@ -228,7 +236,7 @@ const SigninScreen = ({ navigation }) => {
         return (
             <TouchableOpacity
                 activeOpacity={0.9}
-                 onPress={handleSignin}
+                onPress={handleSignin}
                 // onPress={() => navigation.push('BottomTabBar')}
                 style={styles.signinButtonStyle}
             >
@@ -291,15 +299,14 @@ const SigninScreen = ({ navigation }) => {
         return (
             <View style={{ marginTop: Sizes.fixPadding + 5.0, marginHorizontal: Sizes.fixPadding * 2.0, }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <FontAwesome name="user" size={17} color={Colors.grayColor} />
+                    <MaterialIcons name="email" size={19} color={Colors.grayColor} />
                     <TextInput
                         value={userName}
-                        onChangeText={handleUserNameChange
-
-                        }
-                        placeholder="User Name"
+                        onChangeText={handleUserNameChange}
+                        placeholder="Email"
                         placeholderTextColor={Colors.grayColor}
                         selectionColor={Colors.primaryColor}
+                        autoCapitalize="none"
                         style={{
                             marginLeft: Sizes.fixPadding,
                             ...Fonts.blackColor15Bold, flex: 1
@@ -324,7 +331,7 @@ const SigninScreen = ({ navigation }) => {
         return (
             <View style={styles.headerWrapStyle}>
                 <Text style={{ marginLeft: Sizes.fixPadding, ...Fonts.blackColor18Bold }}>
-                    Signin to your account
+                    Sign In to your account
                 </Text>
             </View>
         )
@@ -379,7 +386,13 @@ const styles = StyleSheet.create({
     },
     errorText: {
         color: 'red',
-    }
+    },
+    logoContainer: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginVertical: Sizes.fixPadding * 2.0,
+        marginTop: 200
+    },
 });
 
 export default SigninScreen;

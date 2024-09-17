@@ -1,40 +1,14 @@
 import React from "react";
-import { View, StyleSheet, ScrollView, Image, TouchableOpacity, Text } from "react-native";
+import { View, StyleSheet, ScrollView, Image, TouchableOpacity, Text, FlatList } from "react-native";
 import { Colors, Fonts, Sizes, } from "../../constants/styles";
 import { MaterialIcons, AntDesign } from '@expo/vector-icons';
 import MyStatusBar from "../../components/myStatusBar";
 import { UPDATE_BOOKING } from "../../services/Bookings";
 import { useMutation } from "@apollo/client";
 
-const servicesList = ['Hair wash herbal', 'Hair color', 'Simple hair cuting - hair wash']
-
 const AppointmentDetailsScreen = ({ navigation, route }) => {
 
-    const { date, selectedSlot, selectedServices, product } = route.params;
-
-    const [serviceBookingUpdate, { loading, error }] = useMutation(UPDATE_BOOKING, {
-        onCompleted: async (data) => {
-            console.log("BOOKING successfully update:", data);
-            // navigation.push('PaymentMethod', {
-            //     date: date,
-            //     selectedSlot: selectedSlot,
-            //     selectedServices: selectedServices,
-            //     product: product,
-            // })
-            navigation.push('ShippingDetail', {
-                date: date,
-                selectedSlot: selectedSlot,
-                selectedServices: selectedServices,
-                product: product,
-            })
-        },
-        onError: (error) => {
-            console.error("Error BOOKING update:", error);
-        },
-    });
-
-    console.log("product: ", product);
-    console.log("selected services: ", selectedServices);
+    const { date, endDate, startTime, endTime, selectedSlot, selectedServices, product } = route.params;
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
@@ -49,6 +23,7 @@ const AppointmentDetailsScreen = ({ navigation, route }) => {
                     {servicesInfo()}
                     {/* {specialistsInfo()} */}
                     {dateTimeInfo()}
+                    {selectedServicesInfo()}
                     {totalAmountInfo()}
                 </ScrollView>
             </View>
@@ -60,52 +35,72 @@ const AppointmentDetailsScreen = ({ navigation, route }) => {
         return (
             <TouchableOpacity
                 activeOpacity={0.9}
-                // onPress={() => navigation.push('PaymentMethod', {
-                //     date: date,
-                //     selectedSlot: selectedSlot ,
-                //     selectedServices: selectedServices,
-                //     product: product,
-                // })}
                 onPress={() => handleBooking()}
                 style={styles.bookNowButtonStyle}
             >
                 <Text style={{ ...Fonts.whiteColor18SemiBold }}>
-                    {loading ? "Booking..." : "Book Now"}
+                    {"Book Now"}
                 </Text>
             </TouchableOpacity>
         )
     }
 
     function handleBooking() {
-        try {
-            serviceBookingUpdate({
-                variables: {
-                    input: {
-                        customFields: {
-                            date: date,
-                            time: selectedSlot
-                        }
-                    }
-                }
-            })
-        } catch (error) {
-            console.error("Error Booking: ", error);
-        }
+        navigation.push('ShippingDetail', {
+            date: date,
+            selectedSlot: selectedSlot,
+            selectedServices: selectedServices,
+            product: product,
+        })
     }
 
     function totalAmountInfo() {
+        const servicesArray = Array.isArray(selectedServices) ? selectedServices : [selectedServices];
         return (
             <View style={styles.totalAmountInfoWrapStyle}>
                 <Text style={{ ...Fonts.blackColor16Bold }}>
                     Total Amount
                 </Text>
-                <Text style={{ ...Fonts.blackColor16Bold }}>
-                    {`$`}{selectedServices.reduce((total, item) => total = total + item.priceWithTax, 0).toFixed(2)}
+                <Text style={{ ...Fonts.blackColor13Bold }}>
+                    {`₹ `}{servicesArray.reduce((total, item) => total = total + item.priceWithTax, 0).toFixed(2)}
                 </Text>
             </View>
         )
     }
-    //Thursday •
+
+    function selectedServicesInfo() {
+        const renderItem = ({ item }) => (
+            <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+            }}>
+                <Text style={{ ...Fonts.grayColor12SemiBold, width: "80%" }}>
+                    {item.name}
+                </Text>
+                <Text style={{ ...Fonts.grayColor12SemiBold, width: "20%" }}>
+                    {`₹ `}{item.priceWithTax.toFixed(2)}
+                </Text>
+            </View>
+        )
+        const servicesArray = Array.isArray(selectedServices) ? selectedServices : [selectedServices];
+        return (
+            <View style={{ marginHorizontal: Sizes.fixPadding * 2.0, }}>
+                <Text style={{ marginBottom: Sizes.fixPadding, marginTop: Sizes.fixPadding - 2.0, ...Fonts.blackColor16Bold }}>
+                    Selected Services
+                </Text>
+                <FlatList
+                    listKey="services"
+                    data={servicesArray}
+                    keyExtractor={(item) => `${item.id}`}
+                    renderItem={renderItem}
+                    scrollEnabled={false}
+                    showsVerticalScrollIndicator={false}
+                />
+            </View>
+        )
+    }
+
     function dateTimeInfo() {
         return (
             <View style={{
@@ -115,21 +110,11 @@ const AppointmentDetailsScreen = ({ navigation, route }) => {
                 <Text style={{ ...Fonts.blackColor15Bold }}>
                     Appointment Date Time
                 </Text>
-                <Text style={{ ...Fonts.grayColor13SemiBold }}>
-                    {date} • {selectedSlot}
+                <Text style={{ ...Fonts.grayColor12SemiBold }}>
+                    From {date} to {endDate}
                 </Text>
-            </View>
-        )
-    }
-
-    function specialistsInfo() {
-        return (
-            <View style={{ marginHorizontal: Sizes.fixPadding * 2.0, }}>
-                <Text style={{ ...Fonts.blackColor15Bold }}>
-                    Selected Specialist
-                </Text>
-                <Text style={{ ...Fonts.grayColor13SemiBold }}>
-                    Joya Patel • Hair stylist
+                <Text style={{ ...Fonts.grayColor12SemiBold }}>
+                    Slot: {startTime} to {endTime}
                 </Text>
             </View>
         )
@@ -147,7 +132,7 @@ const AppointmentDetailsScreen = ({ navigation, route }) => {
                 <Text>
                     {selectedServices.map((item, index) => (
                         <Text key={`${index}`}
-                            style={{ ...Fonts.grayColor13SemiBold }}
+                            style={{ ...Fonts.grayColor12SemiBold }}
                         >
                             {item.name} {index == selectedServices.length - 1 ? '' : `• `}
                         </Text>
@@ -162,7 +147,7 @@ const AppointmentDetailsScreen = ({ navigation, route }) => {
         return (
             <View style={{ marginHorizontal: Sizes.fixPadding * 2.0, flexDirection: 'row', alignItems: 'center' }}>
                 <Image
-                    source={{ uri: product.featuredAsset.preview }}
+                    source={{ uri: product?.featuredAsset?.preview }}
                     style={{ width: 70.0, height: 70.0, borderRadius: Sizes.fixPadding }}
                 />
                 <View style={{ marginLeft: Sizes.fixPadding, }}>

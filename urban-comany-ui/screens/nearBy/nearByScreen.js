@@ -155,7 +155,6 @@ const NearByScreen = ({ navigation }) => {
         markers: markersList,
     })
 
-    //console.log("search data: ", searchData?.search?.items);
     const searchProductData = searchData?.search?.items || [];
 
     const updateState = (data) => setState((state) => ({ ...state, ...data }))
@@ -175,7 +174,6 @@ const NearByScreen = ({ navigation }) => {
         const productIds = new Set();
 
         data.forEach(item => {
-            console.log("product id: ",item.productAsset.id);
             if (!productIds.has(item.productAsset.id)) {
                 uniqueProducts.push(item);
                 productIds.add(item.productAsset.id);
@@ -428,9 +426,7 @@ const NearByScreen = ({ navigation }) => {
         const renderItem = ({ item }) => (
             <TouchableOpacity
                 activeOpacity={0.9}
-                onPress={() => {navigation.push('SalonDetail',{ variantSlug: item.slug })
-                //console.log("image url: ",item.productAsset.preview)
-                }}
+                onPress={() => navigation.push('SalonDetail',{ variantSlug: item.slug })}
                 style={styles.salonInfoWrapStyle}
             >
                 <Image

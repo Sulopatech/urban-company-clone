@@ -1,27 +1,27 @@
-{
+ {
   "expo": {
-    "name": "RN SalonBooking",
-    "slug": "rn-SalonBooking",
+    "name": "HelpHub by Sulopa",
+    "slug": "help-hub-sulopa",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/app_icon_new.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/icon.png",
+      "image": "./assets/images/app_icon_new.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "bundleIdentifier": "com.render.rnsalon",
+      "bundleIdentifier": "com.sulopa.helphub",
       "buildNumber": "1.0.0",
       "supportsTablet": true
     },
     "android": {
-      "package": "com.render.rnsalon",
-      "versionCode": 2,
+      "package": "com.sulopa.helphub",
+      "versionCode": 1,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/icon.png",
+        "foregroundImage": "./assets/images/appIcon.jpg",
         "backgroundColor": "#FFFFFF"
       },
       "config": {
@@ -29,7 +29,10 @@
           "apiKey": "YOUR GOOGLE MAP API KEY HERE"
         }
       },
-      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"]
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -37,10 +40,26 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "a10fc5b2-c337-4971-9ca0-164a4fca33ef"
+      }
     }
   }
 }

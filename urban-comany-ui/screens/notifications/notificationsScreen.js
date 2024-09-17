@@ -144,7 +144,7 @@ const NotificationsScreen = ({ navigation }) => {
                     </View>
                 </View>
             </View>
-        </Animated.View >
+        </Animated.View>
     );
 
     const renderHiddenItem = () => (
